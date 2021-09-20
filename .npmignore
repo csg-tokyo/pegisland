@@ -1,0 +1,11 @@
+src
+test
+coverage
+grammar
+example
+tsconfig.json
+.nyc_output
+.vscode
+.nycrc
+.prettierrc.json
+.eslintrc.json
