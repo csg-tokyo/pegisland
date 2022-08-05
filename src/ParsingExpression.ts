@@ -254,12 +254,14 @@ export class Nonterminal implements IParsingExpression {
 
 export class Terminal implements IParsingExpression {
   regex: RegExp;
-  constructor(pattern: string | RegExp) {
+  source: string;
+  constructor(pattern: string | RegExp, source: string) {
     if (pattern instanceof RegExp) {
       this.regex = new RegExp(pattern.source, 'smy');
     } else {
       this.regex = new RegExp(pattern, 'smy');
     }
+    this.source = source;
   }
 
   parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {

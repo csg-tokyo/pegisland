@@ -40,7 +40,7 @@ describe('NullParsingExpression', () => {
 describe('Terminal', () => {
   describe('#parse()', () => {
     const s = '1980/10/28';
-    const term = new Terminal('\\d+');
+    const term = new Terminal(/\d+/, "r'\\d+'");
     it('should consume digits from the beginning of a string', () => {
       const result = term.parse(new ParsingEnv(s), new Position(0, -1, -1));
       assert(result);
@@ -75,7 +75,7 @@ describe('Terminal', () => {
 describe('Nonterminal', () => {
   describe('#parse()', () => {
     const s = '1980/10/28';
-    const term = new Terminal('\\d+');
+    const term = new Terminal('\\d+', "r'\\d+'");
     const nonterm = new Rule('foo', term);
     it('should consume digits from the beginning of a string', () => {
       const result = nonterm.parse(new ParsingEnv(s), new Position(0, -1, -1));
@@ -110,7 +110,7 @@ describe('Nonterminal', () => {
 
 describe('ZeroOrMore', () => {
   const s = '01234ab123';
-  const term = new Terminal('[a-z]');
+  const term = new Terminal('[a-z]', '[a-z]');
   const star = new ZeroOrMore(term);
   describe('#parse()', () => {
     it('should recognize empty string', () => {
@@ -149,7 +149,7 @@ describe('ZeroOrMore', () => {
 
 describe('OneOrMore', () => {
   const s = '01234ab123';
-  const term = new Terminal('[a-z]');
+  const term = new Terminal('[a-z]', '[a-z]');
   const plus = new OneOrMore(term);
   describe('#parse()', () => {
     it('should not recognize empty string', () => {
@@ -178,7 +178,7 @@ describe('OneOrMore', () => {
 
 describe('Optional', () => {
   const s = '01234ab123';
-  const term = new Terminal('[a-z]');
+  const term = new Terminal('[a-z]', '[a-z]');
   const opt = new Optional(term);
   describe('#parse()', () => {
     it('should recognize empty string', () => {
@@ -217,7 +217,7 @@ describe('Optional', () => {
 
 describe('And', () => {
   const s = '01234ab123';
-  const term = new Terminal('[a-z]');
+  const term = new Terminal('[a-z]', '[a-z]');
   const and = new And(term);
   describe('#parse()', () => {
     it('should return null if the pattern does not match', () => {
@@ -248,7 +248,7 @@ describe('And', () => {
 
 describe('Not', () => {
   const s = '01234ab123';
-  const term = new Terminal('[a-z]');
+  const term = new Terminal('[a-z]', '[a-z]');
   const not = new Not(term);
   describe('#parse()', () => {
     it('should return null if the pattern matches', () => {
@@ -274,8 +274,8 @@ describe('Not', () => {
 
 describe('Sequence', () => {
   const s = 'o1234ab123';
-  const numbers = new Terminal('[0-9]+');
-  const letters = new Terminal('[a-z]+');
+  const numbers = new Terminal('[0-9]+', "r'[0-9]+'");
+  const letters = new Terminal('[a-z]+', "r'[a-z]+'");
   const seq = new Sequence([numbers, letters]);
   describe('#parse()', () => {
     it('should recognize the sequence of patterns', () => {
@@ -301,8 +301,8 @@ describe('Sequence', () => {
 
 describe('OrderedChoice', () => {
   const s = 'o1234ab789';
-  const numbers = new Terminal('[0-9]+');
-  const letters = new Terminal('[a-z]+');
+  const numbers = new Terminal('[0-9]+', "r'[0-9]+'");
+  const letters = new Terminal('[a-z]+', "r'[a-z]+'");
   const choice = new OrderedChoice([numbers, letters]);
   describe('#parse()', () => {
     it('should recognize the first pattern', () => {

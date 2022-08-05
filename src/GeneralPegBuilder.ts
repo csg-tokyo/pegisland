@@ -173,7 +173,7 @@ export class GeneralPegBuilder {
     const choice = seq.childNodes[0];
     const term = choice.childNodes[0] as NodeTerminal;
     const text = term.text;
-    return new Terminal(text.slice(2, text.length - 1));
+    return new Terminal(text.slice(2, text.length - 1), text);
   }
 
   processNamedIdentifier(node: IParseTree): IParsingExpression {
@@ -200,18 +200,18 @@ export class GeneralPegBuilder {
     const choice = seq.childNodes[0];
     const term = choice.childNodes[0] as NodeTerminal;
     const result = eval(term.text) as string;
-    return new Terminal(result.replace(/([^0-9a-zA-Z])/g, '\\$1'));
+    return new Terminal(result.replace(/([^0-9a-zA-Z])/g, '\\$1'), term.text);
   }
 
   processClass(node: IParseTree): IParsingExpression {
     assert(node instanceof NodeNonterminal);
     const seq = node.childNodes[0];
     const terminal = seq.childNodes[0] as NodeTerminal;
-    return new Terminal(terminal.text);
+    return new Terminal(terminal.text, terminal.text);
   }
 
   processDot(node: IParseTree): IParsingExpression {
     assert(node instanceof NodeNonterminal);
-    return new Terminal(/./);
+    return new Terminal(/./, '.');
   }
 }

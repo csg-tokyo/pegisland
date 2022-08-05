@@ -38,7 +38,7 @@ export class InitialPegBuilder {
       return new Nonterminal(this.rules.get(nonterminal) as Rule);
     } else if (Array.isArray(expression)) {
       if (expression[0] == 'terminal') {
-        return new Terminal(expression[1] as RegExp | string);
+        return new Terminal(expression[1] as RegExp | string, '<invalid>');
       } else {
         const operator = expression[0];
         const operands = expression

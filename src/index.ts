@@ -1,7 +1,9 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { rewriteLakeSymbols } from './lake';
 import { parseGrammar, Parser } from './Parser';
+export { parseGrammar, rewriteLakeSymbols, Parser };
 import { IParseTree, NodeNonterminal } from './ParseTree';
+export { Peg } from './Peg';
 export { ParsingError } from './PegInterpreter';
 export { exampleGrammar, exampleSource } from './example';
 export { searchExpressions } from './search';
@@ -17,6 +19,7 @@ export {
   Sequence,
   ZeroOrMore,
   Not,
+  IParsingExpressionVisitor,
 } from './ParsingExpression';
 export {
   IParseTree,
@@ -29,12 +32,15 @@ export {
   NodeOrderedChoice,
 } from './ParseTree';
 
-export function createParser(grammar: string): Parser | Error {
+export function createParser(
+  grammar: string,
+  waterSymbols = ['water']
+): Parser | Error {
   const peg = parseGrammar(grammar);
   if (peg instanceof Error) {
     return peg;
   }
-  rewriteLakeSymbols(peg, ['water']);
+  rewriteLakeSymbols(peg, waterSymbols);
   const parser = new Parser(peg);
   return parser;
 }

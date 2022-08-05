@@ -1,5 +1,6 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { assert } from 'console';
+import { Nonterminal } from '.';
 import { AltCalculator } from './AltCalculator';
 import { BeginningCalculator } from './BeginningCalculator';
 import {
@@ -44,8 +45,8 @@ export function rewriteLakeSymbols(
       const rule = peg.rules.get(lakeSymbol) as Rule;
       if (rule.rhs instanceof NullParsingExpression) {
         rule.rhs = new Sequence([
-          new Not(new Terminal(/./)),
-          new Terminal(/./),
+          new Not(new Terminal(/./, '.')),
+          new Terminal(/./, '.'),
         ]);
       }
     });
@@ -74,7 +75,7 @@ export function rewriteLakeSymbols(
       let waters: IParsingExpression[] = [
         new Sequence([
           ...[...altSet.values()].map((symbol) => new Not(symbol)),
-          new Terminal(new RegExp('.')),
+          new Terminal(/./, '.'),
         ]),
       ];
       const waterExps: IParsingExpression[] = [

@@ -17,9 +17,12 @@ import {
 
 export function peToString(pe: IParsingExpression): string {
   if (pe instanceof Terminal) {
-    return `r'${pe.regex.source}'`;
+    return pe.source;
   } else if (pe instanceof Nonterminal) {
-    return (pe.name == '' ? '' : pe.name + ':') + pe.rule.symbol;
+    return (
+      (pe.name == '' ? '' : pe.name + ':') +
+      (pe.rule ? pe.rule.symbol : '=norule=')
+    );
   } else if (pe instanceof ZeroOrMore) {
     return `${peToString(pe.operand)}*`;
   } else if (pe instanceof OneOrMore) {
