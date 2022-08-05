@@ -14,6 +14,7 @@ const grammar: { [name: string]: SimpleTree } = {
   Primary: [
     '/',
     'Regexp',
+    ['', 'LAKE_OPEN', 'Expression', 'LAKE_CLOSE'],
     'NamedItendifier',
     ['', 'OPEN', 'Expression', 'CLOSE'],
     'String',
@@ -68,6 +69,8 @@ const grammar: { [name: string]: SimpleTree } = {
   PLUS: ['', ['terminal', /\+/], 'Spacing'],
   OPEN: ['', ['terminal', /\(/], 'Spacing'],
   CLOSE: ['', ['terminal', /\)/], 'Spacing'],
+  LAKE_OPEN: ['', ['terminal', /<</], 'Spacing'],
+  LAKE_CLOSE: ['', ['terminal', />>/], 'Spacing'],
   DOT: ['', ['terminal', /\.|_/], 'Spacing'],
   Spacing: ['*', ['/', 'Space', 'Comment']],
   Space: ['terminal', /\s+/],

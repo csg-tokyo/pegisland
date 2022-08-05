@@ -30,6 +30,11 @@ import { Peg } from './Peg';
 
 export class GeneralPegBuilder {
   rules = new Map<string, Rule>();
+  lakes = 0;
+
+  makeLakeSymbol() {
+    return `<${this.lakes++}>`;
+  }
 
   getRule(symbol: string): Rule {
     if (!this.rules.has(symbol)) {
@@ -145,24 +150,34 @@ export class GeneralPegBuilder {
       case 0:
         result = this.processRegexp(choice.childNodes[0]);
         break;
-      case 1:
+      case 1: {
+        const seq = choice.childNodes[0];
+        const lakeSymbol = this.makeLakeSymbol();
+        const rule = this.getRule(lakeSymbol);
+        rule.rhs = this.processExpression(seq.childNodes[1]);
+        result = new ZeroOrMore(new Nonterminal(rule));
+        break;
+      }
+      case 2:
         result = this.processNamedIdentifier(choice.childNodes[0]);
         break;
-      case 2: {
+      case 3: {
         const seq = choice.childNodes[0];
         const operand = this.processExpression(seq.childNodes[1]);
         result = new Grouping(operand);
         break;
       }
-      case 3:
+      case 4:
         result = this.processString(choice.childNodes[0]);
         break;
-      case 4:
+      case 5:
         result = this.processClass(choice.childNodes[0]);
         break;
-      case 5:
+      case 6:
         result = this.processDot(choice.childNodes[0]);
         break;
+      default:
+        assert(false, 'unexpected index');
     }
     return result;
   }
