@@ -127,32 +127,50 @@ export class GeneralPegBuilder {
     const seq = node.childNodes[0];
     const [primary, opt] = seq.childNodes;
     let operand = this.processPrimary(primary);
-    opt.childNodes.forEach((node) => {
-      const choice = node as NodeOrderedChoice;
+    if (opt.childNodes.length != 0) {
+      const choice = opt.childNodes[0] as NodeOrderedChoice;
       switch (choice.index) {
         case 0:
-          operand = new Optional(operand);
-          break;
         case 1:
-          operand = new ZeroOrMore(operand);
-          break;
         case 2:
-          operand = new OneOrMore(operand);
-          break;
-        case 3:
-        case 4: {
+        case 3: {
           const choiceOperand = choice.childNodes[0];
           const colonSeq = choiceOperand as NodeSequence;
           const rhs = colonSeq.childNodes[1];
           let rhsOperand = this.processPrimary(rhs);
-          operand = new (choice.index == 3 ? ColonNot : Colon)(
-            operand,
-            rhsOperand
-          );
+          switch (choice.index) {
+            case 0:
+              operand = new Sequence([
+                new ZeroOrMore(new Sequence([new Not(rhsOperand), operand])),
+                rhsOperand,
+              ]);
+              break;
+            case 1:
+              operand = new Sequence([
+                new OneOrMore(new Sequence([new Not(rhsOperand), operand])),
+                rhsOperand,
+              ]);
+              break;
+            case 2:
+              operand = new ColonNot(operand, rhsOperand);
+              break;
+            case 3:
+              operand = new Colon(operand, rhsOperand);
+              break;
+          }
           break;
         }
+        case 4:
+          operand = new Optional(operand);
+          break;
+        case 5:
+          operand = new ZeroOrMore(operand);
+          break;
+        case 6:
+          operand = new OneOrMore(operand);
+          break;
       }
-    });
+    }
     return operand;
   }
 

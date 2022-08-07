@@ -62,7 +62,7 @@ describe('Parser', () => {
   describe('#constructor()', () => {
     it('should recognize a grammar written in PEG', () => {
       const grammar = `
-      foo <- "1234"  r"4321" -> "abc" / &bar+ (!bar?* bar . [123] . _ "123")
+      foo <- "1234"  r"4321" -> "abc" / &bar+ (!bar? bar . [123] . _ "123")
       bar // comment
       <- "1234"
       `;
