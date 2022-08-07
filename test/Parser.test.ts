@@ -80,11 +80,20 @@ describe('Parser', () => {
 
     it('should recognize a string', () => {
       const grammar = `
-      program     <- r'[a-z]+'
+      program     <- r'[a-z]*'
       `;
       const parser = new Parser(parseGrammar(grammar) as Peg);
       const tree = parser.parse('ijk', 'program') as IParseTree;
       assert(tree.childNodes[0] instanceof NodeTerminal);
+    });
+
+    it('should recognize a string by using a class', () => {
+      const grammar = `
+      program     <- ^[0-9]*
+      `;
+      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const tree = parser.parse('ijk', 'program') as IParseTree;
+      assert(tree.childNodes[0] instanceof NodeZeroOrMore);
     });
 
     it('should recognize a sequence', () => {
