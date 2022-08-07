@@ -62,7 +62,7 @@ const grammar: { [name: string]: SimpleTree } = {
     ['/', ['terminal', /r"(\\.|[^"])+"/], ['terminal', /r'(\\.|[^'])+'/]],
     'Spacing',
   ],
-  Class: ['', ['terminal', /\[[^\]]+\]/], 'Spacing'],
+  Class: ['', ['terminal', /\^?\[[^\]]+\]/], 'Spacing'],
   Char: [
     '/',
     ['terminal', /\\[nrt'"[\]\\]/],

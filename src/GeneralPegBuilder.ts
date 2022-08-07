@@ -236,7 +236,11 @@ export class GeneralPegBuilder {
     assert(node instanceof NodeNonterminal);
     const seq = node.childNodes[0];
     const terminal = seq.childNodes[0] as NodeTerminal;
-    return new Terminal(terminal.text, terminal.text);
+    const text =
+      terminal.text[0] == '^'
+        ? '[^' + terminal.text.substring(2)
+        : terminal.text;
+    return new Terminal(text, terminal.text);
   }
 
   processDot(node: IParseTree): IParsingExpression {
