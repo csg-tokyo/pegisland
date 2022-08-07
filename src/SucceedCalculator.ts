@@ -14,6 +14,8 @@ import {
   Sequence,
   Terminal,
   ZeroOrMore,
+  Colon,
+  ColonNot,
 } from './ParsingExpression';
 import { difference, union } from './set-operations';
 import { strict as assert } from 'assert';
@@ -91,5 +93,13 @@ export class SucceedCalculator extends SetCalculator {
 
   visitRewriting(pe: Rewriting): void {
     this.set(pe.operand, new Set(this.get(pe)));
+  }
+
+  visitColon(pe: Colon): void {
+    this.set(pe.rhs, new Set(this.get(pe)));
+  }
+
+  visitColonNot(pe: ColonNot): void {
+    this.set(pe.lhs, new Set(this.get(pe)));
   }
 }

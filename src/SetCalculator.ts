@@ -16,6 +16,8 @@ import {
   Sequence,
   Terminal,
   ZeroOrMore,
+  Colon,
+  ColonNot,
 } from './ParsingExpression';
 
 export const EPSILON = new NullParsingExpression();
@@ -74,4 +76,6 @@ export abstract class SetCalculator implements IParsingExpressionVisitor {
   abstract visitOrderedChoice(pe: OrderedChoice): void;
   abstract visitGrouping(pe: Grouping): void;
   abstract visitRewriting(pe: Rewriting): void;
+  abstract visitColon(pe: Colon): void;
+  abstract visitColonNot(pe: ColonNot): void;
 }

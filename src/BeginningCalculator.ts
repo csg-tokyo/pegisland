@@ -14,6 +14,8 @@ import {
   Sequence,
   Terminal,
   ZeroOrMore,
+  Colon,
+  ColonNot,
 } from './ParsingExpression';
 import { union } from './set-operations';
 
@@ -77,5 +79,13 @@ export class BeginningCalculator extends SetCalculator {
 
   visitRewriting(pe: Rewriting): void {
     this.set(pe, new Set(this.get(pe.operand)));
+  }
+
+  visitColon(pe: Colon): void {
+    this.set(pe, new Set(this.get(pe.rhs)));
+  }
+
+  visitColonNot(pe: ColonNot): void {
+    this.set(pe, new Set(this.get(pe.lhs)));
   }
 }

@@ -44,6 +44,8 @@ export interface IParsingExpressionVisitor {
   visitOrderedChoice(pe: OrderedChoice): void;
   visitGrouping(pe: Grouping): void;
   visitRewriting(pe: Rewriting): void;
+  visitColon(pe: Colon): void;
+  visitColonNot(pe: ColonNot): void;
 }
 
 export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
@@ -97,6 +99,16 @@ export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
   }
   visitRewriting(pe: Rewriting): void {
     pe.operand.accept(this);
+    pe.accept(this.visitor);
+  }
+  visitColon(pe: Colon): void {
+    pe.lhs.accept(this);
+    pe.rhs.accept(this);
+    pe.accept(this.visitor);
+  }
+  visitColonNot(pe: Colon): void {
+    pe.lhs.accept(this);
+    pe.rhs.accept(this);
     pe.accept(this.visitor);
   }
 }
@@ -401,6 +413,56 @@ export class Not implements IParsingExpression {
 
   accept(visitor: IParsingExpressionVisitor): void {
     visitor.visitNot(this);
+  }
+}
+
+export class Colon implements IParsingExpression {
+  constructor(public lhs: IParsingExpression, public rhs: IParsingExpression) {}
+
+  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
+    const lhsResult = env.parse(this.lhs, pos);
+    if (lhsResult == null) {
+      return null;
+    }
+    const [_lhsValue, lhsNextIndex] = lhsResult;
+    const rhsResult = env.parse(this.rhs, pos);
+    if (rhsResult == null) {
+      return null;
+    }
+    const [_rhsValue, rhsNextIndex] = rhsResult;
+    if (!lhsNextIndex.equal(rhsNextIndex)) {
+      console.log(lhsNextIndex, rhsNextIndex);
+      return null;
+    }
+    return rhsResult;
+  }
+
+  accept(visitor: IParsingExpressionVisitor): void {
+    visitor.visitColon(this);
+  }
+}
+
+export class ColonNot implements IParsingExpression {
+  constructor(public lhs: IParsingExpression, public rhs: IParsingExpression) {}
+
+  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
+    const lhsResult = env.parse(this.lhs, pos);
+    if (lhsResult == null) {
+      return null;
+    }
+    const rhsResult = env.parse(this.rhs, pos);
+    if (rhsResult != null) {
+      const [_lhsValue, lhsNextIndex] = lhsResult;
+      const [_rhsValue, rhsNextIndex] = rhsResult;
+      if (lhsNextIndex.equal(rhsNextIndex)) {
+        return null;
+      }
+    }
+    return lhsResult;
+  }
+
+  accept(visitor: IParsingExpressionVisitor): void {
+    visitor.visitColonNot(this);
   }
 }
 

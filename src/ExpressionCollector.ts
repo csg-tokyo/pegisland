@@ -15,6 +15,8 @@ import {
   Sequence,
   Terminal,
   ZeroOrMore,
+  Colon,
+  ColonNot,
 } from './ParsingExpression';
 
 export class ExpressionCollector implements IParsingExpressionVisitor {
@@ -58,6 +60,12 @@ export class ExpressionCollector implements IParsingExpressionVisitor {
     this.expressions.push(pe);
   }
   visitRewriting(pe: Rewriting): void {
+    this.expressions.push(pe);
+  }
+  visitColon(pe: Colon): void {
+    this.expressions.push(pe);
+  }
+  visitColonNot(pe: ColonNot): void {
     this.expressions.push(pe);
   }
 }

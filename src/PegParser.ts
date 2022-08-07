@@ -10,7 +10,21 @@ const grammar: { [name: string]: SimpleTree } = {
   Rewriting: ['', 'Sequence', ['?', ['', 'RIGHTARROW', 'String']]],
   Sequence: ['*', ['', 'Prefix', ['!', 'LEFTARROW']]],
   Prefix: ['', ['?', ['/', 'AND', 'NOT']], 'Suffix'],
-  Suffix: ['', 'Primary', ['*', ['/', 'QUESTION', 'STAR', 'PLUS']]],
+  Suffix: [
+    '',
+    'Primary',
+    [
+      '*',
+      [
+        '/',
+        'QUESTION',
+        'STAR',
+        'PLUS',
+        ['', 'COLON_NOT', 'Primary'],
+        ['', 'COLON', 'Primary'],
+      ],
+    ],
+  ],
   Primary: [
     '/',
     'Regexp',
@@ -28,7 +42,7 @@ const grammar: { [name: string]: SimpleTree } = {
       [
         '',
         ['terminal', /[a-zA-Z][a-zA-Z0-9_]*|<[a-zA-Z][a-zA-Z0-9_]*>/],
-        ['terminal', /:/],
+        ['terminal', /@/],
       ],
     ],
     'Identifier',
@@ -72,6 +86,8 @@ const grammar: { [name: string]: SimpleTree } = {
   LAKE_OPEN: ['', ['terminal', /<</], 'Spacing'],
   LAKE_CLOSE: ['', ['terminal', />>/], 'Spacing'],
   DOT: ['', ['terminal', /\.|_/], 'Spacing'],
+  COLON: ['', ['terminal', /:/], 'Spacing'],
+  COLON_NOT: ['', ['terminal', /:!/], 'Spacing'],
   Spacing: ['*', ['/', 'Space', 'Comment']],
   Space: ['terminal', /\s+/],
   Comment: ['terminal', /\/\/.*?$/],

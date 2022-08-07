@@ -51,11 +51,10 @@ function doit(name: string, pe: IParsingExpression): void {
         return nonterminal.rule.symbol + ': Node' + (array ? '[]' : '');
       });
       const s = name + '(' + args.join(', ') + ')';
-      console.log('XXX', s);
     }
   } else if (pe instanceof OrderedChoice) {
   } else {
-    console.log(pe);
+    //console.log(pe);
   }
 }
 
@@ -185,6 +184,28 @@ describe('Parser', () => {
       assert.equal(choice.range.end.offset, 4);
     });
 
+    it('should work with :', () => {
+      const grammar = `
+      program     <- ([a-z]+):"xyz" 
+      `;
+      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const tree = parser.parse('xyz', 'program') as IParseTree;
+      assert.equal(tree.range.end.offset, 3);
+      const tree2 = parser.parse('xyza', 'program') as IParseTree;
+      assert(tree2 instanceof Error);
+    });
+
+    it('should work with :!', () => {
+      const grammar = `
+      program     <- ([a-z]+):!"xyz" 
+      `;
+      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const tree = parser.parse('xyza', 'program') as IParseTree;
+      assert.equal(tree.range.end.offset, 4);
+      const tree2 = parser.parse('xyz', 'program') as IParseTree;
+      assert(tree2 instanceof Error);
+    });
+
     it('should work with ()', () => {
       const grammar = `
       program     <- ('a' 'b')+
@@ -215,7 +236,7 @@ describe('Parser', () => {
 
     it('should work with nonterminal', () => {
       const grammar = `
-      program     <- name:A name:A
+      program     <- name@A name@A
       A           <- r'[abc][abc][abc]'
       `;
       const parser = new Parser(parseGrammar(grammar) as Peg);
@@ -262,7 +283,7 @@ describe('Parser', () => {
       const grammar = `
       program     <- spacing statement
       spacing     <- r'\\s*'
-      statement   <- a:ID b:ID a:ID b:ID
+      statement   <- a@ID b@ID a@ID b@ID
       ID          <- r'[a-z]+' spacing
       `;
       const peg = parseGrammar(grammar) as Peg;
@@ -273,8 +294,8 @@ describe('Parser', () => {
       const s = '   abc xyz abc xyz';
       const result = parser.parse(s, 'program') as IParseTree;
       assert.equal(result.range.end.offset, s.length);
-      console.log(result);
-      printTree(result);
+      //console.log(result);
+      //printTree(result);
     });
   });
 });

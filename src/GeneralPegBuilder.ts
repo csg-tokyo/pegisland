@@ -16,6 +16,8 @@ import {
   Grouping,
   Terminal,
   Rewriting,
+  Colon,
+  ColonNot,
 } from './ParsingExpression';
 import {
   NodeNonterminal,
@@ -123,9 +125,9 @@ export class GeneralPegBuilder {
   processSuffix(node: IParseTree): IParsingExpression {
     assert(node instanceof NodeNonterminal);
     const seq = node.childNodes[0];
-    const [primary, star] = seq.childNodes;
+    const [primary, opt] = seq.childNodes;
     let operand = this.processPrimary(primary);
-    star.childNodes.forEach((node) => {
+    opt.childNodes.forEach((node) => {
       const choice = node as NodeOrderedChoice;
       switch (choice.index) {
         case 0:
@@ -137,6 +139,18 @@ export class GeneralPegBuilder {
         case 2:
           operand = new OneOrMore(operand);
           break;
+        case 3:
+        case 4: {
+          const choiceOperand = choice.childNodes[0];
+          const colonSeq = choiceOperand as NodeSequence;
+          const rhs = colonSeq.childNodes[1];
+          let rhsOperand = this.processPrimary(rhs);
+          operand = new (choice.index == 3 ? ColonNot : Colon)(
+            operand,
+            rhsOperand
+          );
+          break;
+        }
       }
     });
     return operand;
