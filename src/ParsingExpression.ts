@@ -431,7 +431,6 @@ export class Colon implements IParsingExpression {
     }
     const [_rhsValue, rhsNextIndex] = rhsResult;
     if (!lhsNextIndex.equal(rhsNextIndex)) {
-      console.log(lhsNextIndex, rhsNextIndex);
       return null;
     }
     return rhsResult;
