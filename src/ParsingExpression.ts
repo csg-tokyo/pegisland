@@ -113,8 +113,12 @@ export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
   }
 }
 
+class LR {
+  constructor(public detected: boolean) {}
+}
+
 export class Rule {
-  memo: { [name: number]: [IParseTree, Position] | null } = {};
+  memo: { [name: number]: [IParseTree, Position] | LR | null } = {};
   constructor(public symbol: string, public rhs: IParsingExpression) {}
 
   parseWithoutMemo(
@@ -134,11 +138,48 @@ export class Rule {
     ];
   }
 
+  glowLR(
+    env: IParsingEnv,
+    pos: Position,
+    nextPos: Position
+  ): [IParseTree, Position] | null {
+    console.log('glowLR');
+    while (true) {
+      const ans = this.parseWithoutMemo(env, pos);
+      if (ans == null) {
+        break;
+      }
+      const [_tree, newNextPos] = ans;
+      if (newNextPos.offset <= nextPos.offset) {
+        break;
+      }
+      nextPos = newNextPos;
+      this.memo[pos.offset] = ans;
+    }
+    return this.memo[pos.offset] as [IParseTree, Position] | null;
+  }
+
   parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
     if (pos.offset in this.memo == false) {
-      this.memo[pos.offset] = this.parseWithoutMemo(env, pos);
+      const lr = new LR(false);
+      this.memo[pos.offset] = lr;
+      const ans = this.parseWithoutMemo(env, pos);
+      this.memo[pos.offset] = ans;
+      if (lr.detected && ans != null) {
+        const [_tree, nextPos] = ans;
+        return this.glowLR(env, pos, nextPos);
+      } else {
+        return ans;
+      }
+    } else {
+      const m = this.memo[pos.offset];
+      if (m instanceof LR) {
+        m.detected = true;
+        return null;
+      } else {
+        return m;
+      }
     }
-    return this.memo[pos.offset];
   }
 }
 
