@@ -1,5 +1,7 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { strict as assert } from 'assert';
+import { InitialPegBuilder } from './InitialPegBuilder';
+import { Parser } from './Parser';
 import {
   IParseTree,
   NodeNonterminal,
@@ -113,12 +115,7 @@ export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
   }
 }
 
-class LR {
-  constructor(public detected: boolean) {}
-}
-
-export class Rule {
-  memo: { [name: number]: [IParseTree, Position] | LR | null } = {};
+class BaseRule {
   constructor(public symbol: string, public rhs: IParsingExpression) {}
 
   parseWithoutMemo(
@@ -137,13 +134,25 @@ export class Rule {
       nextIndex,
     ];
   }
+}
+
+/*
+class LR {
+  constructor(public detected: boolean) {}
+}
+
+// Section 3.2
+export class Rule extends BaseRule {
+  memo: { [name: number]: [IParseTree, Position] | LR | null } = {};
+  constructor(symbol: string, rhs: IParsingExpression) {
+    super(symbol, rhs);
+  }
 
   glowLR(
     env: IParsingEnv,
     pos: Position,
     nextPos: Position
   ): [IParseTree, Position] | null {
-    console.log('glowLR');
     while (true) {
       const ans = this.parseWithoutMemo(env, pos);
       if (ans == null) {
@@ -179,6 +188,163 @@ export class Rule {
       } else {
         return m;
       }
+    }
+  }
+}
+*/
+
+class Head {
+  constructor(
+    public rule: BaseRule,
+    public involvedSet: Set<BaseRule>,
+    public evalSet: Set<BaseRule>
+  ) {}
+}
+class LR {
+  constructor(
+    public seed: ParseResult | null,
+    public rule: BaseRule,
+    public head: Head | null = null,
+    public next: LR | null = null
+  ) {}
+}
+
+let LRStack: LR | null = null;
+const heads: Map<number, Head> = new Map();
+
+class ParseResult {
+  constructor(public tree: IParseTree, public nextPos: Position) {}
+}
+
+class MemorEntry {
+  constructor(public ans: ParseResult | LR | null) {}
+}
+
+export class Rule extends BaseRule {
+  memo: { [name: number]: MemorEntry | null } = {};
+  constructor(symbol: string, rhs: IParsingExpression) {
+    super(symbol, rhs);
+  }
+
+  glowLR(
+    env: IParsingEnv,
+    pos: Position,
+    m: MemorEntry,
+    h: Head
+  ): [IParseTree, Position] | null {
+    heads.set(pos.offset, h); // A
+    while (true) {
+      h.evalSet = new Set(h.involvedSet); // B
+      const ans = this.parseWithoutMemo(env, pos);
+      if (ans == null) {
+        break;
+      }
+      const [_, nextPos] = ans;
+      assert(m.ans instanceof ParseResult);
+      if (nextPos.offset <= m.ans.nextPos.offset) {
+        break;
+      }
+      m.ans = this.convertToParseResult(ans);
+    }
+    heads.delete(pos.offset); // C
+    assert(m.ans != null);
+    assert(!(m.ans instanceof LR));
+    return this.convertFromParseResult(m.ans);
+  }
+
+  convertFromParseResult(
+    ans: ParseResult | null
+  ): [IParseTree, Position] | null {
+    if (ans == null) {
+      return null;
+    }
+    const { tree, nextPos } = ans;
+    return [tree, nextPos];
+  }
+  convertToParseResult(ans: [IParseTree, Position] | null): ParseResult | null {
+    if (ans == null) {
+      return null;
+    }
+    const [tree, nextPos] = ans;
+    return new ParseResult(tree, nextPos);
+  }
+
+  lrAnswer(
+    env: IParsingEnv,
+    rule: BaseRule,
+    pos: Position,
+    m: MemorEntry
+  ): [IParseTree, Position] | null {
+    assert(m.ans instanceof LR);
+    const h = m.ans.head;
+    assert(h != null);
+    if (h.rule != rule) {
+      return this.convertFromParseResult(m.ans.seed);
+    } else {
+      m.ans = m.ans.seed;
+      if (m.ans == null) {
+        return null;
+      } else {
+        return this.glowLR(env, pos, m, h);
+      }
+    }
+  }
+
+  recall(env: IParsingEnv, pos: Position): MemorEntry | null {
+    let m = this.memo[pos.offset];
+    let h = heads.get(pos.offset);
+    if (h == undefined) {
+      return m;
+    }
+    if (m == null && (this == h.rule || h.involvedSet.has(this))) {
+      return new MemorEntry(null);
+    }
+    if (h.evalSet.has(this)) {
+      h.evalSet.delete(this);
+      let ans = this.parseWithoutMemo(env, pos);
+      assert(m != null);
+      m.ans = this.convertToParseResult(ans);
+    }
+    return m;
+  }
+
+  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
+    let m = this.recall(env, pos);
+    if (m == null) {
+      const lr = new LR(null, this, null, LRStack);
+      LRStack = lr;
+      const m = new MemorEntry(lr);
+      this.memo[pos.offset] = m;
+      const ans = this.parseWithoutMemo(env, pos);
+      LRStack = LRStack.next;
+      if (lr.head != null) {
+        lr.seed = this.convertToParseResult(ans);
+        return this.lrAnswer(env, this, pos, m);
+      } else {
+        m.ans = this.convertToParseResult(ans);
+        return ans;
+      }
+    } else {
+      if (m.ans instanceof LR) {
+        this.setUpLR(this, m.ans);
+        return this.convertFromParseResult(m.ans.seed);
+      } else {
+        return this.convertFromParseResult(m.ans);
+      }
+    }
+  }
+
+  setUpLR(rule: BaseRule, lr: LR) {
+    if (lr.head == null) {
+      lr.head = new Head(rule, new Set(), new Set());
+    }
+    assert(LRStack instanceof LR);
+    let s = LRStack;
+    while (s.head != lr.head) {
+      s.head = lr.head;
+      lr.head.involvedSet.add(s.rule);
+      assert(s.next != null);
+      s = s.next;
     }
   }
 }
