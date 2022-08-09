@@ -296,7 +296,7 @@ export class Rule extends BaseRule {
     if (h == undefined) {
       return m;
     }
-    if (m == null && (this == h.rule || h.involvedSet.has(this))) {
+    if (m == null && this != h.rule && !h.involvedSet.has(this)) {
       return new MemorEntry(null);
     }
     if (h.evalSet.has(this)) {
