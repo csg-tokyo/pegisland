@@ -32,7 +32,10 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
+    "@types/heap": "^0.2.31",
     "@types/line-column": "^1.0.0",
-    "line-column": "^1.0.2"
+    "heap": "^0.2.7",
+    "line-column": "^1.0.2",
+    "source-map-support": "^0.5.21"
   }
 }
