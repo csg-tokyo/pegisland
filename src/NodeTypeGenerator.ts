@@ -7,7 +7,7 @@ import {
   OneOrMore,
   Optional,
   OrderedChoice,
-  Rule,
+  BaseRule,
   Sequence,
   Terminal,
   ZeroOrMore,
@@ -24,7 +24,7 @@ function stripBracket(s: string): string {
   return s.replace(/<(.*?)>/, '$1');
 }
 
-function make_type(rule: Rule): string {
+function make_type(rule: BaseRule): string {
   const rhs = rule.rhs;
   const symbol = stripBracket(rule.symbol);
   if (rhs instanceof OrderedChoice) {
@@ -86,7 +86,7 @@ function make_type(rule: Rule): string {
   }
 }
 
-function make_builder(rule: Rule): string {
+function make_builder(rule: BaseRule): string {
   const rhs = rule.rhs;
   const symbol = stripBracket(rule.symbol);
   if (rhs instanceof OrderedChoice) {
@@ -167,7 +167,7 @@ const seq = tree.childNodes[0] as NodeSequence;
   return '';
 }
 
-function make_visitor(rule: Rule): string {
+function make_visitor(rule: BaseRule): string {
   const rhs = rule.rhs;
   const symbol = stripBracket(rule.symbol);
   return `  abstract ${symbol}(node: Node_${symbol}): T;`;

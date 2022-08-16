@@ -11,7 +11,7 @@ import {
   IParsingExpressionVisitor,
   PostorderExpressionTraverser,
   Rewriting,
-  Rule,
+  BaseRule,
   Sequence,
   Terminal,
   ZeroOrMore,
@@ -23,7 +23,7 @@ export class ExpressionCollector implements IParsingExpressionVisitor {
   expressions: IParsingExpression[] = [];
   traverser = new PostorderExpressionTraverser(this);
 
-  collect(rules: Map<string, Rule>): IParsingExpression[] {
+  collect(rules: Map<string, BaseRule>): IParsingExpression[] {
     this.expressions = [];
     rules.forEach((rule) => this.traverser.traverse(rule.rhs));
     return this.expressions;

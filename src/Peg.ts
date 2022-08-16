@@ -9,7 +9,7 @@ import {
   OrderedChoice,
   IParsingExpression,
   Rewriting,
-  Rule,
+  BaseRule,
   Sequence,
   Terminal,
   ZeroOrMore,
@@ -45,7 +45,7 @@ export function peToString(pe: IParsingExpression): string {
   return 'unkown';
 }
 
-function ruleToString(rule: Rule): string {
+function ruleToString(rule: BaseRule): string {
   if (rule.rhs instanceof OrderedChoice) {
     return (
       '\n' +
@@ -58,7 +58,7 @@ function ruleToString(rule: Rule): string {
 }
 
 export class Peg {
-  constructor(public rules: Map<string, Rule>) {}
+  constructor(public rules: Map<string, BaseRule>) {}
 
   toString(): string {
     return Array.from(this.rules)

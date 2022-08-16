@@ -10,7 +10,7 @@ import {
   OrderedChoice,
   IParsingExpression,
   Rewriting,
-  Rule,
+  BaseRule,
   Sequence,
   Terminal,
   ZeroOrMore,
@@ -22,7 +22,7 @@ import { strict as assert } from 'assert';
 
 export class SucceedCalculator extends SetCalculator {
   constructor(
-    rules: Map<string, Rule>,
+    rules: Map<string, BaseRule>,
     public beginning: Map<IParsingExpression, Set<IParsingExpression>>
   ) {
     super(rules, false);

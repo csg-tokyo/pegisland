@@ -10,7 +10,7 @@ import {
   OrderedChoice,
   IParsingExpression,
   Rewriting,
-  Rule,
+  BaseRule,
   Sequence,
   Terminal,
   ZeroOrMore,
@@ -20,7 +20,7 @@ import {
 import { union } from './set-operations';
 
 export class BeginningCalculator extends SetCalculator {
-  constructor(rules: Map<string, Rule>) {
+  constructor(rules: Map<string, BaseRule>) {
     super(rules, false);
   }
 

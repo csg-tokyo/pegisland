@@ -1,10 +1,11 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { ParsingEnv, Position, Rule } from './ParsingExpression';
+import { Position, BaseRule } from './ParsingExpression';
 import { IParseTree } from './ParseTree';
 import lineColumn from 'line-column';
 import { peToString } from './Peg';
+import { PackratParsingEnv } from './PackratParser';
 
-function makeErrorMessage(env: ParsingEnv) {
+function makeErrorMessage(env: PackratParsingEnv) {
   const finder = lineColumn(env.s);
   const info = finder.fromIndex(env.maxIndex);
   if (info) {
@@ -21,23 +22,19 @@ function makeErrorMessage(env: ParsingEnv) {
 }
 
 export class ParsingError extends Error {
-  constructor(public env: ParsingEnv) {
+  constructor(public env: PackratParsingEnv) {
     super(makeErrorMessage(env));
   }
 }
 
 export class PegInterpreter {
-  rules: Map<string, Rule>;
+  rules: Map<string, BaseRule>;
 
-  constructor(nonterminals: Map<string, Rule>) {
+  constructor(nonterminals: Map<string, BaseRule>) {
     this.rules = nonterminals;
   }
 
-  clearMemo(): void {
-    this.rules.forEach((rule) => (rule.memo = {}));
-  }
-
-  private getStartRule(startSymbol?: string): Rule | Error {
+  private getStartRule(startSymbol?: string): BaseRule | Error {
     let rule = this.rules.values().next().value;
     if (startSymbol) {
       if (this.rules.has(startSymbol)) {
@@ -55,12 +52,11 @@ export class PegInterpreter {
     s: string,
     startSymbol?: string
   ): IParseTree | ParsingError | Error {
-    this.clearMemo();
     const rule = this.getStartRule(startSymbol);
     if (rule instanceof Error) {
       return rule;
     }
-    const env = new ParsingEnv(s);
+    const env = new PackratParsingEnv(s);
     const result = rule.parse(env, new Position(0, 1, 1));
     if (result == null) {
       return new ParsingError(env);

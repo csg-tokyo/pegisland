@@ -3,7 +3,7 @@ import { strict as assert } from 'assert';
 import { PegParser } from './PegParser';
 import {
   And,
-  Rule,
+  BaseRule,
   Nonterminal,
   Not,
   NullParsingExpression,
@@ -30,19 +30,25 @@ import {
 import { ParsingError } from './PegInterpreter';
 import { Peg } from './Peg';
 
+export interface IRuleFactory {
+  createRule(symbol: string, rhs: IParsingExpression): BaseRule;
+}
+
 export class GeneralPegBuilder {
-  rules = new Map<string, Rule>();
+  rules = new Map<string, BaseRule>();
   lakes = 0;
+
+  constructor() {}
 
   makeLakeSymbol() {
     return `<${this.lakes++}>`;
   }
 
-  getRule(symbol: string): Rule {
+  getRule(symbol: string): BaseRule {
     if (!this.rules.has(symbol)) {
-      this.rules.set(symbol, new Rule(symbol, new NullParsingExpression()));
+      this.rules.set(symbol, new BaseRule(symbol, new NullParsingExpression()));
     }
-    return this.rules.get(symbol) as Rule;
+    return this.rules.get(symbol) as BaseRule;
   }
 
   build(grammar: string): Peg | ParsingError | Error {
@@ -237,7 +243,7 @@ export class GeneralPegBuilder {
     {
       const seq = id.childNodes[0];
       const term = seq.childNodes[0] as NodeTerminal;
-      return new Nonterminal(this.getRule(term.text) as Rule, subname);
+      return new Nonterminal(this.getRule(term.text) as BaseRule, subname);
     }
   }
 

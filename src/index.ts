@@ -15,7 +15,7 @@ export {
   OneOrMore,
   Optional,
   OrderedChoice,
-  Rule,
+  BaseRule,
   Sequence,
   ZeroOrMore,
   Not,

@@ -10,7 +10,7 @@ import {
   Not,
   Sequence,
   OrderedChoice,
-  Rule,
+  BaseRule,
   NullParsingExpression,
   Nonterminal,
 } from './ParsingExpression';
@@ -18,15 +18,15 @@ import {
 export type SimpleTree = string | RegExp | SimpleTree[];
 
 export class InitialPegBuilder {
-  rules = new Map<string, Rule>();
+  rules = new Map<string, BaseRule>();
 
   public build(peg: { [name: string]: SimpleTree }): void {
-    this.rules = new Map<string, Rule>();
+    this.rules = new Map<string, BaseRule>();
     for (const key in peg) {
-      this.rules.set(key, new Rule(key, new NullParsingExpression()));
+      this.rules.set(key, new BaseRule(key, new NullParsingExpression()));
     }
     for (const key in peg) {
-      const rule = this.rules.get(key) as Rule;
+      const rule = this.rules.get(key) as BaseRule;
       rule.rhs = this.compileExpression(peg[key]);
     }
   }
@@ -35,7 +35,7 @@ export class InitialPegBuilder {
     if (typeof expression == 'string') {
       const nonterminal = expression;
       assert(this.rules.has(nonterminal));
-      return new Nonterminal(this.rules.get(nonterminal) as Rule);
+      return new Nonterminal(this.rules.get(nonterminal) as BaseRule);
     } else if (Array.isArray(expression)) {
       if (expression[0] == 'terminal') {
         return new Terminal(expression[1] as RegExp | string, '<invalid>');
