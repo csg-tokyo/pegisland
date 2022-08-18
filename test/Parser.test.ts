@@ -10,7 +10,6 @@ import {
   NodeOptional,
   NodeRewriting,
   IParseTree,
-  printTree,
 } from '../src/ParseTree';
 import { Peg } from '../src/Peg';
 import {
@@ -22,7 +21,6 @@ import {
   Sequence,
   ZeroOrMore,
 } from '../src/ParsingExpression';
-import { SSL_OP_MSIE_SSLV2_RSA_PADDING } from 'constants';
 
 function doit(name: string, pe: IParsingExpression): void {
   if (pe instanceof Sequence) {
@@ -53,6 +51,7 @@ function doit(name: string, pe: IParsingExpression): void {
       const s = name + '(' + args.join(', ') + ')';
     }
   } else if (pe instanceof OrderedChoice) {
+    // XXX
   } else {
     //console.log(pe);
   }
@@ -269,67 +268,63 @@ describe('Parser', () => {
       const result = parser.parse(s, 'program') as IParseTree;
       assert.equal(result.range.end.offset, s.length);
     });
-    it('should handle the Java grammar', () => {
-      const grammar = fs
-        .readFileSync('./grammar/java/full/java.peg')
-        .toString();
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+    it('should handle C grammar', () => {
+      const grammar = fs.readFileSync('./grammar/C/full/C.peg').toString();
+      const peg = parseGrammar(grammar);
+      if (peg instanceof Error) {
+        console.log(peg.message);
+        assert(false);
+      }
+      const parser = new Parser(peg);
       const program = `
-      class Foo {
-        public static void main() {
-          System.out.println("Hello world!");
-        }
-      }`;
-      const tree = parser.parse(program, 'Compilation') as IParseTree;
+      int main(void) {
+        printf("Hello World!\\n");
+      }
+      `;
+      const tree = parser.parse(program, 'TranslationUnit') as IParseTree;
       assert(tree);
-      assert.equal(tree.range.start.line, 1);
-      assert.equal(tree.range.start.column, 1);
-      assert.equal(tree.range.end.line, 6);
-      assert.equal(tree.range.end.column, 8);
+      assert.equal(tree.range.end.offset, program.length);
     });
 
-    if (false)
-      it('should operate on left recursion', () => {
-        const grammar = `
+    it('should operate on left recursion', () => {
+      const grammar = `
       expr     <- expr '-' number / number
       number   <- r'\\d+'
       `;
-        const peg = parseGrammar(grammar) as Peg;
-        const parser = new Parser(peg);
-        const s = '1';
-        const result = parser.parse(s, 'expr') as IParseTree;
-        if (result instanceof Error) {
-          console.log(result.message);
-        }
-        assert.equal(result.range.end.offset, s.length);
-      });
+      const peg = parseGrammar(grammar) as Peg;
+      const parser = new Parser(peg);
+      const s = '1';
+      const result = parser.parse(s, 'expr') as IParseTree;
+      if (result instanceof Error) {
+        console.log(result.message);
+      }
+      assert.equal(result.range.end.offset, s.length);
+    });
 
-    if (false)
-      it('should operate on direct left recursion', () => {
-        const grammar = `
+    it('should operate on direct left recursion', () => {
+      const grammar = `
       expr     <- expr '-' number / number
       number   <- r'\\d+'
       `;
-        const peg = parseGrammar(grammar) as Peg;
-        const parser = new Parser(peg);
-        const s = '1-1-1';
-        const result = parser.parse(s, 'expr') as IParseTree;
-        assert.equal(result.range.end.offset, s.length);
-      });
+      const peg = parseGrammar(grammar) as Peg;
+      const parser = new Parser(peg);
+      const s = '1-1-1';
+      const result = parser.parse(s, 'expr') as IParseTree;
+      assert.equal(result.range.end.offset, s.length);
+    });
 
-    if (false)
-      it('should operate on indirect left recursion', () => {
-        const grammar = `
+    it('should operate on indirect left recursion', () => {
+      const grammar = `
       x   <- expr '[' number ']' / expr
       expr     <- x '-' number / number 
       number   <- r'\\d+'
       `;
-        const peg = parseGrammar(grammar) as Peg;
-        const parser = new Parser(peg);
-        const s = '1-1-1';
-        const result = parser.parse(s, 'expr') as IParseTree;
-        assert.equal(result.range.end.offset, s.length);
-      });
+      const peg = parseGrammar(grammar) as Peg;
+      const parser = new Parser(peg);
+      const s = '1-1-1';
+      const result = parser.parse(s, 'expr') as IParseTree;
+      assert.equal(result.range.end.offset, s.length);
+    });
 
     it('should recognize named identifiers', () => {
       const grammar = `

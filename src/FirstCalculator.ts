@@ -19,17 +19,13 @@ import {
 } from './ParsingExpression';
 import { union } from './set-operations';
 
-export class BeginningCalculator extends SetCalculator {
+export class FirstCalculator extends SetCalculator {
   constructor(rules: Map<string, Rule>) {
     super(rules, false);
   }
 
   visitNonterminal(pe: Nonterminal): void {
-    if (this.get(pe.rule.rhs).has(EPSILON)) {
-      this.set(pe, new Set([pe, EPSILON]));
-    } else {
-      this.set(pe, new Set([pe]));
-    }
+    this.set(pe, union(this.get(pe.rule.rhs), new Set([pe])));
   }
 
   visitTerminal(pe: Terminal): void {

@@ -1,26 +1,88 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-
-import { assert } from 'chai';
+import assert from 'assert';
+import lineColumn from 'line-column';
 import { IParseTree } from './ParseTree';
 import {
-  BaseRule,
+  Rule,
   Position,
   IParsingExpression,
   BaseParsingEnv,
 } from './ParsingExpression';
+import { peToString } from './Printer';
+
+function makeErrorMessage(env: PackratParsingEnv) {
+  const finder = lineColumn(env.s);
+  const info = finder.fromIndex(env.maxIndex);
+  if (info) {
+    return [
+      `Parsing error at offset line ${info.line} column ${info.col}.`,
+      'when parsing with the following parsing expressions:',
+      ...[...env.deepestStack.map(peToString)].reverse(),
+    ].join('\n');
+  }
+  return `Parsing error at offset ${env.maxIndex}`;
+}
+
+export class ParsingError extends Error {
+  constructor(public env: PackratParsingEnv) {
+    super(makeErrorMessage(env));
+  }
+}
+
+export class PackratParser {
+  rules: Map<string, Rule>;
+
+  constructor(nonterminals: Map<string, Rule>) {
+    this.rules = nonterminals;
+  }
+
+  private getStartRule(startSymbol?: string): Rule | Error {
+    let rule = this.rules.values().next().value;
+    if (startSymbol) {
+      if (this.rules.has(startSymbol)) {
+        rule = this.rules.get(startSymbol);
+      } else {
+        return Error(
+          `Nonterminal symbol {startSymbol} does not exist in the grammar.`
+        );
+      }
+    }
+    return rule;
+  }
+
+  public parse(
+    s: string,
+    startSymbol?: string
+  ): IParseTree | ParsingError | Error {
+    const rule = this.getStartRule(startSymbol);
+    if (rule instanceof Error) {
+      return rule;
+    }
+    const env = new PackratParsingEnv(s);
+    const result = rule.parse(env, new Position(0, 1, 1));
+    if (result == null) {
+      return new ParsingError(env);
+    }
+    const [tree, nextPos] = result;
+    if (nextPos.offset < s.length) {
+      return new ParsingError(env);
+    }
+    return tree;
+  }
+}
 
 export class PackratParsingEnv extends BaseParsingEnv {
   private currentStack: IParsingExpression[] = [];
   deepestStack: IParsingExpression[] = [];
   public maxIndex = 0;
 
-  memo: Map<BaseRule, [IParseTree, Position] | null> = new Map();
+  memo: Map<Rule, [IParseTree, Position] | null> = new Map();
 
   constructor(public s: string) {
     super();
   }
 
-  parseRule(rule: BaseRule, pos: Position): [IParseTree, Position] | null {
+  parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
     if (!this.memo.has(rule)) {
       const result = rule.parse(this, pos);
       this.memo.set(rule, result);
@@ -42,15 +104,15 @@ export class PackratParsingEnv extends BaseParsingEnv {
 
 class Head {
   constructor(
-    public rule: BaseRule,
-    public involvedSet: Set<BaseRule>,
-    public evalSet: Set<BaseRule>
+    public rule: Rule,
+    public involvedSet: Set<Rule>,
+    public evalSet: Set<Rule>
   ) {}
 }
 class LR {
   constructor(
     public seed: ParseResult | null,
-    public rule: BaseRule,
+    public rule: Rule,
     public head: Head | null = null,
     public next: LR | null = null
   ) {}
@@ -79,13 +141,13 @@ export class PackratParsingEnv2 extends BaseParsingEnv {
   }
 
   glowLR(
-    rule: BaseRule,
+    rule: Rule,
     pos: Position,
     m: MemorEntry,
     h: Head
   ): [IParseTree, Position] | null {
     heads.set(pos.offset, h); // A
-    while (true) {
+    for (;;) {
       h.evalSet = new Set(h.involvedSet); // B
       const ans = rule.parseWithoutMemo(this, pos);
       if (ans == null) {
@@ -122,7 +184,7 @@ export class PackratParsingEnv2 extends BaseParsingEnv {
   }
 
   lrAnswer(
-    rule: BaseRule,
+    rule: Rule,
     pos: Position,
     m: MemorEntry
   ): [IParseTree, Position] | null {
@@ -141,9 +203,9 @@ export class PackratParsingEnv2 extends BaseParsingEnv {
     }
   }
 
-  recall(rule: BaseRule, pos: Position): MemorEntry | null {
-    let m = this.memo[pos.offset];
-    let h = heads.get(pos.offset);
+  recall(rule: Rule, pos: Position): MemorEntry | null {
+    const m = this.memo[pos.offset];
+    const h = heads.get(pos.offset);
     if (h == undefined) {
       return m;
     }
@@ -152,15 +214,15 @@ export class PackratParsingEnv2 extends BaseParsingEnv {
     }
     if (h.evalSet.has(rule)) {
       h.evalSet.delete(rule);
-      let ans = rule.parseWithoutMemo(this, pos);
+      const ans = rule.parseWithoutMemo(this, pos);
       assert(m != null);
       m.ans = this.convertToParseResult(ans);
     }
     return m;
   }
 
-  parseRule(rule: BaseRule, pos: Position): [IParseTree, Position] | null {
-    let m = this.recall(rule, pos);
+  parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
+    const m = this.recall(rule, pos);
     if (m == null) {
       const lr = new LR(null, rule, null, LRStack);
       LRStack = lr;
@@ -185,7 +247,7 @@ export class PackratParsingEnv2 extends BaseParsingEnv {
     }
   }
 
-  setUpLR(rule: BaseRule, lr: LR) {
+  setUpLR(rule: Rule, lr: LR): void {
     if (lr.head == null) {
       lr.head = new Head(rule, new Set(), new Set());
     }

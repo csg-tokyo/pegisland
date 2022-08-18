@@ -1,19 +1,11 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { GeneralPegBuilder, IRuleFactory } from './GeneralPegBuilder';
+import { FirstCalculator } from './FirstCalculator';
+import { GeneralPegBuilder } from './GeneralPegBuilder';
+import { PackratParser, ParsingError } from './PackratParser';
 import { IParseTree } from './ParseTree';
-import { IParsingExpression, BaseRule } from './ParsingExpression';
+import { IParsingExpression, Nonterminal } from './ParsingExpression';
 import { Peg } from './Peg';
-import { ParsingError, PegInterpreter } from './PegInterpreter';
-
-class DefaultRuleFactory implements IRuleFactory {
-  private static instance = new DefaultRuleFactory();
-  createRule(symbol: string, rhs: IParsingExpression): BaseRule {
-    return new BaseRule(symbol, rhs);
-  }
-  static getInstance() {
-    return this.instance;
-  }
-}
+import { PikaParser } from './PikaParser';
 
 export function parseGrammar(grammar: string): Peg | ParsingError | Error {
   const builder = new GeneralPegBuilder();
@@ -21,11 +13,24 @@ export function parseGrammar(grammar: string): Peg | ParsingError | Error {
   return result;
 }
 
+function isLeftRecursive(peg: Peg): boolean {
+  const firstSets = new FirstCalculator(peg.rules).calculate();
+  return [...peg.rules.entries()].some(([symbol, rule]) =>
+    [...(firstSets.get(rule.rhs) as Set<IParsingExpression>)].some(
+      (pe) => pe instanceof Nonterminal && pe.rule.symbol == symbol
+    )
+  );
+}
+
 export class Parser {
-  private pegInterpreter: PegInterpreter;
+  private pegInterpreter: PackratParser | PikaParser;
 
   constructor(peg: Peg) {
-    this.pegInterpreter = new PegInterpreter(peg.rules);
+    if (isLeftRecursive(peg)) {
+      this.pegInterpreter = new PikaParser(peg);
+    } else {
+      this.pegInterpreter = new PackratParser(peg.rules);
+    }
   }
 
   public parse(

@@ -9,7 +9,7 @@ import {
   IParsingExpression,
   Sequence,
   Terminal,
-  BaseRule,
+  Rule,
 } from './ParsingExpression';
 import { Peg } from './Peg';
 import { SucceedCalculator } from './SucceedCalculator';
@@ -41,7 +41,7 @@ export function rewriteLakeSymbols(
   [...peg.rules.keys()]
     .filter((symbol) => isLake(symbol))
     .forEach((lakeSymbol) => {
-      const rule = peg.rules.get(lakeSymbol) as BaseRule;
+      const rule = peg.rules.get(lakeSymbol) as Rule;
       if (rule.rhs instanceof NullParsingExpression) {
         rule.rhs = new Sequence([
           new Not(new Terminal(/./, '.')),
@@ -57,15 +57,6 @@ export function rewriteLakeSymbols(
   const succeeds = succeedCalculator.calculate();
   const altCalculator = new AltCalculator(peg.rules, beginnings, succeeds);
   const alts = altCalculator.calculate();
-
-  if (false) {
-    console.log('beginnings');
-    console.log(beginnings);
-    console.log('succeeds');
-    console.log(succeeds);
-    console.log('alts');
-    console.log(alts);
-  }
 
   peg.rules.forEach((rule, symbol) => {
     const altSet = alts.get(rule.rhs) as Set<IParsingExpression>;

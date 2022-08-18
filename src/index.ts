@@ -4,7 +4,7 @@ import { parseGrammar, Parser } from './Parser';
 export { parseGrammar, rewriteLakeSymbols, Parser };
 import { IParseTree, NodeNonterminal } from './ParseTree';
 export { Peg } from './Peg';
-export { ParsingError } from './PegInterpreter';
+export { ParsingError } from './PackratParser';
 export { exampleGrammar, exampleSource } from './example';
 export { searchExpressions } from './search';
 export { generateNodeTypes } from './NodeTypeGenerator';
@@ -15,7 +15,7 @@ export {
   OneOrMore,
   Optional,
   OrderedChoice,
-  BaseRule,
+  Rule,
   Sequence,
   ZeroOrMore,
   Not,
@@ -48,7 +48,7 @@ export function createParser(
 export function traverseNonterminals(
   parseTree: IParseTree,
   func: (node: NodeNonterminal) => void
-) {
+): void {
   traverseTree(parseTree, (node) => {
     if (node instanceof NodeNonterminal) {
       func(node);

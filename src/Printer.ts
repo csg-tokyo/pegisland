@@ -88,7 +88,7 @@ class Printer implements IParsingExpressionVisitor {
   }
 }
 
-export function show(pe: IParsingExpression) {
+export function peToString(pe: IParsingExpression): string {
   const printer = new Printer();
   return printer.buildString(pe);
 }

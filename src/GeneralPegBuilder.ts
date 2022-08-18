@@ -3,7 +3,7 @@ import { strict as assert } from 'assert';
 import { PegParser } from './PegParser';
 import {
   And,
-  BaseRule,
+  Rule,
   Nonterminal,
   Not,
   NullParsingExpression,
@@ -27,28 +27,24 @@ import {
   IParseTree,
   NodeOptional,
 } from './ParseTree';
-import { ParsingError } from './PegInterpreter';
 import { Peg } from './Peg';
-
-export interface IRuleFactory {
-  createRule(symbol: string, rhs: IParsingExpression): BaseRule;
-}
+import { difference } from './set-operations';
+import { ParsingError } from './PackratParser';
 
 export class GeneralPegBuilder {
-  rules = new Map<string, BaseRule>();
+  rules = new Map<string, Rule>();
+  visitedRules = new Set<Rule>();
   lakes = 0;
 
-  constructor() {}
-
-  makeLakeSymbol() {
+  makeLakeSymbol(): string {
     return `<${this.lakes++}>`;
   }
 
-  getRule(symbol: string): BaseRule {
+  getRule(symbol: string): Rule {
     if (!this.rules.has(symbol)) {
-      this.rules.set(symbol, new BaseRule(symbol, new NullParsingExpression()));
+      this.rules.set(symbol, new Rule(symbol, new NullParsingExpression()));
     }
-    return this.rules.get(symbol) as BaseRule;
+    return this.rules.get(symbol) as Rule;
   }
 
   build(grammar: string): Peg | ParsingError | Error {
@@ -66,7 +62,11 @@ export class GeneralPegBuilder {
       const rule = this.getRule(id.text);
       rule.rhs = this.processExpression(seq.childNodes[2]);
     });
-    return new Peg(this.rules);
+    const toplevelRules = difference(
+      new Set(this.rules.values()),
+      this.visitedRules
+    );
+    return new Peg(this.rules, [...toplevelRules]);
   }
 
   processExpression(node: IParseTree): IParsingExpression {
@@ -143,7 +143,7 @@ export class GeneralPegBuilder {
           const choiceOperand = choice.childNodes[0];
           const colonSeq = choiceOperand as NodeSequence;
           const rhs = colonSeq.childNodes[1];
-          let rhsOperand = this.processPrimary(rhs);
+          const rhsOperand = this.processPrimary(rhs);
           switch (choice.index) {
             case 0:
               operand = new Sequence([
@@ -243,7 +243,9 @@ export class GeneralPegBuilder {
     {
       const seq = id.childNodes[0];
       const term = seq.childNodes[0] as NodeTerminal;
-      return new Nonterminal(this.getRule(term.text) as BaseRule, subname);
+      const rule = this.getRule(term.text) as Rule;
+      this.visitedRules.add(rule);
+      return new Nonterminal(rule, subname);
     }
   }
 

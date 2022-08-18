@@ -10,7 +10,7 @@ import {
   OrderedChoice,
   NullParsingExpression,
   Position,
-  BaseRule,
+  Rule,
 } from '../src/ParsingExpression';
 import {
   NodeTerminal,
@@ -85,7 +85,7 @@ describe('Nonterminal', () => {
   describe('#parse()', () => {
     const s = '1980/10/28';
     const term = new Terminal('\\d+', "r'\\d+'");
-    const nonterm = new BaseRule('foo', term);
+    const nonterm = new Rule('foo', term);
     it('should consume digits from the beginning of a string', () => {
       const result = nonterm.parse(
         new PackratParsingEnv(s),

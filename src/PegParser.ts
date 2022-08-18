@@ -1,6 +1,6 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { InitialPegBuilder, SimpleTree } from './InitialPegBuilder';
-import { ParsingError, PegInterpreter } from './PegInterpreter';
+import { PackratParser, ParsingError } from './PackratParser';
 import { IParseTree } from './ParseTree';
 
 const grammar: { [name: string]: SimpleTree } = {
@@ -96,11 +96,11 @@ const grammar: { [name: string]: SimpleTree } = {
 };
 
 export class PegParser {
-  pegInterpreter: PegInterpreter;
+  pegInterpreter: PackratParser;
   constructor() {
     const builder = new InitialPegBuilder();
     const rules = builder.build(grammar);
-    this.pegInterpreter = new PegInterpreter(builder.rules);
+    this.pegInterpreter = new PackratParser(builder.rules);
   }
 
   parse(s: string): IParseTree | ParsingError | Error {

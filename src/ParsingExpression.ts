@@ -113,7 +113,7 @@ export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
   }
 }
 
-export class BaseRule {
+export class Rule {
   constructor(public symbol: string, public rhs: IParsingExpression) {}
   parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
     return this.parseWithoutMemo(env, pos);
@@ -140,7 +140,7 @@ export class BaseRule {
 export interface IParsingEnv {
   s: string;
   parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null;
-  parseRule(rule: BaseRule, pos: Position): [IParseTree, Position] | null;
+  parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null;
   push(): void;
   pop(): void;
   has(name: string): boolean;
@@ -172,7 +172,7 @@ export abstract class BaseParsingEnv implements IParsingEnv {
     pos: Position
   ): [IParseTree, Position] | null;
 
-  parseRule(rule: BaseRule, pos: Position): [IParseTree, Position] | null {
+  parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
     return rule.parse(this, pos);
   }
 }
@@ -213,9 +213,9 @@ export class NullParsingExpression implements IParsingExpression {
 }
 
 export class Nonterminal implements IParsingExpression {
-  rule: BaseRule;
+  rule: Rule;
   name: string;
-  constructor(rule: BaseRule, name: string = '') {
+  constructor(rule: Rule, name = '') {
     this.rule = rule;
     this.name = name;
   }
@@ -574,7 +574,7 @@ function expressionToString(pe: IParsingExpression, level: number): string {
   }
 }
 
-function ruleToString(rule: BaseRule) {
+function ruleToString(rule: Rule) {
   return rule.symbol + ' <- ' + expressionToString(rule.rhs, 0);
 }
 

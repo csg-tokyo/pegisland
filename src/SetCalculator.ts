@@ -12,7 +12,7 @@ import {
   IParsingExpression,
   IParsingExpressionVisitor,
   Rewriting,
-  BaseRule,
+  Rule,
   Sequence,
   Terminal,
   ZeroOrMore,
@@ -26,7 +26,7 @@ export abstract class SetCalculator implements IParsingExpressionVisitor {
   private expressions;
   public peSet: Map<IParsingExpression, Set<IParsingExpression>>;
 
-  constructor(rules: Map<string, BaseRule>, isPostorder: boolean) {
+  constructor(rules: Map<string, Rule>, isPostorder: boolean) {
     const collector = new ExpressionCollector();
     this.expressions = collector.collect(rules);
     if (!isPostorder) {

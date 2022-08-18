@@ -7,7 +7,7 @@ import {
   OneOrMore,
   Optional,
   OrderedChoice,
-  BaseRule,
+  Rule,
   Sequence,
   Terminal,
   ZeroOrMore,
@@ -24,7 +24,7 @@ function stripBracket(s: string): string {
   return s.replace(/<(.*?)>/, '$1');
 }
 
-function make_type(rule: BaseRule): string {
+function make_type(rule: Rule): string {
   const rhs = rule.rhs;
   const symbol = stripBracket(rule.symbol);
   if (rhs instanceof OrderedChoice) {
@@ -86,7 +86,7 @@ function make_type(rule: BaseRule): string {
   }
 }
 
-function make_builder(rule: BaseRule): string {
+function make_builder(rule: Rule): string {
   const rhs = rule.rhs;
   const symbol = stripBracket(rule.symbol);
   if (rhs instanceof OrderedChoice) {
@@ -128,7 +128,6 @@ function make_builder(rule: BaseRule): string {
       .filter(([operand, _index]) => !(operand instanceof Not))
       .map(([operand, index]) => {
         let name = '';
-        let isArray = '';
         if (operand instanceof Nonterminal) {
           name = symbolName(operand);
           return `convert_${name}(seq.childNodes[${index}] as NodeNonterminal)`;
@@ -167,13 +166,13 @@ const seq = tree.childNodes[0] as NodeSequence;
   return '';
 }
 
-function make_visitor(rule: BaseRule): string {
+function make_visitor(rule: Rule): string {
   const rhs = rule.rhs;
   const symbol = stripBracket(rule.symbol);
   return `  abstract ${symbol}(node: Node_${symbol}): T;`;
 }
 
-export function generateNodeTypes(peg: Peg, outfile: string) {
+export function generateNodeTypes(peg: Peg, outfile: string): void {
   const rules = [...peg.rules.values()];
   const s = rules.map(make_type);
   const decls = rules

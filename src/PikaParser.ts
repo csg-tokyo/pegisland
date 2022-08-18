@@ -6,7 +6,7 @@ import { IParseTree } from './ParseTree';
 import {
   And,
   BaseParsingEnv,
-  BaseRule,
+  Rule,
   Colon,
   ColonNot,
   Grouping,
@@ -24,7 +24,6 @@ import {
   ZeroOrMore,
 } from './ParsingExpression';
 import { Peg } from './Peg';
-import { show } from './Printer';
 import { EPSILON } from './SetCalculator';
 
 export class PikaParsingEnv extends BaseParsingEnv {
@@ -32,7 +31,7 @@ export class PikaParsingEnv extends BaseParsingEnv {
   private createHeap;
   private parentsMap;
 
-  constructor(public s: string, private peg: Peg, private start: string) {
+  constructor(public s: string, private peg: Peg) {
     super();
     for (let i = 0; i <= s.length; i++) {
       this.memo.push(
@@ -40,22 +39,13 @@ export class PikaParsingEnv extends BaseParsingEnv {
       );
     }
 
-    this.parentsMap = createParentsMap(this.peg, this.start);
-    this.parentsMap.forEach((value, key) => {
-      if (false)
-        console.log(
-          'mapEntry: ',
-          show(key),
-          '=>',
-          value.map((pe) => show(pe)).join(' or ')
-        );
-    });
-    this.createHeap = getHeapCreator(this.peg, this.start);
+    this.parentsMap = createParentsMap(this.peg);
+    this.createHeap = getHeapCreator(this.peg);
   }
 
-  parseString(s: string): [IParseTree, Position] | null {
+  parseString(s: string, start: string): [IParseTree, Position] | null {
     for (let pos = s.length; pos >= 0; pos--) {
-      const [heap, indexMap] = this.createHeap();
+      const [heap, _indexMap] = this.createHeap();
       const set = new Set<IParsingExpression>(heap.toArray());
       // console.log('heap was created for ' + pos, heap.size());
 
@@ -63,12 +53,13 @@ export class PikaParsingEnv extends BaseParsingEnv {
         const pe = heap.pop() as IParsingExpression;
         set.delete(pe);
         const isGlowing = this.glow(pe, new Position(pos, -1, -1)); // XXX
-        if (false)
-          console.log(
-            pos,
-            heap.size(),
-            show(pe) + indexMap.get(pe) + ' was poped!' + isGlowing
-          );
+        /*
+        console.log(
+          pos,
+          heap.size(),
+          show(pe) + indexMap.get(pe) + ' was poped!' + isGlowing
+        );
+        */
         if (isGlowing) {
           const parents = this.parentsMap.get(pe);
           if (parents != undefined) {
@@ -83,22 +74,14 @@ export class PikaParsingEnv extends BaseParsingEnv {
         }
       }
     }
-    if (!this.peg.rules.has(this.start)) {
+    if (!this.peg.rules.has(start)) {
       return null;
     }
-    const startRule = this.peg.rules.get(this.start) as BaseRule;
+    const startRule = this.peg.rules.get(start) as Rule;
     if (startRule == undefined) {
       return null;
     }
-    const result = this.memo[0].get(startRule.rhs);
-    if (result == null) {
-      this.recover(startRule);
-    }
-    return result == undefined ? null : result;
-  }
-
-  recover(startRule: BaseRule) {
-    startRule.rhs.parse(this, new Position(0, -1, -1));
+    return startRule.parse(this, new Position(0, 1, 1));
   }
 
   parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null {
@@ -115,7 +98,7 @@ export class PikaParsingEnv extends BaseParsingEnv {
   isGlowing(
     result: [IParseTree, Position] | null,
     oldResult: [IParseTree, Position] | null
-  ) {
+  ): boolean {
     if (oldResult == null) {
       // console.log('oldResult is null');
       return result != null;
@@ -129,7 +112,7 @@ export class PikaParsingEnv extends BaseParsingEnv {
     }
   }
 
-  glow(pe: IParsingExpression, pos: Position): Boolean {
+  glow(pe: IParsingExpression, pos: Position): boolean {
     const isFirstEval = !this.memo[pos.offset].has(pe);
     //console.log('glow ' + show(pe));
     if (isFirstEval) {
@@ -154,13 +137,11 @@ class Indexer implements IParsingExpressionVisitor {
   private index = 0;
   private terminals: IParsingExpression[] = [];
 
-  build(
-    peg: Peg,
-    start: string
-  ): [Map<IParsingExpression, number>, IParsingExpression[]] {
-    const startRule = peg.rules.get(start) as BaseRule;
-    const startExpression = startRule.rhs;
-    const traverser = new DepthFirstTraverser(this, [startExpression]);
+  build(peg: Peg): [Map<IParsingExpression, number>, IParsingExpression[]] {
+    const traverser = new DepthFirstTraverser(
+      this,
+      getTopLevelExpressions(peg)
+    );
     traverser.traverse();
     return [this.indexMap, this.terminals];
   }
@@ -218,10 +199,11 @@ class ParentsBuilder implements IParsingExpressionVisitor {
     private beginning: Map<IParsingExpression, Set<IParsingExpression>>
   ) {}
 
-  build(peg: Peg, start: string) {
-    const startRule = peg.rules.get(start) as BaseRule;
-    const startExpression = startRule.rhs;
-    const traverser = new DepthFirstTraverser(this, [startExpression]);
+  build(peg: Peg) {
+    const traverser = new DepthFirstTraverser(
+      this,
+      getTopLevelExpressions(peg)
+    );
     traverser.traverse();
     return this.parents;
   }
@@ -238,7 +220,9 @@ class ParentsBuilder implements IParsingExpressionVisitor {
     this.addParent(pe.rule.rhs, pe);
   }
 
-  visitTerminal(pe: Terminal): void {}
+  visitTerminal(_pe: Terminal): void {
+    // Nothing to be done
+  }
   visitZeroOrMore(pe: ZeroOrMore): void {
     this.addParent(pe.operand, pe);
   }
@@ -289,13 +273,24 @@ class ParentsBuilder implements IParsingExpressionVisitor {
   }
 }
 
-function getHeapCreator(peg: Peg, start: string) {
+function getTopLevelExpressions(peg: Peg): IParsingExpression[] {
+  return getTopLevelRules(peg).map((rule) => rule.rhs);
+}
+
+function getTopLevelRules(peg: Peg) {
+  return peg.toplevelRules.length > 0
+    ? peg.toplevelRules
+    : [peg.rules.values().next().value as Rule];
+}
+
+function getHeapCreator(peg: Peg) {
   const indexer = new Indexer();
-  const [indexMap, terminals] = indexer.build(peg, start);
-  if (false)
-    console.log(
-      'terminals: ' + terminals.map((terminal) => (terminal as Terminal).source)
-    );
+  const [indexMap, terminals] = indexer.build(peg);
+  /*
+  console.log(
+    'terminals: ' + terminals.map((terminal) => (terminal as Terminal).source)
+  );
+  */
   const cmp = (a: IParsingExpression, b: IParsingExpression) => {
     return (indexMap.get(a) as number) - (indexMap.get(b) as number);
   };
@@ -308,21 +303,27 @@ function getHeapCreator(peg: Peg, start: string) {
   };
 }
 
-const debug = true;
-
 export class PikaParser {
-  constructor(private peg: Peg, private start: string) {}
+  constructor(private peg: Peg) {}
 
-  parse(s: string): [IParseTree, Position] | null {
-    const env = new PikaParsingEnv(s, this.peg, this.start);
-    return env.parseString(s);
+  parse(s: string, start?: string): IParseTree | Error {
+    const env = new PikaParsingEnv(s, this.peg);
+    if (start == undefined) {
+      return Error('start symbol must be given.');
+    }
+    const result = env.parseString(s, start);
+    if (result == null) {
+      return Error('error');
+    }
+    const [tree, _pos] = result;
+    return tree;
   }
 }
 
-function createParentsMap(peg: Peg, start: string) {
+function createParentsMap(peg: Peg) {
   const beginningCalculator = new BeginningCalculator(peg.rules);
   const beginningSets = beginningCalculator.calculate();
   const parentsBuilder = new ParentsBuilder(beginningSets);
-  const parentsMap = parentsBuilder.build(peg, start);
+  const parentsMap = parentsBuilder.build(peg);
   return parentsMap;
 }

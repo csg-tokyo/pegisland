@@ -2,13 +2,13 @@ import { strict as assert } from 'assert';
 import * as fs from 'fs';
 import { PegParser } from '../src/PegParser';
 import { NodeNonterminal } from '../src/ParseTree';
-import { ParsingError } from '../src/PegInterpreter';
+import { ParsingError } from '../src/PackratParser';
 
 describe('PegParser', () => {
   const parser = new PegParser();
   describe('#parse()', () => {
     it('should recognize the grammar for Java', () => {
-      const s = fs.readFileSync('grammar/java/full/java.peg').toString();
+      const s = fs.readFileSync('grammar/java/full/Java.18.peg').toString();
       const result = parser.parse(s);
       assert(result instanceof NodeNonterminal);
     });

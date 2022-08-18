@@ -56,7 +56,7 @@ if (parseTree instanceof Error) {
 traverseNonterminals(parseTree, (node) => {
   if (node.symbol == 'block') {
     const start = node.range.start;
-    const end = node.range.enud;
+    const end = node.range.end;
     console.log(
       `start: (${start.line}, ${start.column}), end: (${end.line}, ${end.column})`
     );
@@ -65,48 +65,56 @@ traverseNonterminals(parseTree, (node) => {
 ```
 
 When this code is run, positions of all blocks, including nested ones in the program stored in the variable `program` are shown in the standard output as follows:
+
 ```
 start: (1, 16), end: (10, 2)
 start: (2, 35), end: (9, 6)
 start: (3, 25), end: (5, 10)
 start: (5, 16), end: (8, 10)
 ```
+
 Each line represents the text area of a block in the program.
 For example, the last line `start: (5, 16), end: (8, 10)` represents the block starting on line 5 at column 16 and ending on line 8 at column 10 corresponding to the following code snippet:
+
 ```c
         {
             printf("world!\n")
         }
-        
+
 ```
+
 The grammar for extracting blocks is stored in the variable `grammar` in this code.
 The function `createParser` creates a parser based on the grammar specified by its argument.
 The method `parse` in the parser instance parses the program and generates a parse tree.
 The function `traverseNonterminals` traverses all nodes corresponding to nonterminal symbols in the parse tree and applies the function specified as its argument.
-
 
 ## Acceptable grammars
 
 PEGIsland takes a PEG, which consists of grammar rules.
 Each grammar rule consists of a nonterminal or lake symbol and parsing expression separated by `<-` or `=` followed by optional `;`.
 For example, the following line is a valid grammar rule for PEGIsland:
+
 ```
 foo <- bar*
 ```
+
 This rule describes that the nonterminal `foo` matches zero or more repetitions of the nonterminal `bar`.
 This rule can also be written like this:
+
 ```
 foo = bar*;
 ```
 
-PEGIsland supports regular expressions for writing lexical rules for a language. 
+PEGIsland supports regular expressions for writing lexical rules for a language.
 A regular expression can be described by surrounding it with `r'` and `'` like Python.
 We can use any regular expression supported by JavaScript in PEGIsland.
 For example, the rule for a lexical token for integer numbers can be described as follows:
+
 ```
 NUMBER <- r'\d+\s*'
 ```
-This rule describes that the nonterminal `NUMBER` matches one or more repetitions of a numerical digit followed by zero or more white spaces such as `123  `.
+
+This rule describes that the nonterminal `NUMBER` matches one or more repetitions of a numerical digit followed by zero or more white spaces such as `123 `.
 Appending additional spaces with a token is a convention in a PEG for scanner-less parsers.
 
 We can get a practical grammar by writing one or more rules.
@@ -126,6 +134,7 @@ RPAREN <- ')' spacing
 NUMBER <- r'\d+\s*'
 spacing <- r'\s*'
 ```
+
 This grammar recognizes arithmetic expressions like `(123 + 1) * 4`.
 
 ## Lake symbols
@@ -140,28 +149,34 @@ For example, `<e>` is a lake symbol.
 Without its related rule, it is a special wildcard symbol supporting shortest match of any characters.
 A lake symbol is typically used with a repeat operator such as `*` and `+`.
 For example, the following rule matches blocks by enclosed by `{` and `}`.
+
 ```
 block <- '{' <body>* '}'
 ```
+
 `<body>*` matches any character until the parser encounters `}`.
 Explicitly specified symbols are always prioritized over lake symbols.
 In this case, `}` is prioritized over the lake symbol `<body>`.
 This feature prevents the parser consumes a part of an island as water.
 The above rules cannot match nested blocks. To make the nonterminal `block` match nested blocks, we can describe a rule for the lake `<body>` as follows:
+
 ```
 <body> <- block
 ```
+
 If a lake symbol has a rule, it works as a wildcard only when it fails to match the pattern specified on the right-hand side.
 Therefore, `<body>` works as a wildcard if it fails to match `block` on its right-hand side of the rule.
 
-Lake symbols do not provide a naive shortest match realized by `.*?`  in regular expressions.
-To explain this point,  we extend the above rule as follows:
+Lake symbols do not provide a naive shortest match realized by `.*?` in regular expressions.
+To explain this point, we extend the above rule as follows:
+
 ```
 block <- '{' <body>* '}'
 <body> <- block / <expr>* ';'
 ```
+
 We added the lake `<expr>` to extract statements terminated by `;`.
-If `<expr>*` were a simple shortest match, `<expr>* ';'`  would happen to match an unexpected part of the input string.
+If `<expr>*` were a simple shortest match, `<expr>* ';'` would happen to match an unexpected part of the input string.
 For example, if the input is `{ x = 1; } y = 1;`, pattern `.*? ';'` may match its substring `} y = 1;` since `.` matches `}`.
 The lake symbol `<expr>` does not match `}` since it is a part of the island `block`.
 
