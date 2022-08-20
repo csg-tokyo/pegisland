@@ -20,7 +20,7 @@ import {
 import { union } from './set-operations';
 
 export class BeginningCalculator extends SetCalculator {
-  constructor(rules: Map<string, Rule>) {
+  constructor(rules: Map<string, Rule>, private isSpecial = false) {
     super(rules, false);
   }
 
@@ -53,7 +53,11 @@ export class BeginningCalculator extends SetCalculator {
   }
 
   visitNot(pe: Not): void {
-    this.set(pe, new Set([EPSILON]));
+    if (this.isSpecial) {
+      this.set(pe, union(this.get(pe.operand), new Set([EPSILON])));
+    } else {
+      this.set(pe, new Set([EPSILON]));
+    }
   }
 
   visitSequence(pe: Sequence): void {
@@ -82,10 +86,18 @@ export class BeginningCalculator extends SetCalculator {
   }
 
   visitColon(pe: Colon): void {
-    this.set(pe, new Set(this.get(pe.rhs)));
+    if (this.isSpecial) {
+      this.set(pe, union(this.get(pe.lhs), this.get(pe.rhs)));
+    } else {
+      this.set(pe, new Set(this.get(pe.rhs)));
+    }
   }
 
   visitColonNot(pe: ColonNot): void {
-    this.set(pe, new Set(this.get(pe.lhs)));
+    if (this.isSpecial) {
+      this.set(pe, union(this.get(pe.lhs), this.get(pe.rhs)));
+    } else {
+      this.set(pe, new Set(this.get(pe.lhs)));
+    }
   }
 }

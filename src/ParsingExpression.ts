@@ -222,7 +222,7 @@ export class Nonterminal implements IParsingExpression {
 
   parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
     //const result = this.rule.parse(env, pos);
-    const result = this.rule.parse(env, pos);
+    const result = env.parseRule(this.rule, pos);
     if (this.name == '') {
       return result;
     }

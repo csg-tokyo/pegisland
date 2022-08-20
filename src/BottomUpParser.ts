@@ -1,7 +1,7 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
 import Heap from 'heap';
+import lineColumn from 'line-column';
 import { BeginningCalculator } from './BeginningCalculator';
-import { DepthFirstTraverser } from './DepthFirstTraverser';
 import { Indexer } from './Indexer';
 import { IParseTree } from './ParseTree';
 import {
@@ -23,14 +23,16 @@ import {
   Sequence,
   Terminal,
   ZeroOrMore,
+  NullParsingExpression,
+  PostorderExpressionTraverser,
 } from './ParsingExpression';
 import { Peg } from './Peg';
-import { EPSILON } from './SetCalculator';
+import { peToString } from './Printer';
 
-export class PikaParsingEnv extends BaseParsingEnv {
+export class BottomupParsingEnv extends BaseParsingEnv {
   private memo: Map<IParsingExpression, [IParseTree, Position] | null>[] = [];
   private createHeap;
-  private parentsMap;
+  private parentsMap: Map<IParsingExpression, Set<IParsingExpression>>;
 
   constructor(public s: string, private peg: Peg) {
     super();
@@ -41,10 +43,12 @@ export class PikaParsingEnv extends BaseParsingEnv {
     }
 
     this.parentsMap = createParentsMap(this.peg);
-    this.createHeap = getHeapCreator(this.peg);
+    this.createHeap = getHeapCreator(this.peg, this.parentsMap);
   }
 
-  parseString(s: string, start: string): [IParseTree, Position] | null {
+  parseString(s: string, start: string): [IParseTree, Position] | Error {
+    const dummy = ' ';
+    const finder = lineColumn(s + dummy);
     for (let pos = s.length; pos >= 0; pos--) {
       const [heap, _indexMap] = this.createHeap();
       const set = new Set<IParsingExpression>(heap.toArray());
@@ -53,47 +57,56 @@ export class PikaParsingEnv extends BaseParsingEnv {
       while (!heap.empty()) {
         const pe = heap.pop() as IParsingExpression;
         set.delete(pe);
-        const isGlowing = this.glow(pe, new Position(pos, -1, -1)); // XXX
+        const info = finder.fromIndex(pos) as {
+          line: number;
+          col: number;
+        };
+        const isGlowing = this.glow(pe, new Position(pos, info.line, info.col));
+
         /*
-        console.log(
-          pos,
-          heap.size(),
-          show(pe) + indexMap.get(pe) + ' was poped!' + isGlowing
-        );
+        if (isGlowing)
+          console.log(
+            pos,
+            heap.size(),
+            peToString(pe) + ' was poped!' + (this.memo[pos].get(pe) != null)
+          );
         */
+
         if (isGlowing) {
           const parents = this.parentsMap.get(pe);
           if (parents != undefined) {
             parents.forEach((parent) => {
-              //console.log(show(parent) + ' was pushed!');
               if (!set.has(parent)) {
                 heap.push(parent);
                 set.add(parent);
+                //console.log(peToString(parent) + ' was pushed!');
               }
             });
           }
         }
       }
     }
-    if (!this.peg.rules.has(start)) {
-      return null;
-    }
+
     const startRule = this.peg.rules.get(start) as Rule;
-    if (startRule == undefined) {
-      return null;
+    if (!startRule) {
+      return Error(`${start} is not a valid nonterminal symbol.`);
     }
-    return startRule.parse(this, new Position(0, 1, 1));
+    const result = this.parseRule(startRule, new Position(0, 1, 1));
+    if (result == null) {
+      return Error(`${peToString(startRule.rhs)} is not found`);
+    }
+    return result;
+  }
+
+  parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
+    if (!this.memo[pos.offset].has(rule.rhs)) {
+      this.memo[pos.offset].set(rule.rhs, null);
+    }
+    return this.memo[pos.offset].get(rule.rhs) as [IParseTree, Position] | null;
   }
 
   parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null {
-    //console.log('offset: ' + pos.offset);
-    if (!this.memo[pos.offset].has(pe)) {
-      this.memo[pos.offset].set(pe, null);
-      //const result = pe.parse(this, pos);
-      //assert(result == null, `${show(pe)} should be null`);
-      //this.memo[pos.offset].set(pe, result);
-    }
-    return this.memo[pos.offset].get(pe) as [IParseTree, Position] | null;
+    return pe.parse(this, pos);
   }
 
   isGlowing(
@@ -134,87 +147,78 @@ export class PikaParsingEnv extends BaseParsingEnv {
 }
 
 class ParentsBuilder implements IParsingExpressionVisitor {
-  private parents: Map<IParsingExpression, IParsingExpression[]> = new Map();
-
-  constructor(
-    private beginning: Map<IParsingExpression, Set<IParsingExpression>>
-  ) {}
+  private parents: Map<IParsingExpression, Set<IParsingExpression>> = new Map();
+  private rule: Rule = new Rule('dummy', new NullParsingExpression());
+  private beginningSet = new Set<IParsingExpression>();
 
   build(peg: Peg) {
-    const traverser = new DepthFirstTraverser(
-      this,
-      getTopLevelExpressions(peg)
-    );
-    traverser.traverse();
+    const beginningSets = new BeginningCalculator(peg.rules, true).calculate();
+    const traverser = new PostorderExpressionTraverser(this);
+    [...peg.rules.values()].forEach((rule) => {
+      this.rule = rule;
+      this.beginningSet = beginningSets.get(
+        rule.rhs
+      ) as Set<IParsingExpression>;
+      traverser.traverse(rule.rhs);
+    });
     return this.parents;
   }
 
   addParent(pe: IParsingExpression, parent: IParsingExpression) {
     if (!this.parents.has(pe)) {
-      this.parents.set(pe, []);
+      this.parents.set(pe, new Set());
     }
-    const parents = this.parents.get(pe) as IParsingExpression[];
-    parents.push(parent);
+    const parents = this.parents.get(pe) as Set<IParsingExpression>;
+    parents.add(parent);
   }
 
   visitNonterminal(pe: Nonterminal): void {
-    this.addParent(pe.rule.rhs, pe);
-  }
-
-  visitTerminal(_pe: Terminal): void {
-    // Nothing to be done
-  }
-  visitZeroOrMore(pe: ZeroOrMore): void {
-    this.addParent(pe.operand, pe);
-  }
-  visitOneOrMore(pe: OneOrMore): void {
-    this.addParent(pe.operand, pe);
-  }
-  visitOptional(pe: Optional): void {
-    this.addParent(pe.operand, pe);
-  }
-  visitAnd(pe: And): void {
-    this.addParent(pe.operand, pe);
-  }
-  visitNot(pe: Not): void {
-    this.addParent(pe.operand, pe);
-  }
-  visitSequence(pe: Sequence): void {
-    for (const i in pe.operands) {
-      const operand = pe.operands[i];
-      this.addParent(operand, pe);
-      const beginningSet = this.beginning.get(
-        operand
-      ) as Set<IParsingExpression>;
-      if (!beginningSet.has(EPSILON)) {
-        break;
-      }
+    if (this.beginningSet.has(pe)) {
+      this.addParent(pe.rule.rhs, this.rule.rhs);
     }
   }
+
+  visitTerminal(pe: Terminal): void {
+    if (this.beginningSet.has(pe) && pe != this.rule.rhs) {
+      this.addParent(pe, this.rule.rhs);
+    }
+  }
+  visitZeroOrMore(pe: ZeroOrMore): void {
+    // Nothing to be done
+  }
+  visitOneOrMore(pe: OneOrMore): void {
+    // Nothing to be done
+  }
+  visitOptional(pe: Optional): void {
+    // Nothing to be done
+  }
+  visitAnd(pe: And): void {
+    // Nothing to be done
+  }
+  visitNot(pe: Not): void {
+    // Nothing to be done
+  }
+  visitSequence(pe: Sequence): void {
+    // Nothing to be done
+  }
   visitOrderedChoice(pe: OrderedChoice): void {
-    pe.operands.forEach((operand) => {
-      this.addParent(operand, pe);
-    });
+    // Nothing to be done
   }
   visitGrouping(pe: Grouping): void {
-    this.addParent(pe.operand, pe);
+    // Nothing to be done
   }
   visitRewriting(pe: Rewriting): void {
-    this.addParent(pe.operand, pe);
+    // Nothing to be done
   }
   visitColon(pe: Colon): void {
-    // XXX
-    this.addParent(pe.lhs, pe);
-    this.addParent(pe.rhs, pe);
+    // Nothing to be done
   }
   visitColonNot(pe: ColonNot): void {
-    // XXX
-    this.addParent(pe.lhs, pe);
-    this.addParent(pe.rhs, pe);
+    // Nothing to be done
   }
 }
 
-function getTopLevelExpressions(peg: Peg): IParsingExpression[] {
+export function getTopLevelExpressions(peg: Peg): IParsingExpression[] {
   return getTopLevelRules(peg).map((rule) => rule.rhs);
 }
 
@@ -224,9 +228,13 @@ function getTopLevelRules(peg: Peg) {
     : [peg.rules.values().next().value as Rule];
 }
 
-function getHeapCreator(peg: Peg) {
+function getHeapCreator(
+  peg: Peg,
+  parentsMap: Map<IParsingExpression, Set<IParsingExpression>>
+) {
   const indexer = new Indexer();
   const [indexMap, terminals] = indexer.build(peg);
+
   /*
   console.log(
     'terminals: ' + terminals.map((terminal) => (terminal as Terminal).source)
@@ -237,34 +245,36 @@ function getHeapCreator(peg: Peg) {
   };
   return (): [Heap<IParsingExpression>, Map<IParsingExpression, number>] => {
     const heap = new Heap<IParsingExpression>(cmp);
-    terminals.forEach((terminal) => {
+    terminals.filter(hasParent).forEach((terminal) => {
       heap.push(terminal);
     });
     return [heap, indexMap];
   };
-}
 
-export class PikaParser {
-  constructor(private peg: Peg) {}
-
-  parse(s: string, start?: string): IParseTree | Error {
-    const env = new PikaParsingEnv(s, this.peg);
-    if (start == undefined) {
-      return Error('start symbol must be given.');
-    }
-    const result = env.parseString(s, start);
-    if (result == null) {
-      return Error('error');
-    }
-    const [tree, _pos] = result;
-    return tree;
+  function hasParent(pe: IParsingExpression) {
+    return parentsMap.has(pe);
   }
 }
 
 function createParentsMap(peg: Peg) {
-  const beginningCalculator = new BeginningCalculator(peg.rules);
-  const beginningSets = beginningCalculator.calculate();
-  const parentsBuilder = new ParentsBuilder(beginningSets);
+  const parentsBuilder = new ParentsBuilder();
   const parentsMap = parentsBuilder.build(peg);
   return parentsMap;
+}
+
+export class BottomUpParser {
+  constructor(private peg: Peg) {}
+
+  parse(s: string, start?: string): IParseTree | Error {
+    const env = new BottomupParsingEnv(s, this.peg);
+    if (start == undefined) {
+      return Error('start symbol must be given.');
+    }
+    const result = env.parseString(s, start);
+    if (result instanceof Error) {
+      return result;
+    }
+    const [tree, _pos] = result;
+    return tree;
+  }
 }

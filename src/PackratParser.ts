@@ -83,11 +83,14 @@ export class PackratParsingEnv extends BaseParsingEnv {
   }
 
   parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
+    return rule.parse(this, pos);
+    /*
     if (!this.memo.has(rule)) {
       const result = rule.parse(this, pos);
       this.memo.set(rule, result);
     }
     return this.memo.get(rule) as [IParseTree, Position] | null;
+    */
   }
 
   parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null {

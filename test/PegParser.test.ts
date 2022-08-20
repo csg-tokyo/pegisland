@@ -1,5 +1,5 @@
 import { strict as assert } from 'assert';
-import * as fs from 'fs';
+import fs from 'fs';
 import { PegParser } from '../src/PegParser';
 import { NodeNonterminal } from '../src/ParseTree';
 import { ParsingError } from '../src/PackratParser';

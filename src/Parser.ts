@@ -5,7 +5,7 @@ import { PackratParser, ParsingError } from './PackratParser';
 import { IParseTree } from './ParseTree';
 import { IParsingExpression, Nonterminal } from './ParsingExpression';
 import { Peg } from './Peg';
-import { PikaParser } from './PikaParser';
+import { BottomUpParser } from './BottomUpParser';
 
 export function parseGrammar(grammar: string): Peg | ParsingError | Error {
   const builder = new GeneralPegBuilder();
@@ -23,11 +23,11 @@ function isLeftRecursive(peg: Peg): boolean {
 }
 
 export class Parser {
-  private pegInterpreter: PackratParser | PikaParser;
+  private pegInterpreter: PackratParser | BottomUpParser;
 
   constructor(peg: Peg) {
     if (isLeftRecursive(peg)) {
-      this.pegInterpreter = new PikaParser(peg);
+      this.pegInterpreter = new BottomUpParser(peg);
     } else {
       this.pegInterpreter = new PackratParser(peg.rules);
     }
