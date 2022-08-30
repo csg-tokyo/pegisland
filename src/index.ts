@@ -5,32 +5,11 @@ export { parseGrammar, rewriteLakeSymbols, Parser };
 import { IParseTree, NodeNonterminal } from './ParseTree';
 export { Peg } from './Peg';
 export { ParsingError } from './PackratParser';
-export { exampleGrammar, exampleSource } from './example';
-export { searchExpressions } from './search';
-export { generateNodeTypes } from './NodeTypeGenerator';
-export type { IParsingExpression } from './ParsingExpression';
-export {
-  Terminal,
-  Nonterminal,
-  OneOrMore,
-  Optional,
-  OrderedChoice,
-  Rule,
-  Sequence,
-  ZeroOrMore,
-  Not,
-  IParsingExpressionVisitor,
-} from './ParsingExpression';
-export {
-  IParseTree,
-  NodeTerminal,
-  NodeNonterminal,
-  NodeOneOrMore,
-  NodeZeroOrMore,
-  NodeOptional,
-  NodeSequence,
-  NodeOrderedChoice,
-} from './ParseTree';
+export * from './example';
+export * from './search';
+export * from './NodeTypeGenerator';
+export * from './ParsingExpression';
+export * from './ParseTree';
 
 export function createParser(
   grammar: string,

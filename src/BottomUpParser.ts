@@ -1,49 +1,37 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
-import Heap from 'heap';
+import assert from 'assert';
 import lineColumn from 'line-column';
 import { BeginningCalculator } from './BeginningCalculator';
+import { GraphBuilder } from './GraphBuilder';
+import { genDot } from './GraphPrinter';
 import { Indexer } from './Indexer';
 import { IParseTree } from './ParseTree';
 import {
-  And,
   BaseParsingEnv,
   Rule,
-  Colon,
-  ColonNot,
-  Grouping,
   IParsingExpression,
-  IParsingExpressionVisitor,
-  Nonterminal,
-  Not,
-  OneOrMore,
-  Optional,
-  OrderedChoice,
   Position,
-  Rewriting,
-  Sequence,
   Terminal,
-  ZeroOrMore,
-  NullParsingExpression,
-  PostorderExpressionTraverser,
 } from './ParsingExpression';
 import { Peg } from './Peg';
 import { peToString } from './Printer';
+import { PriorityQueue } from './PriorityQueue';
 
 export class BottomupParsingEnv extends BaseParsingEnv {
-  private memo: Map<IParsingExpression, [IParseTree, Position] | null>[] = [];
+  private memo: Map<Rule, [IParseTree, Position] | null>[] = [];
   private createHeap;
-  private parentsMap: Map<IParsingExpression, Set<IParsingExpression>>;
+  private parentsMap: Map<Rule, Set<Rule>>;
 
   constructor(public s: string, private peg: Peg) {
     super();
     for (let i = 0; i <= s.length; i++) {
-      this.memo.push(
-        new Map<IParsingExpression, [IParseTree, Position] | null>()
-      );
+      this.memo.push(new Map<Rule, [IParseTree, Position] | null>());
     }
 
-    this.parentsMap = createParentsMap(this.peg);
-    this.createHeap = getHeapCreator(this.peg, this.parentsMap);
+    const [parentsMap, childrenMap] = createParentsMap(this.peg);
+    console.log(genDot(peg, parentsMap));
+    this.parentsMap = parentsMap;
+    this.createHeap = getHeapCreator(this.peg, childrenMap);
   }
 
   parseString(s: string, start: string): [IParseTree, Position] | Error {
@@ -51,17 +39,18 @@ export class BottomupParsingEnv extends BaseParsingEnv {
     const finder = lineColumn(s + dummy);
     for (let pos = s.length; pos >= 0; pos--) {
       const [heap, _indexMap] = this.createHeap();
-      const set = new Set<IParsingExpression>(heap.toArray());
       // console.log('heap was created for ' + pos, heap.size());
 
       while (!heap.empty()) {
-        const pe = heap.pop() as IParsingExpression;
-        set.delete(pe);
+        const rule = heap.pop() as Rule;
         const info = finder.fromIndex(pos) as {
           line: number;
           col: number;
         };
-        const isGlowing = this.glow(pe, new Position(pos, info.line, info.col));
+        const isGlowing = this.grow(
+          rule,
+          new Position(pos, info.line, info.col)
+        );
 
         /*
         if (isGlowing)
@@ -73,14 +62,11 @@ export class BottomupParsingEnv extends BaseParsingEnv {
         */
 
         if (isGlowing) {
-          const parents = this.parentsMap.get(pe);
+          const parents = this.parentsMap.get(rule);
           if (parents != undefined) {
             parents.forEach((parent) => {
-              if (!set.has(parent)) {
-                heap.push(parent);
-                set.add(parent);
-                //console.log(peToString(parent) + ' was pushed!');
-              }
+              heap.push(parent);
+              //console.log(peToString(parent) + ' was pushed!');
             });
           }
         }
@@ -99,17 +85,18 @@ export class BottomupParsingEnv extends BaseParsingEnv {
   }
 
   parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
-    if (!this.memo[pos.offset].has(rule.rhs)) {
-      this.memo[pos.offset].set(rule.rhs, null);
+    if (!this.memo[pos.offset].has(rule)) {
+      console.log('XXX: ', pos.offset, rule.symbol);
+      this.memo[pos.offset].set(rule, null);
     }
-    return this.memo[pos.offset].get(rule.rhs) as [IParseTree, Position] | null;
+    return this.memo[pos.offset].get(rule) as [IParseTree, Position] | null;
   }
 
   parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null {
     return pe.parse(this, pos);
   }
 
-  isGlowing(
+  isGrowing(
     result: [IParseTree, Position] | null,
     oldResult: [IParseTree, Position] | null
   ): boolean {
@@ -126,95 +113,23 @@ export class BottomupParsingEnv extends BaseParsingEnv {
     }
   }
 
-  glow(pe: IParsingExpression, pos: Position): boolean {
-    const isFirstEval = !this.memo[pos.offset].has(pe);
+  grow(rule: Rule, pos: Position): boolean {
+    const isFirstEval = !this.memo[pos.offset].has(rule);
     //console.log('glow ' + show(pe));
     if (isFirstEval) {
-      this.memo[pos.offset].set(pe, null);
+      this.memo[pos.offset].set(rule, null);
     }
-    const result = pe.parse(this, pos);
-    const oldResult = this.memo[pos.offset].get(pe) as
+    const result = rule.parse(this, pos);
+    const oldResult = this.memo[pos.offset].get(rule) as
       | null
       | [IParseTree, Position];
-    if (isFirstEval || this.isGlowing(result, oldResult)) {
-      this.memo[pos.offset].set(pe, result);
+    if (isFirstEval || this.isGrowing(result, oldResult)) {
+      this.memo[pos.offset].set(rule, result);
       //console.log(result);
       return true;
     } else {
       return false;
     }
-  }
-}
-
-class ParentsBuilder implements IParsingExpressionVisitor {
-  private parents: Map<IParsingExpression, Set<IParsingExpression>> = new Map();
-  private rule: Rule = new Rule('dummy', new NullParsingExpression());
-  private beginningSet = new Set<IParsingExpression>();
-
-  build(peg: Peg) {
-    const beginningSets = new BeginningCalculator(peg.rules, true).calculate();
-    const traverser = new PostorderExpressionTraverser(this);
-    [...peg.rules.values()].forEach((rule) => {
-      this.rule = rule;
-      this.beginningSet = beginningSets.get(
-        rule.rhs
-      ) as Set<IParsingExpression>;
-      traverser.traverse(rule.rhs);
-    });
-    return this.parents;
-  }
-
-  addParent(pe: IParsingExpression, parent: IParsingExpression) {
-    if (!this.parents.has(pe)) {
-      this.parents.set(pe, new Set());
-    }
-    const parents = this.parents.get(pe) as Set<IParsingExpression>;
-    parents.add(parent);
-  }
-
-  visitNonterminal(pe: Nonterminal): void {
-    if (this.beginningSet.has(pe)) {
-      this.addParent(pe.rule.rhs, this.rule.rhs);
-    }
-  }
-
-  visitTerminal(pe: Terminal): void {
-    if (this.beginningSet.has(pe) && pe != this.rule.rhs) {
-      this.addParent(pe, this.rule.rhs);
-    }
-  }
-  visitZeroOrMore(pe: ZeroOrMore): void {
-    // Nothing to be done
-  }
-  visitOneOrMore(pe: OneOrMore): void {
-    // Nothing to be done
-  }
-  visitOptional(pe: Optional): void {
-    // Nothing to be done
-  }
-  visitAnd(pe: And): void {
-    // Nothing to be done
-  }
-  visitNot(pe: Not): void {
-    // Nothing to be done
-  }
-  visitSequence(pe: Sequence): void {
-    // Nothing to be done
-  }
-  visitOrderedChoice(pe: OrderedChoice): void {
-    // Nothing to be done
-  }
-  visitGrouping(pe: Grouping): void {
-    // Nothing to be done
-  }
-  visitRewriting(pe: Rewriting): void {
-    // Nothing to be done
-  }
-  visitColon(pe: Colon): void {
-    // Nothing to be done
-  }
-  visitColonNot(pe: ColonNot): void {
-    // Nothing to be done
   }
 }
 
@@ -228,36 +143,96 @@ function getTopLevelRules(peg: Peg) {
     : [peg.rules.values().next().value as Rule];
 }
 
-function getHeapCreator(
-  peg: Peg,
-  parentsMap: Map<IParsingExpression, Set<IParsingExpression>>
-) {
+class DFSTraverser {
+  visited = new Set<Rule>();
+  bottoms = new Set<Rule>();
+  constructor(
+    private childrenMap: Map<Rule, Set<Rule>>,
+    private topLevelRules: Rule[]
+  ) {}
+
+  visit(pe: Rule) {
+    const children = this.childrenMap.has(pe)
+      ? [...(this.childrenMap.get(pe) as Set<Rule>)]
+      : [];
+    const unvisitedChildren = children.filter(
+      (child) => !this.visited.has(child)
+    );
+    if (unvisitedChildren.length == 0) {
+      this.bottoms.add(pe);
+    } else {
+      unvisitedChildren.forEach((child) => {
+        this.visited.add(child);
+        this.visit(child);
+      });
+    }
+  }
+
+  traverse() {
+    this.topLevelRules.forEach((rule) => {
+      this.visited.add(rule);
+      this.visit(rule);
+    });
+  }
+}
+
+function getHeapCreator(peg: Peg, childrenMap: Map<Rule, Set<Rule>>) {
   const indexer = new Indexer();
   const [indexMap, terminals] = indexer.build(peg);
+  assert(
+    peg.toplevelRules.length > 0,
+    'One or more top-level rules are needed.'
+  );
+
+  const traverser = new DFSTraverser(childrenMap, peg.toplevelRules);
+  traverser.traverse();
+  const bottoms = traverser.bottoms;
+
+  const b = new BeginningCalculator(peg.rules, true).calculate();
+  const beginWithTerminal = (rule: Rule) =>
+    [...(b.get(rule.rhs) as Set<IParsingExpression>).values()].filter(
+      (pe) => pe instanceof Terminal
+    ).length > 0;
+  const bottomRules = [...peg.rules.values()].filter(beginWithTerminal);
 
   /*
   console.log(
-    'terminals: ' + terminals.map((terminal) => (terminal as Terminal).source)
+    'XXX',
+    [...difference(new Set(bottomRules), bottoms)]
+      .map((rule) => rule.symbol)
+      .join(',')
+  );
+  console.log(
+    'YYY',
+    [...difference(bottoms, new Set(bottomRules))]
+      .map((rule) => rule.symbol)
+      .join(',')
   );
   */
-  const cmp = (a: IParsingExpression, b: IParsingExpression) => {
-    return (indexMap.get(a) as number) - (indexMap.get(b) as number);
+  /*
+  console.log(
+    'bottoms',
+    [...bottomRules].map((rule) => peToString(rule.rhs)).join('\n')
+  );
+  */
+  const cmp = (a: Rule, b: Rule) => {
+    return (indexMap.get(a.rhs) as number) - (indexMap.get(b.rhs) as number);
   };
-  return (): [Heap<IParsingExpression>, Map<IParsingExpression, number>] => {
-    const heap = new Heap<IParsingExpression>(cmp);
-    terminals.filter(hasParent).forEach((terminal) => {
-      heap.push(terminal);
-    });
+  return (): [PriorityQueue<Rule>, Map<IParsingExpression, number>] => {
+    const heap = new PriorityQueue(cmp);
+    bottomRules.forEach((rule) => heap.push(rule));
+    //bottoms.forEach((pe) => heap.push(pe));
+
     return [heap, indexMap];
   };
 
-  function hasParent(pe: IParsingExpression) {
-    return parentsMap.has(pe);
+  function hasChild(rule: Rule) {
+    return childrenMap.has(rule);
   }
 }
 
 function createParentsMap(peg: Peg) {
-  const parentsBuilder = new ParentsBuilder();
+  const parentsBuilder = new GraphBuilder();
   const parentsMap = parentsBuilder.build(peg);
   return parentsMap;
 }

@@ -1,5 +1,5 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import fs from 'fs';
+//import fs from 'fs';
 import {
   IParsingExpression,
   Nonterminal,
@@ -210,5 +210,5 @@ ${visitor}
 ${builder}
 `;
 
-  fs.writeFileSync(outfile, code);
+  //fs.writeFileSync(outfile, code);
 }

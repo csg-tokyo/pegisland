@@ -1,5 +1,5 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { assert } from 'console';
+import assert from 'assert';
 import { AltCalculator } from './AltCalculator';
 import { BeginningCalculator } from './BeginningCalculator';
 import {
