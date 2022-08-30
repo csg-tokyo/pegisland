@@ -18,6 +18,7 @@ import {
   ZeroOrMore,
   Colon,
   ColonNot,
+  Lake,
 } from './ParsingExpression';
 
 export const EPSILON = new NullParsingExpression();
@@ -78,4 +79,5 @@ export abstract class SetCalculator implements IParsingExpressionVisitor {
   abstract visitRewriting(pe: Rewriting): void;
   abstract visitColon(pe: Colon): void;
   abstract visitColonNot(pe: ColonNot): void;
+  abstract visitLake(pe: Lake): void;
 }

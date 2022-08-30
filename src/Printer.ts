@@ -16,6 +16,7 @@ import {
   Rewriting,
   Colon,
   ColonNot,
+  Lake,
 } from './ParsingExpression';
 
 class Printer implements IParsingExpressionVisitor {
@@ -85,6 +86,9 @@ class Printer implements IParsingExpressionVisitor {
     const rhs = this.pop();
     const lhs = this.pop();
     this.push(lhs + '!:' + rhs);
+  }
+  visitLake(pe: Lake): void {
+    this.push('<< ' + this.pop() + ' >>');
   }
 }
 

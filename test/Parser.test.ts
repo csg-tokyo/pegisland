@@ -10,6 +10,8 @@ import {
   NodeOptional,
   NodeRewriting,
   IParseTree,
+  NodeLake,
+  printTree,
 } from '../src/ParseTree';
 import { Peg } from '../src/Peg';
 import {
@@ -21,6 +23,7 @@ import {
   Sequence,
   ZeroOrMore,
 } from '../src/ParsingExpression';
+import { createParser } from '../src';
 
 function doit(name: string, pe: IParsingExpression): void {
   if (pe instanceof Sequence) {
@@ -242,6 +245,27 @@ describe('Parser', () => {
       }
     });
 
+    it('should work with lake operators', () => {
+      const grammar = `
+      program     <- << block >>
+      block       <- '{' << block >> '}'
+      `;
+      //const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
+      {
+        const s = '{aaa{} }  ';
+        const tree = parser.parse(s, 'program') as IParseTree;
+        assert(tree != null);
+        const choice = tree.childNodes[0];
+        assert(choice instanceof NodeLake);
+        assert.equal(choice.range.end.offset, s.length);
+      }
+      {
+        const tree = parser.parse('b', 'program');
+        //assert(tree instanceof Error);
+      }
+    });
+
     it('should work with nonterminal', () => {
       const grammar = `
       program     <- name@A name@A
@@ -288,13 +312,14 @@ describe('Parser', () => {
 
     it('should operate on left recursion', () => {
       const grammar = `
+      start    <- expr
       expr     <- expr '-' number / number
       number   <- r'\\d+'
       `;
       const peg = parseGrammar(grammar) as Peg;
       const parser = new Parser(peg);
       const s = '1';
-      const result = parser.parse(s, 'expr') as IParseTree;
+      const result = parser.parse(s, 'start') as IParseTree;
       if (result instanceof Error) {
         console.log(result.message);
       }
@@ -303,18 +328,20 @@ describe('Parser', () => {
 
     it('should operate on direct left recursion', () => {
       const grammar = `
+      start    <- expr
       expr     <- expr '-' number / number
       number   <- r'\\d+'
       `;
       const peg = parseGrammar(grammar) as Peg;
       const parser = new Parser(peg);
       const s = '1-1-1';
-      const result = parser.parse(s, 'expr') as IParseTree;
+      const result = parser.parse(s, 'start') as IParseTree;
       assert.equal(result.range.end.offset, s.length);
     });
 
     it('should operate on indirect left recursion', () => {
       const grammar = `
+      start <- expr
       x   <- expr '[' number ']' / expr
       expr     <- x '-' number / number 
       number   <- r'\\d+'
@@ -322,7 +349,7 @@ describe('Parser', () => {
       const peg = parseGrammar(grammar) as Peg;
       const parser = new Parser(peg);
       const s = '1-1-1';
-      const result = parser.parse(s, 'expr') as IParseTree;
+      const result = parser.parse(s, 'start') as IParseTree;
       assert.equal(result.range.end.offset, s.length);
     });
 

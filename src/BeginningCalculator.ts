@@ -16,6 +16,7 @@ import {
   ZeroOrMore,
   Colon,
   ColonNot,
+  Lake,
 } from './ParsingExpression';
 import { union } from './set-operations';
 
@@ -99,5 +100,9 @@ export class BeginningCalculator extends SetCalculator {
     } else {
       this.set(pe, new Set(this.get(pe.lhs)));
     }
+  }
+
+  visitLake(pe: Lake): void {
+    this.set(pe, union(this.get(pe.operand), new Set([EPSILON])));
   }
 }

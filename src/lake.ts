@@ -10,6 +10,18 @@ import {
   Sequence,
   Terminal,
   Rule,
+  And,
+  Colon,
+  ColonNot,
+  Grouping,
+  Nonterminal,
+  OneOrMore,
+  Optional,
+  Rewriting,
+  ZeroOrMore,
+  IParsingExpressionVisitor,
+  Lake,
+  PostorderExpressionTraverser,
 } from './ParsingExpression';
 import { Peg } from './Peg';
 import { SucceedCalculator } from './SucceedCalculator';
@@ -32,6 +44,54 @@ function isDummy(rhs: IParsingExpression): boolean {
     }
   }
   return false;
+}
+
+class AltSetter implements IParsingExpressionVisitor {
+  constructor(
+    private altSets: Map<IParsingExpression, Set<IParsingExpression>>
+  ) {}
+  visitNonterminal(pe: Nonterminal): void {
+    // Do nothing
+  }
+  visitTerminal(pe: Terminal): void {
+    // Do nothing
+  }
+  visitZeroOrMore(pe: ZeroOrMore): void {
+    // Do nothing
+  }
+  visitOneOrMore(pe: OneOrMore): void {
+    // Do nothing
+  }
+  visitOptional(pe: Optional): void {
+    // Do nothing
+  }
+  visitAnd(pe: And): void {
+    // Do nothing
+  }
+  visitNot(pe: Not): void {
+    // Do nothing
+  }
+  visitSequence(pe: Sequence): void {
+    // Do nothing
+  }
+  visitOrderedChoice(pe: OrderedChoice): void {
+    // Do nothing
+  }
+  visitGrouping(pe: Grouping): void {
+    // Do nothing
+  }
+  visitRewriting(pe: Rewriting): void {
+    // Do nothing
+  }
+  visitColon(pe: Colon): void {
+    // Do nothing
+  }
+  visitColonNot(pe: ColonNot): void {
+    // Do nothing
+  }
+  visitLake(pe: Lake): void {
+    pe.altSymbols = this.altSets.get(pe.operand) as Set<IParsingExpression>;
+  }
 }
 
 export function rewriteLakeSymbols(
@@ -57,6 +117,11 @@ export function rewriteLakeSymbols(
   const succeeds = succeedCalculator.calculate();
   const altCalculator = new AltCalculator(peg.rules, beginnings, succeeds);
   const alts = altCalculator.calculate();
+
+  peg.rules.forEach((rule, symbol) => {
+    const travarser = new PostorderExpressionTraverser(new AltSetter(alts));
+    travarser.traverse(rule.rhs);
+  });
 
   peg.rules.forEach((rule, symbol) => {
     const altSet = alts.get(rule.rhs) as Set<IParsingExpression>;

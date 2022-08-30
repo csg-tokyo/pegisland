@@ -14,6 +14,7 @@ import {
   Grouping,
   Rewriting,
   Colon,
+  Lake,
 } from './ParsingExpression';
 
 export class DepthFirstTraverser implements IParsingExpressionVisitor {
@@ -87,6 +88,10 @@ export class DepthFirstTraverser implements IParsingExpressionVisitor {
   visitColonNot(pe: Colon): void {
     pe.lhs.accept(this);
     pe.rhs.accept(this);
+    pe.accept(this.visitor);
+  }
+  visitLake(pe: Lake): void {
+    pe.operand.accept(this);
     pe.accept(this.visitor);
   }
 }

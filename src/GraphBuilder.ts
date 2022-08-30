@@ -18,6 +18,7 @@ import {
   ZeroOrMore,
   NullParsingExpression,
   PostorderExpressionTraverser,
+  Lake,
 } from './ParsingExpression';
 import { Peg } from './Peg';
 
@@ -124,6 +125,9 @@ export class GraphBuilder implements IParsingExpressionVisitor {
     // Nothing to be done
   }
   visitColonNot(pe: ColonNot): void {
+    // Nothing to be done
+  }
+  visitLake(pe: Lake): void {
     // Nothing to be done
   }
 }

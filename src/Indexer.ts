@@ -6,6 +6,7 @@ import {
   Grouping,
   IParsingExpression,
   IParsingExpressionVisitor,
+  Lake,
   Nonterminal,
   Not,
   OneOrMore,
@@ -75,6 +76,9 @@ export class Indexer implements IParsingExpressionVisitor {
     this.giveIndex(pe);
   }
   visitColonNot(pe: ColonNot): void {
+    this.giveIndex(pe);
+  }
+  visitLake(pe: Lake): void {
     this.giveIndex(pe);
   }
 }

@@ -18,6 +18,7 @@ import {
   Rewriting,
   Colon,
   ColonNot,
+  Lake,
 } from './ParsingExpression';
 import {
   NodeNonterminal,
@@ -189,11 +190,16 @@ export class GeneralPegBuilder {
         result = this.processRegexp(choice.childNodes[0]);
         break;
       case 1: {
+        /*
         const seq = choice.childNodes[0];
         const lakeSymbol = this.makeLakeSymbol();
         const rule = this.getRule(lakeSymbol);
         rule.rhs = this.processExpression(seq.childNodes[1]);
         result = new ZeroOrMore(new Nonterminal(rule));
+        */
+        const seq = choice.childNodes[0];
+        const operand = this.processExpression(seq.childNodes[1]);
+        result = new Lake(operand);
         break;
       }
       case 2:

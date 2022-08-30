@@ -16,6 +16,7 @@ import {
   ZeroOrMore,
   Colon,
   ColonNot,
+  Lake,
 } from './ParsingExpression';
 import { difference, union } from './set-operations';
 import { strict as assert } from 'assert';
@@ -108,5 +109,9 @@ export class AltCalculator extends SetCalculator {
 
   visitColonNot(pe: ColonNot): void {
     this.set(pe.lhs, new Set(this.get(pe)));
+  }
+
+  visitLake(pe: Lake): void {
+    this.set(pe.operand, union(this.get(pe), this.getSucceed(pe)));
   }
 }

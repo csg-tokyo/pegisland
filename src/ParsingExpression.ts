@@ -1,5 +1,6 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { strict as assert } from 'assert';
+import { ChildProcess } from 'child_process';
 import {
   IParseTree,
   NodeNonterminal,
@@ -14,6 +15,7 @@ import {
   NodeGrouping,
   NodeRewriting,
   Range,
+  NodeLake,
 } from './ParseTree';
 import { Peg } from './Peg';
 
@@ -46,6 +48,7 @@ export interface IParsingExpressionVisitor {
   visitRewriting(pe: Rewriting): void;
   visitColon(pe: Colon): void;
   visitColonNot(pe: ColonNot): void;
+  visitLake(pe: Lake): void;
 }
 
 export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
@@ -109,6 +112,10 @@ export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
   visitColonNot(pe: Colon): void {
     pe.lhs.accept(this);
     pe.rhs.accept(this);
+    pe.accept(this.visitor);
+  }
+  visitLake(pe: Lake): void {
+    pe.operand.accept(this);
     pe.accept(this.visitor);
   }
 }
@@ -230,7 +237,7 @@ export class Nonterminal implements IParsingExpression {
       return result;
     }
     const [_, end] = result;
-    const value = env.s.substr(pos.offset, end.offset - pos.offset).trim();
+    const value = env.s.substring(pos.offset, end.offset).trim();
     if (!env.has(this.name)) {
       env.register(this.name, value);
     } else {
@@ -529,6 +536,40 @@ export class Rewriting implements IParsingExpression {
 
   accept(visitor: IParsingExpressionVisitor): void {
     visitor.visitRewriting(this);
+  }
+}
+
+export class Lake implements IParsingExpression {
+  semantics = new NullParsingExpression();
+  constructor(public operand: IParsingExpression) {}
+
+  set altSymbols(symbols: Set<IParsingExpression>) {
+    this.semantics = new ZeroOrMore(
+      new OrderedChoice([
+        this.operand,
+        new Sequence([
+          ...[...symbols].map((symbol) => new Not(symbol)),
+          new Terminal(/./, '.'),
+        ]),
+      ])
+    );
+  }
+
+  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
+    const result = env.parse(this.semantics, pos);
+    if (result == null) {
+      return null;
+    }
+    const [childNode, nextIndex] = result;
+    const zeroOrMore = childNode as NodeZeroOrMore;
+    const islands = zeroOrMore.childNodes
+      .filter((childNode) => (childNode as NodeOrderedChoice).index == 0)
+      .map((childNode) => (childNode as NodeOrderedChoice).childNodes[0]);
+    return [new NodeLake(new Range(pos, nextIndex), islands), nextIndex];
+  }
+
+  accept(visitor: IParsingExpressionVisitor): void {
+    visitor.visitLake(this);
   }
 }
 

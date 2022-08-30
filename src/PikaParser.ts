@@ -23,6 +23,7 @@ import {
   Sequence,
   Terminal,
   ZeroOrMore,
+  Lake,
 } from './ParsingExpression';
 import { Peg } from './Peg';
 import { EPSILON } from './SetCalculator';
@@ -211,6 +212,9 @@ class ParentsBuilder implements IParsingExpressionVisitor {
     // XXX
     this.addParent(pe.lhs, pe);
     this.addParent(pe.rhs, pe);
+  }
+  visitLake(pe: Lake): void {
+    this.addParent(pe.operand, pe);
   }
 }
 

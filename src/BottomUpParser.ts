@@ -29,7 +29,7 @@ export class BottomupParsingEnv extends BaseParsingEnv {
     }
 
     const [parentsMap, childrenMap] = createParentsMap(this.peg);
-    console.log(genDot(peg, parentsMap));
+    //console.log(genDot(peg, parentsMap));
     this.parentsMap = parentsMap;
     this.createHeap = getHeapCreator(this.peg, childrenMap);
   }
@@ -86,7 +86,7 @@ export class BottomupParsingEnv extends BaseParsingEnv {
 
   parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
     if (!this.memo[pos.offset].has(rule)) {
-      console.log('XXX: ', pos.offset, rule.symbol);
+      //console.log('XXX: ', pos.offset, rule.symbol);
       this.memo[pos.offset].set(rule, null);
     }
     return this.memo[pos.offset].get(rule) as [IParseTree, Position] | null;

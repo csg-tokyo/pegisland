@@ -17,6 +17,7 @@ import {
   ZeroOrMore,
   Colon,
   ColonNot,
+  Lake,
 } from './ParsingExpression';
 
 export class ExpressionCollector implements IParsingExpressionVisitor {
@@ -66,6 +67,9 @@ export class ExpressionCollector implements IParsingExpressionVisitor {
     this.expressions.push(pe);
   }
   visitColonNot(pe: ColonNot): void {
+    this.expressions.push(pe);
+  }
+  visitLake(pe: Lake): void {
     this.expressions.push(pe);
   }
 }

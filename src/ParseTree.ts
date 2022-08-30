@@ -129,6 +129,14 @@ export class NodeGrouping implements IParseTree {
   }
 }
 
+export class NodeLake implements IParseTree {
+  id = getSeq();
+  parentNode: IParseTree = this;
+  constructor(public range: Range, public childNodes: IParseTree[]) {
+    childNodes.forEach((n) => (n.parentNode = this));
+  }
+}
+
 declare class Rewriting {}
 
 export class NodeRewriting implements IParseTree {
