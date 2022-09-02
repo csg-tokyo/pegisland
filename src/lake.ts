@@ -22,6 +22,7 @@ import {
   IParsingExpressionVisitor,
   Lake,
   PostorderExpressionTraverser,
+  DefaultParsingExpressionVisitor,
 } from './ParsingExpression';
 import { Peg } from './Peg';
 import { SucceedCalculator } from './SucceedCalculator';
@@ -46,50 +47,13 @@ function isDummy(rhs: IParsingExpression): boolean {
   return false;
 }
 
-class AltSetter implements IParsingExpressionVisitor {
+class AltSetter extends DefaultParsingExpressionVisitor {
   constructor(
     private altSets: Map<IParsingExpression, Set<IParsingExpression>>
-  ) {}
-  visitNonterminal(pe: Nonterminal): void {
-    // Do nothing
+  ) {
+    super();
   }
-  visitTerminal(pe: Terminal): void {
-    // Do nothing
-  }
-  visitZeroOrMore(pe: ZeroOrMore): void {
-    // Do nothing
-  }
-  visitOneOrMore(pe: OneOrMore): void {
-    // Do nothing
-  }
-  visitOptional(pe: Optional): void {
-    // Do nothing
-  }
-  visitAnd(pe: And): void {
-    // Do nothing
-  }
-  visitNot(pe: Not): void {
-    // Do nothing
-  }
-  visitSequence(pe: Sequence): void {
-    // Do nothing
-  }
-  visitOrderedChoice(pe: OrderedChoice): void {
-    // Do nothing
-  }
-  visitGrouping(pe: Grouping): void {
-    // Do nothing
-  }
-  visitRewriting(pe: Rewriting): void {
-    // Do nothing
-  }
-  visitColon(pe: Colon): void {
-    // Do nothing
-  }
-  visitColonNot(pe: ColonNot): void {
-    // Do nothing
-  }
-  visitLake(pe: Lake): void {
+  override visitLake(pe: Lake): void {
     pe.altSymbols = this.altSets.get(pe.operand) as Set<IParsingExpression>;
   }
 }

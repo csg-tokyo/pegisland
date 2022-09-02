@@ -1,6 +1,5 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { strict as assert } from 'assert';
-import { ChildProcess } from 'child_process';
 import {
   IParseTree,
   NodeNonterminal,
@@ -49,6 +48,53 @@ export interface IParsingExpressionVisitor {
   visitColon(pe: Colon): void;
   visitColonNot(pe: ColonNot): void;
   visitLake(pe: Lake): void;
+}
+
+export class DefaultParsingExpressionVisitor
+  implements IParsingExpressionVisitor
+{
+  visitNonterminal(pe: Nonterminal): void {
+    // Do nothing
+  }
+  visitTerminal(pe: Terminal): void {
+    // Do nothing
+  }
+  visitOrderedChoice(pe: OrderedChoice): void {
+    // Do nothing
+  }
+  visitSequence(pe: Sequence): void {
+    // Do nothing
+  }
+  visitAnd(pe: And): void {
+    // Do nothing
+  }
+  visitColon(pe: Colon): void {
+    // Do nothing
+  }
+  visitColonNot(pe: ColonNot): void {
+    // Do nothing
+  }
+  visitGrouping(pe: Grouping): void {
+    // Do nothing
+  }
+  visitLake(pe: Lake): void {
+    // Do nothing
+  }
+  visitNot(pe: Not): void {
+    // Do nothing
+  }
+  visitOneOrMore(pe: OneOrMore): void {
+    // Do nothing
+  }
+  visitOptional(pe: Optional): void {
+    // Do nothing
+  }
+  visitRewriting(pe: Rewriting): void {
+    // Do nothing
+  }
+  visitZeroOrMore(pe: ZeroOrMore): void {
+    // Do nothing
+  }
 }
 
 export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
