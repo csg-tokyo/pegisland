@@ -611,7 +611,7 @@ export class Lake implements IParsingExpression {
     const islands = zeroOrMore.childNodes
       .filter((childNode) => (childNode as NodeOrderedChoice).index == 0)
       .map((childNode) => (childNode as NodeOrderedChoice).childNodes[0]);
-    return [new NodeLake(new Range(pos, nextIndex), islands), nextIndex];
+    return [new NodeLake(new Range(pos, nextIndex), islands, this), nextIndex];
   }
 
   accept(visitor: IParsingExpressionVisitor): void {

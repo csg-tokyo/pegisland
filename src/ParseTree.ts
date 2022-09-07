@@ -1,5 +1,5 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { Position } from './ParsingExpression';
+import { Lake, Position } from './ParsingExpression';
 
 export class Range {
   constructor(public start: Position, public end: Position) {}
@@ -132,7 +132,11 @@ export class NodeGrouping implements IParseTree {
 export class NodeLake implements IParseTree {
   id = getSeq();
   parentNode: IParseTree = this;
-  constructor(public range: Range, public childNodes: IParseTree[]) {
+  constructor(
+    public range: Range,
+    public childNodes: IParseTree[],
+    public pe: Lake
+  ) {
     childNodes.forEach((n) => (n.parentNode = this));
   }
 }
