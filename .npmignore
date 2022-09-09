@@ -4,8 +4,10 @@ coverage
 grammar
 example
 tsconfig.json
+doc
 .nyc_output
 .vscode
 .nycrc
 .prettierrc.json
 .eslintrc.json
+.idea
