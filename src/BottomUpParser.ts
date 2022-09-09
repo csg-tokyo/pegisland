@@ -242,10 +242,10 @@ export class BottomUpParser {
 
   parse(s: string, start?: string): IParseTree | Error {
     const env = new BottomupParsingEnv(s, this.peg);
-    if (start == undefined) {
-      return Error('start symbol must be given.');
-    }
-    const result = env.parseString(s, start);
+    const result = env.parseString(
+      s,
+      start ? start : this.peg.rules.keys().next().value
+    );
     if (result instanceof Error) {
       return result;
     }
