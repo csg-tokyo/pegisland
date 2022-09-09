@@ -17,6 +17,7 @@ import {
   NodeLake,
 } from './ParseTree';
 import { Peg } from './Peg';
+import { peToString } from './Printer';
 
 export class Position {
   constructor(
@@ -586,23 +587,24 @@ export class Rewriting implements IParsingExpression {
 }
 
 export class Lake implements IParsingExpression {
-  semantics = new NullParsingExpression();
+  semantics: IParsingExpression = new NullParsingExpression();
   constructor(public operand: IParsingExpression) {}
 
   set altSymbols(symbols: Set<IParsingExpression>) {
+    const operandIsEpsilon =
+      this.operand instanceof Sequence && this.operand.operands.length == 0;
+    const wildcard = new Sequence([
+      ...[...symbols].map((symbol) => new Not(symbol)),
+      new Terminal(/./, '.'),
+    ]);
     this.semantics = new ZeroOrMore(
-      new OrderedChoice([
-        this.operand,
-        new Sequence([
-          ...[...symbols].map((symbol) => new Not(symbol)),
-          new Terminal(/./, '.'),
-        ]),
-      ])
+      operandIsEpsilon ? wildcard : new OrderedChoice([this.operand, wildcard])
     );
   }
 
   parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
     const result = env.parse(this.semantics, pos);
+    // console.log(pegToString(this.semantics));
     if (result == null) {
       return null;
     }

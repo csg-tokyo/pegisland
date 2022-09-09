@@ -16,7 +16,7 @@ function getSeq() {
 
 export function printTree(tree: IParseTree, level = 0): void {
   if (tree instanceof NodeNonterminal) {
-    console.log(level, tree.symbol);
+    console.log(level, tree.symbol, tree.range);
   }
   tree.childNodes.forEach((x) => {
     printTree(x, level + 1);

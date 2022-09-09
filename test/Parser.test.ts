@@ -24,6 +24,7 @@ import {
   ZeroOrMore,
 } from '../src/ParsingExpression';
 import { createParser } from '../src';
+import { create } from 'domain';
 
 function doit(name: string, pe: IParsingExpression): void {
   if (pe instanceof Sequence) {
@@ -368,6 +369,23 @@ describe('Parser', () => {
       const s = '   abc xyz abc xyz';
       const result = parser.parse(s, 'program') as IParseTree;
       assert.equal(result.range.end.offset, s.length);
+      //console.log(result);
+      //printTree(result);
+    });
+
+    it('should work with lake operators', () => {
+      const grammar = `
+      program     <- stmt
+      stmt        <- <<>> ';'
+      `;
+      const parser = createParser(grammar);
+      if (parser instanceof Error) {
+        return;
+      }
+      const s = 'abcdefg;';
+      const result = parser.parse(s, 'program') as IParseTree;
+      assert.equal(result.range.end.offset, s.length);
+
       //console.log(result);
       //printTree(result);
     });
