@@ -1,11 +1,63 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { InitialPegBuilder, SimpleTree } from './InitialPegBuilder';
+import { InitialPegBuilder } from './InitialPegBuilder';
 import { PackratParser, ParsingError } from './PackratParser';
 import { IParseTree } from './ParseTree';
 
-const grammar: { [name: string]: SimpleTree } = {
+export type SimpleTree =
+  | Nonterminals
+  | ['terminal', RegExp | string]
+  | ['' | '/', ...SimpleTree[]]
+  | ['*' | '+' | '?' | '!' | '&', SimpleTree];
+
+export type Nonterminals =
+  | 'AND'
+  | 'Char'
+  | 'Class'
+  | 'CLOSE'
+  | 'COLON'
+  | 'COLON_NOT'
+  | 'Comment'
+  | 'DOT'
+  | 'Definition'
+  | 'Expression'
+  | 'grammar'
+  | 'Identifier'
+  | 'LAKE_CLOSE'
+  | 'LAKE_OPEN'
+  | 'LEFTARROW'
+  | 'NamedItendifier'
+  | 'NOT'
+  | 'OPEN'
+  | 'OptAnnotations'
+  | 'PLUS'
+  | 'PLUS_PLUS'
+  | 'Primary'
+  | 'Prefix'
+  | 'QUESTION'
+  | 'Regexp'
+  | 'Rewriting'
+  | 'RIGHTARROW'
+  | 'SEMICOLON'
+  | 'Sequence'
+  | 'SLASH'
+  | 'Space'
+  | 'Spacing'
+  | 'STAR'
+  | 'STAR_PLUS'
+  | 'String'
+  | 'Suffix';
+
+const grammar: { [name in Nonterminals]: SimpleTree } = {
   grammar: ['', 'Spacing', ['+', 'Definition']],
-  Definition: ['', 'Identifier', 'LEFTARROW', 'Expression', ['?', 'SEMICOLON']],
+  OptAnnotations: ['*', ['terminal', /@water\s*/]],
+  Definition: [
+    '',
+    'OptAnnotations',
+    'Identifier',
+    'LEFTARROW',
+    'Expression',
+    ['?', 'SEMICOLON'],
+  ],
   Expression: ['', 'Rewriting', ['*', ['', 'SLASH', 'Rewriting']]],
   Rewriting: ['', 'Sequence', ['?', ['', 'RIGHTARROW', 'String']]],
   Sequence: ['*', ['', 'Prefix', ['!', 'LEFTARROW']]],

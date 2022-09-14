@@ -15,7 +15,7 @@ import {
   Nonterminal,
 } from './ParsingExpression';
 
-export type SimpleTree = string | RegExp | SimpleTree[];
+import { Nonterminals, SimpleTree } from './PegParser';
 
 export class InitialPegBuilder {
   rules = new Map<string, Rule>();
@@ -36,7 +36,7 @@ export class InitialPegBuilder {
       const nonterminal = expression;
       assert(this.rules.has(nonterminal));
       return new Nonterminal(this.rules.get(nonterminal) as Rule);
-    } else if (Array.isArray(expression)) {
+    } else {
       if (expression[0] == 'terminal') {
         const pattern = expression[1] as RegExp | string;
         return new Terminal(
@@ -47,7 +47,7 @@ export class InitialPegBuilder {
         const operator = expression[0];
         const operands = expression
           .slice(1)
-          .map((subexp) => this.compileExpression(subexp));
+          .map((subexp) => this.compileExpression(subexp as SimpleTree));
         switch (operator) {
           case '*':
             return new ZeroOrMore(operands[0]);
@@ -66,6 +66,5 @@ export class InitialPegBuilder {
         }
       }
     }
-    return new NullParsingExpression();
   }
 }

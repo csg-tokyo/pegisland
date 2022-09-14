@@ -49,12 +49,16 @@ function isDummy(rhs: IParsingExpression): boolean {
 
 class AltSetter extends DefaultParsingExpressionVisitor {
   constructor(
-    private altSets: Map<IParsingExpression, Set<IParsingExpression>>
+    private altSets: Map<IParsingExpression, Set<IParsingExpression>>,
+    private waterRules: Rule[]
   ) {
     super();
   }
   override visitLake(pe: Lake): void {
-    pe.altSymbols = this.altSets.get(pe.operand) as Set<IParsingExpression>;
+    pe.makeSemantics(
+      this.altSets.get(pe.operand) as Set<IParsingExpression>,
+      this.waterRules
+    );
   }
 }
 
@@ -81,9 +85,11 @@ export function rewriteLakeSymbols(
   const succeeds = succeedCalculator.calculate();
   const altCalculator = new AltCalculator(peg.rules, beginnings, succeeds);
   const alts = altCalculator.calculate();
-
+  const waterRules = [...peg.rules.values()].filter((rule) => rule.isWater);
   peg.rules.forEach((rule, symbol) => {
-    const travarser = new PostorderExpressionTraverser(new AltSetter(alts));
+    const travarser = new PostorderExpressionTraverser(
+      new AltSetter(alts, waterRules)
+    );
     travarser.traverse(rule.rhs);
   });
 

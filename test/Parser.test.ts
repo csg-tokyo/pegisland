@@ -12,6 +12,7 @@ import {
   IParseTree,
   NodeLake,
   printTree,
+  NodeNonterminal,
 } from '../src/ParseTree';
 import { Peg } from '../src/Peg';
 import {
@@ -25,6 +26,7 @@ import {
 } from '../src/ParsingExpression';
 import { createParser } from '../src';
 import { create } from 'domain';
+import { ChildProcess } from 'child_process';
 
 function doit(name: string, pe: IParsingExpression): void {
   if (pe instanceof Sequence) {
@@ -388,6 +390,40 @@ describe('Parser', () => {
 
       //console.log(result);
       //printTree(result);
+    });
+
+    it('should work with a water annotation', () => {
+      const grammar = `
+      program     <- << 'b' >>
+      @water
+      water <- r'".*?"'
+      `;
+      const parser = createParser(grammar);
+      if (parser instanceof Error) {
+        return;
+      }
+      const s = 'abc"dbe"fg;';
+      const result = parser.parse(s, 'program') as NodeNonterminal;
+      const lake = result.childNodes[0];
+      assert.equal(result.range.end.offset, s.length);
+      assert.equal(lake.childNodes.length, 1);
+    });
+
+    it('should work with an empty lake and a water annotation', () => {
+      const grammar = `
+      program     <- << >>
+      @water
+      water <- r'".*?"'
+      `;
+      const parser = createParser(grammar);
+      if (parser instanceof Error) {
+        return;
+      }
+      const s = 'abc"dbe"fg;';
+      const result = parser.parse(s, 'program') as NodeNonterminal;
+      const lake = result.childNodes[0];
+      assert.equal(result.range.end.offset, s.length);
+      assert.equal(lake.childNodes.length, 0);
     });
   });
 });

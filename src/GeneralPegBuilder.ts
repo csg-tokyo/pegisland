@@ -27,6 +27,7 @@ import {
   NodeTerminal,
   IParseTree,
   NodeOptional,
+  NodeZeroOrMore,
 } from './ParseTree';
 import { Peg } from './Peg';
 import { difference } from './set-operations';
@@ -59,9 +60,15 @@ export class GeneralPegBuilder {
     const plus = seq.childNodes[1];
     plus.childNodes.forEach((node) => {
       const seq = node.childNodes[0];
-      const id = seq.childNodes[0].childNodes[0].childNodes[0] as NodeTerminal;
+      const id = seq.childNodes[1].childNodes[0].childNodes[0] as NodeTerminal;
       const rule = this.getRule(id.text);
-      rule.rhs = this.processExpression(seq.childNodes[2]);
+      rule.rhs = this.processExpression(seq.childNodes[3]);
+
+      // check if it has a water annotation
+      const optAnnotations = seq.childNodes[0] as NodeNonterminal;
+      const annotations = optAnnotations.childNodes[0];
+      const hasAnnotation = annotations.childNodes.length > 0;
+      rule.isWater = hasAnnotation;
     });
     const toplevelRules = difference(
       new Set(this.rules.values()),

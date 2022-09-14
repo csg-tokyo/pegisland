@@ -14,12 +14,19 @@ function ruleToString(rule: Rule): string {
   return peToString(rule.rhs);
 }
 
+function makeAnnotation(rule: Rule) {
+  return rule.isWater ? '@water\n' : '';
+}
+
 export class Peg {
   constructor(public rules: Map<string, Rule>, public toplevelRules: Rule[]) {}
 
   toString(): string {
     return Array.from(this.rules)
-      .map(([symbol, rule]) => `${symbol} <- ${ruleToString(rule)}`)
+      .map(
+        ([symbol, rule]) =>
+          `${makeAnnotation(rule)}${symbol} <- ${ruleToString(rule)}`
+      )
       .join('\n');
   }
 }

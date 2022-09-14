@@ -168,7 +168,11 @@ export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
 }
 
 export class Rule {
-  constructor(public symbol: string, public rhs: IParsingExpression) {}
+  constructor(
+    public symbol: string,
+    public rhs: IParsingExpression,
+    public isWater = false
+  ) {}
   parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
     return this.parseWithoutMemo(env, pos);
   }
@@ -590,15 +594,21 @@ export class Lake implements IParsingExpression {
   semantics: IParsingExpression = new NullParsingExpression();
   constructor(public operand: IParsingExpression) {}
 
-  set altSymbols(symbols: Set<IParsingExpression>) {
+  makeSemantics(symbols: Set<IParsingExpression>, waterRules: Rule[]) {
     const operandIsEpsilon =
       this.operand instanceof Sequence && this.operand.operands.length == 0;
-    const wildcard = new Sequence([
-      ...[...symbols].map((symbol) => new Not(symbol)),
-      new Terminal(/./, '.'),
+    const wildcard = new OrderedChoice([
+      ...waterRules.map((rule) => new Nonterminal(rule)),
+      new Sequence([
+        ...[...symbols].map((symbol) => new Not(symbol)),
+        new Terminal(/./, '.'),
+      ]),
     ]);
     this.semantics = new ZeroOrMore(
-      operandIsEpsilon ? wildcard : new OrderedChoice([this.operand, wildcard])
+      new OrderedChoice([
+        operandIsEpsilon ? new NullParsingExpression() : this.operand,
+        wildcard,
+      ])
     );
   }
 
