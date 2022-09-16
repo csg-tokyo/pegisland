@@ -1,7 +1,7 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { rewriteLakeSymbols } from './lake';
+import { processLakes } from './lake';
 import { parseGrammar, Parser } from './Parser';
-export { parseGrammar, rewriteLakeSymbols, Parser };
+export { parseGrammar, processLakes as rewriteLakeSymbols, Parser };
 import { IParseTree, NodeNonterminal } from './ParseTree';
 export { Peg } from './Peg';
 export { ParsingError } from './PackratParser';
@@ -19,7 +19,7 @@ export function createParser(
   if (peg instanceof Error) {
     return peg;
   }
-  rewriteLakeSymbols(peg, waterSymbols);
+  processLakes(peg, waterSymbols);
   const parser = new Parser(peg);
   return parser;
 }
