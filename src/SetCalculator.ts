@@ -5,7 +5,6 @@ import {
   Grouping,
   Nonterminal,
   Not,
-  NullParsingExpression,
   OneOrMore,
   Optional,
   OrderedChoice,
@@ -21,7 +20,7 @@ import {
   Lake,
 } from './ParsingExpression';
 
-export const EPSILON = new NullParsingExpression();
+export const EPSILON = new Sequence([]);
 
 export abstract class SetCalculator implements IParsingExpressionVisitor {
   private expressions;
