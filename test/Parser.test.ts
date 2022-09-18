@@ -425,5 +425,13 @@ describe('Parser', () => {
       assert.equal(result.range.end.offset, s.length);
       assert.equal(lake.childNodes.length, 0);
     });
+
+    it('should report an error when a nonterminal does not have a rule', () => {
+      const grammar = `
+      program     <- nonterminal_without_rule
+      `;
+      const parser = createParser(grammar);
+      assert(parser instanceof Error);
+    });
   });
 });
