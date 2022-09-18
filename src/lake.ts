@@ -19,7 +19,7 @@ import { Peg } from './Peg';
 import { areEqualSets } from './set-operations';
 import { SucceedCalculator } from './SucceedCalculator';
 
-function isLake(symbol: string) {
+export function isLake(symbol: string) {
   return /^<.*?>$/.test(symbol);
 }
 
@@ -167,7 +167,9 @@ function updateLakeRule(
     ]),
   ];
   const waterExps: IParsingExpression[] = [
-    ...waterSymbols.map((s) => new Nonterminal(peg.rules.get(s) as Rule)),
+    ...waterSymbols
+      .filter((s) => peg.rules.has(s))
+      .map((s) => new Nonterminal(peg.rules.get(s) as Rule)),
   ] as IParsingExpression[];
   waters = [...waterExps, ...waters];
   const hasRhs = !(rule.rhs instanceof NullParsingExpression);

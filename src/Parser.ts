@@ -10,6 +10,7 @@ import {
 } from './ParsingExpression';
 import { Peg } from './Peg';
 import { BottomUpParser } from './BottomUpParser';
+import { isLake } from './lake';
 
 export function parseGrammar(grammar: string): Peg | ParsingError | Error {
   const builder = new GeneralPegBuilder();
@@ -19,6 +20,7 @@ export function parseGrammar(grammar: string): Peg | ParsingError | Error {
   }
   const errors = [...result.rules.values()]
     .filter((rule) => rule.rhs instanceof NullParsingExpression)
+    .filter((rule) => !isLake(rule.symbol))
     .map((rule) => new Error(`Rule '${rule.symbol}' is not defined.`));
   if (errors.length > 0) {
     return errors[0];

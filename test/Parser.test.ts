@@ -433,5 +433,13 @@ describe('Parser', () => {
       const parser = createParser(grammar);
       assert(parser instanceof Error);
     });
+
+    it('should not report an error when a lake does not have a rule', () => {
+      const grammar = `
+      program     <- <lake_without_rule>*
+      `;
+      const parser = createParser(grammar);
+      assert(!(parser instanceof Error));
+    });
   });
 });
