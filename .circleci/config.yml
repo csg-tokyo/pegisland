@@ -17,10 +17,10 @@ jobs:
       - run: npm install
       - run:
           name: 'JavaScript Linter'
-          command: eslint --format junit -o reports/junit/eslint.xml
+          command: npx eslint --format junit -o reports/junit/eslint.xml src/*.ts test/*
       - run:
           name: 'Run Jest and Collect Coverage Reports'
-          command: jest
+          command: npx jest
           environment:
             JEST_JUNIT_OUTPUT_DIR: 'reports/junit'
       - store_test_results:
