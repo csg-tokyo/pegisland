@@ -47,6 +47,7 @@
     "@types/heap": "^0.2.31",
     "@types/line-column": "^1.0.0",
     "heap": "^0.2.7",
+    "jest-codemods": "^0.30.0",
     "line-column": "^1.0.2",
     "source-map-support": "^0.5.21",
     "ts-graphviz": "^0.16.0"
