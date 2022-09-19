@@ -11,3 +11,6 @@ doc
 .prettierrc.json
 .eslintrc.json
 .idea
+jest.config.ts
+reports
+.circleci
