@@ -5,29 +5,29 @@ version: 2.1
 # See: https://circleci.com/docs/2.0/orb-intro/
 orbs:
   node: circleci/node@4.7
-
-build-and-test:
-  # These next lines define a Docker executor: https://circleci.com/docs/2.0/executor-types/
-  # You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-  # A list of available CircleCI Docker Convenience Images are available here: https://circleci.com/developer/images/image/cimg/node
-  docker:
-    - image: cimg/node:16.10
-  steps:
-    - checkout
-    - browser-tools/install-browser-tools
-    - run: npm install
-    - run:
-        name: 'JavaScript Linter'
-        command: eslint --format junit -o reports/junit/eslint.xml
-    - run:
-        name: 'Run Jest and Collect Coverage Reports'
-        command: jest
-        environment:
-          JEST_JUNIT_OUTPUT_DIR: 'reports/junit'
-    - store_test_results:
-        path: reports/junit
-    - store_artifacts:
-        path: coverage
+jobs:
+  build-and-test:
+    # These next lines define a Docker executor: https://circleci.com/docs/2.0/executor-types/
+    # You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
+    # A list of available CircleCI Docker Convenience Images are available here: https://circleci.com/developer/images/image/cimg/node
+    docker:
+      - image: cimg/node:16.10
+    steps:
+      - checkout
+      - browser-tools/install-browser-tools
+      - run: npm install
+      - run:
+          name: 'JavaScript Linter'
+          command: eslint --format junit -o reports/junit/eslint.xml
+      - run:
+          name: 'Run Jest and Collect Coverage Reports'
+          command: jest
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: 'reports/junit'
+      - store_test_results:
+          path: reports/junit
+      - store_artifacts:
+          path: coverage
 
 workflows:
   # Below is the definition of your workflow.
