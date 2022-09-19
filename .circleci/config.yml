@@ -14,7 +14,6 @@ jobs:
       - image: cimg/node:16.10
     steps:
       - checkout
-      - browser-tools/install-browser-tools
       - run: npm install
       - run:
           name: 'JavaScript Linter'
