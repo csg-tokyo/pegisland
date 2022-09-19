@@ -1,7 +1,8 @@
-import { assert } from 'chai';
 import fs from 'fs';
+import { expect } from '@jest/globals';
 import { parseGrammar, Peg } from '../src';
 import { BottomUpParser } from '../src/BottomUpParser';
+import assert from 'assert';
 
 describe('BottomUpParser', () => {
   describe('#parse()', () => {
@@ -17,7 +18,7 @@ describe('BottomUpParser', () => {
       if (!(parser instanceof Error)) {
         const result = parser.parse(s, 'start');
         assert(!(result instanceof Error));
-        assert.equal(result.range.end.offset, s.length);
+        expect(result.range.end.offset).toEqual(s.length);
       }
     });
     it("should handle Mouse's operators", () => {
@@ -30,7 +31,7 @@ describe('BottomUpParser', () => {
       const s = `while`;
       const result = parser.parse(s, 'Compilation');
       assert(!(result instanceof Error));
-      assert.equal(result.range.end.offset, s.length);
+      expect(result.range.end.offset).toEqual(s.length);
     });
     it('should handle the Java grammar', () => {
       const grammar = fs
@@ -41,7 +42,7 @@ describe('BottomUpParser', () => {
       const result = parser.parse(s, 'Compilation');
       //console.log(result);
       assert(!(result instanceof Error));
-      assert.equal(result.range.end.offset, s.length);
+      expect(result.range.end.offset).toEqual(s.length);
     });
 
     it('should handle a complex grammar', () => {
@@ -56,7 +57,7 @@ describe('BottomUpParser', () => {
       const result = parser.parse(s, 'A');
       //console.log(result);
       assert(!(result instanceof Error));
-      assert.equal(result.range.end.offset, s.length);
+      expect(result.range.end.offset).toEqual(s.length);
     });
 
     it('should handle a typical grammar', () => {
@@ -80,7 +81,7 @@ describe('BottomUpParser', () => {
       const result = parser.parse(s, 'start');
       //console.log(result);
       assert(!(result instanceof Error));
-      assert.equal(result.range.end.offset, s.length);
+      expect(result.range.end.offset).toEqual(s.length);
     });
   });
 });

@@ -5,17 +5,25 @@ version: 2.1
 # See: https://circleci.com/docs/2.0/orb-intro/
 orbs:
   node: circleci/node@4.7
-
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
-workflows:
-  sample: # This is the name of the workflow, feel free to change it to better match your workflow.
-    # Inside the workflow, you define the jobs you want to run.
-    jobs:
-      - node/test:
-          # This is the node version to use for the `cimg/node` tag
-          # Relevant tags can be found on the CircleCI Developer Hub
-          # https://circleci.com/developer/images/image/cimg/node
-          version: '16.10'
-          # If you are using yarn, change the line below from "npm" to "yarn"
-          pkg-manager: npm
+jobs:
+  build:
+    # These next lines define a Docker executor: https://circleci.com/docs/2.0/executor-types/
+    # You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
+    # A list of available CircleCI Docker Convenience Images are available here: https://circleci.com/developer/images/image/cimg/node
+    docker:
+      - image: cimg/node:16.10
+    steps:
+      - checkout
+      - run: npm install
+      - run:
+          name: 'JavaScript Linter'
+          command: npx eslint --format junit -o reports/junit/eslint.xml src/*.ts test/*
+      - run:
+          name: 'Run Jest and Collect Coverage Reports'
+          command: npx jest
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: 'reports/junit'
+      - store_test_results:
+          path: reports/junit
+      - store_artifacts:
+          path: coverage

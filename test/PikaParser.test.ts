@@ -1,4 +1,5 @@
-import { assert } from 'chai';
+import assert from 'assert';
+import { expect } from '@jest/globals';
 import fs from 'fs';
 import { parseGrammar, Peg } from '../src';
 import { PikaParser } from '../src/PikaParser';
@@ -16,7 +17,7 @@ describe('PikaParser', () => {
       if (!(parser instanceof Error)) {
         const result = parser.parse(s, 'program');
         assert(!(result instanceof Error));
-        assert.equal(result.range.end.offset, s.length);
+        expect(result.range.end.offset).toEqual(s.length);
       }
     });
     it("should handle Mouse's operators", () => {
@@ -29,7 +30,7 @@ describe('PikaParser', () => {
       const s = `while`;
       const result = parser.parse(s, 'Compilation');
       assert(!(result instanceof Error));
-      assert.equal(result.range.end.offset, s.length);
+      expect(result.range.end.offset).toEqual(s.length);
     });
     it('should handle the Java grammar', () => {
       const grammar = fs
@@ -39,7 +40,7 @@ describe('PikaParser', () => {
       const s = `class Foo { int main() { foo(); } }`;
       const result = parser.parse(s, 'Compilation');
       assert(!(result instanceof Error));
-      assert.equal(result.range.end.offset, s.length);
+      expect(result.range.end.offset).toEqual(s.length);
     });
   });
 });
