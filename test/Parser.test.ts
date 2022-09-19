@@ -295,23 +295,23 @@ describe('Parser', () => {
       const result = parser.parse(s, 'program') as IParseTree;
       assert.equal(result.range.end.offset, s.length);
     });
-    it('should handle C grammar', () => {
-      const grammar = fs.readFileSync('./grammar/C/full/C.peg').toString();
-      const peg = parseGrammar(grammar);
-      if (peg instanceof Error) {
-        console.log(peg.message);
-        assert(false);
-      }
-      const parser = new Parser(peg);
-      const program = `
-      int main(void) {
-        printf("Hello World!\\n");
-      }
-      `;
-      const tree = parser.parse(program, 'TranslationUnit') as IParseTree;
-      assert(tree);
-      assert.equal(tree.range.end.offset, program.length);
-    });
+    // it('should handle C grammar', () => {
+    //   const grammar = fs.readFileSync('./grammar/C/full/C.peg').toString();
+    //   const peg = parseGrammar(grammar);
+    //   if (peg instanceof Error) {
+    //     console.log(peg.message);
+    //     assert(false);
+    //   }
+    //   const parser = new Parser(peg);
+    //   const program = `
+    //   int main(void) {
+    //     printf("Hello World!\\n");
+    //   }
+    //   `;
+    //   const tree = parser.parse(program, 'TranslationUnit') as IParseTree;
+    //   assert(tree);
+    //   assert.equal(tree.range.end.offset, program.length);
+    // });
 
     it('should operate on left recursion', () => {
       const grammar = `
