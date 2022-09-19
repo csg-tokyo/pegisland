@@ -1,6 +1,6 @@
 # PEGIsland: a general PEG-based parser supporting lake symbols
 
-[![csg-tokyo](https://circleci.com/gh/csg-tokyo/pegisland.svg?style=svg)](LINK)
+[![csg-tokyo](https://circleci.com/gh/csg-tokyo/pegisland.svg?style=svg)](https://circleci.com/gh/csg-tokyo/pegisland)
 
 PEGIsland is a general parser supporting island grammars with `lake symbols`.
 PEGIsland parses any text based on a given parsing expression grammar (PEG).
