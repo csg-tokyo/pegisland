@@ -10,6 +10,7 @@ export * from './search';
 export * from './NodeTypeGenerator';
 export * from './ParsingExpression';
 export * from './ParseTree';
+export * from './Printer';
 
 export function createParser(
   grammar: string,
