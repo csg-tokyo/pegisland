@@ -7,7 +7,7 @@
     "test": "dist/test"
   },
   "scripts": {
-    "test": "cross-env TS_NODE_FILES=true mocha --require source-map-support/register dist/test/*.js",
+    "test": "./node_modules/.bin/mocha --require ts-node/register test/*.ts",
     "coverage": "nyc npm run test",
     "lint": "npx eslint src/*.ts test/*.ts",
     "build": "tsc"
