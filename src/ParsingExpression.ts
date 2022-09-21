@@ -17,7 +17,6 @@ import {
   NodeLake,
 } from './ParseTree';
 import { Peg } from './Peg';
-import { peToString } from './Printer';
 
 export class Position {
   constructor(
@@ -34,21 +33,21 @@ export class Position {
   }
 }
 
-export interface IParsingExpressionVisitor {
-  visitNonterminal(pe: Nonterminal): void;
-  visitTerminal(pe: Terminal): void;
-  visitZeroOrMore(pe: ZeroOrMore): void;
-  visitOneOrMore(pe: OneOrMore): void;
-  visitOptional(pe: Optional): void;
-  visitAnd(pe: And): void;
-  visitNot(pe: Not): void;
-  visitSequence(pe: Sequence): void;
-  visitOrderedChoice(pe: OrderedChoice): void;
-  visitGrouping(pe: Grouping): void;
-  visitRewriting(pe: Rewriting): void;
-  visitColon(pe: Colon): void;
-  visitColonNot(pe: ColonNot): void;
-  visitLake(pe: Lake): void;
+export interface IParsingExpressionVisitor<T = void> {
+  visitNonterminal(pe: Nonterminal): T;
+  visitTerminal(pe: Terminal): T;
+  visitZeroOrMore(pe: ZeroOrMore): T;
+  visitOneOrMore(pe: OneOrMore): T;
+  visitOptional(pe: Optional): T;
+  visitAnd(pe: And): T;
+  visitNot(pe: Not): T;
+  visitSequence(pe: Sequence): T;
+  visitOrderedChoice(pe: OrderedChoice): T;
+  visitGrouping(pe: Grouping): T;
+  visitRewriting(pe: Rewriting): T;
+  visitColon(pe: Colon): T;
+  visitColonNot(pe: ColonNot): T;
+  visitLake(pe: Lake): T;
 }
 
 export class DefaultParsingExpressionVisitor
@@ -258,15 +257,16 @@ export class ParsingEnvPlayer extends BaseParsingEnv {
 
 export interface IParsingExpression {
   parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null;
-  accept(visitor: IParsingExpressionVisitor): void;
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T;
 }
 
 export class NullParsingExpression implements IParsingExpression {
   parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
     return null;
   }
-  accept(visitor: IParsingExpressionVisitor): void {
-    assert(visitor);
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+    assert(false);
+    return null as T;
   }
 }
 
@@ -299,8 +299,8 @@ export class Nonterminal implements IParsingExpression {
     return result;
   }
 
-  accept(visitor: IParsingExpressionVisitor): void {
-    visitor.visitNonterminal(this);
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+    return visitor.visitNonterminal(this);
   }
 }
 
@@ -338,8 +338,8 @@ export class Terminal implements IParsingExpression {
     ];
   }
 
-  accept(visitor: IParsingExpressionVisitor): void {
-    visitor.visitTerminal(this);
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+    return visitor.visitTerminal(this);
   }
 }
 
@@ -364,8 +364,8 @@ export class ZeroOrMore implements IParsingExpression {
     return [new NodeZeroOrMore(new Range(start, nextIndex), values), nextIndex];
   }
 
-  accept(visitor: IParsingExpressionVisitor): void {
-    visitor.visitZeroOrMore(this);
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+    return visitor.visitZeroOrMore(this);
   }
 }
 
@@ -393,8 +393,8 @@ export class OneOrMore implements IParsingExpression {
     return [new NodeOneOrMore(new Range(start, nextIndex), values), nextIndex];
   }
 
-  accept(visitor: IParsingExpressionVisitor): void {
-    visitor.visitOneOrMore(this);
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+    return visitor.visitOneOrMore(this);
   }
 }
 
@@ -414,8 +414,8 @@ export class Optional implements IParsingExpression {
     return [new NodeOptional(new Range(start, nextIndex), values), nextIndex];
   }
 
-  accept(visitor: IParsingExpressionVisitor): void {
-    visitor.visitOptional(this);
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+    return visitor.visitOptional(this);
   }
 }
 
@@ -432,8 +432,8 @@ export class And implements IParsingExpression {
     return [new NodeAnd(new Range(start, nextIndex), value), start];
   }
 
-  accept(visitor: IParsingExpressionVisitor): void {
-    visitor.visitAnd(this);
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+    return visitor.visitAnd(this);
   }
 }
 
@@ -451,8 +451,8 @@ export class Not implements IParsingExpression {
     return [new NodeNot(new Range(pos, pos)), pos];
   }
 
-  accept(visitor: IParsingExpressionVisitor): void {
-    visitor.visitNot(this);
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+    return visitor.visitNot(this);
   }
 }
 
@@ -476,8 +476,8 @@ export class Colon implements IParsingExpression {
     return rhsResult;
   }
 
-  accept(visitor: IParsingExpressionVisitor): void {
-    visitor.visitColon(this);
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+    return visitor.visitColon(this);
   }
 }
 
@@ -500,8 +500,8 @@ export class ColonNot implements IParsingExpression {
     return lhsResult;
   }
 
-  accept(visitor: IParsingExpressionVisitor): void {
-    visitor.visitColonNot(this);
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+    return visitor.visitColonNot(this);
   }
 }
 
@@ -524,8 +524,8 @@ export class Sequence implements IParsingExpression {
     return [new NodeSequence(new Range(start, nextIndex), values), nextIndex];
   }
 
-  accept(visitor: IParsingExpressionVisitor): void {
-    visitor.visitSequence(this);
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+    return visitor.visitSequence(this);
   }
 }
 
@@ -548,8 +548,8 @@ export class OrderedChoice implements IParsingExpression {
     return null;
   }
 
-  accept(visitor: IParsingExpressionVisitor): void {
-    visitor.visitOrderedChoice(this);
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+    return visitor.visitOrderedChoice(this);
   }
 }
 
@@ -565,8 +565,8 @@ export class Grouping implements IParsingExpression {
     return [new NodeGrouping(new Range(pos, nextIndex), childNode), nextIndex];
   }
 
-  accept(visitor: IParsingExpressionVisitor): void {
-    visitor.visitGrouping(this);
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+    return visitor.visitGrouping(this);
   }
 }
 
@@ -585,8 +585,8 @@ export class Rewriting implements IParsingExpression {
     ];
   }
 
-  accept(visitor: IParsingExpressionVisitor): void {
-    visitor.visitRewriting(this);
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+    return visitor.visitRewriting(this);
   }
 }
 
@@ -630,8 +630,8 @@ export class Lake implements IParsingExpression {
     return [new NodeLake(new Range(pos, nextIndex), islands, this), nextIndex];
   }
 
-  accept(visitor: IParsingExpressionVisitor): void {
-    visitor.visitLake(this);
+  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+    return visitor.visitLake(this);
   }
 }
 
