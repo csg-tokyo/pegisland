@@ -605,10 +605,12 @@ export class Lake implements IParsingExpression {
       ]),
     ]);
     this.semantics = new ZeroOrMore(
-      new OrderedChoice([
-        operandIsEpsilon ? new NullParsingExpression() : this.operand,
-        wildcard,
-      ])
+      new Grouping(
+        new OrderedChoice([
+          operandIsEpsilon ? new NullParsingExpression() : this.operand,
+          wildcard,
+        ])
+      )
     );
   }
 
@@ -620,7 +622,9 @@ export class Lake implements IParsingExpression {
     }
     const [childNode, nextIndex] = result;
     const zeroOrMore = childNode as NodeZeroOrMore;
+    const group = zeroOrMore.childNodes[0];
     const islands = zeroOrMore.childNodes
+      .map((group) => group.childNodes[0])
       .filter((childNode) => (childNode as NodeOrderedChoice).index == 0)
       .map((childNode) => (childNode as NodeOrderedChoice).childNodes[0]);
     return [new NodeLake(new Range(pos, nextIndex), islands, this), nextIndex];
