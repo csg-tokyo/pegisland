@@ -59,7 +59,7 @@ class Printer implements IParsingExpressionVisitor<string> {
     return pe.lhs.accept(this) + ':' + pe.rhs.accept(this);
   }
   visitColonNot(pe: ColonNot): string {
-    return pe.lhs.accept(this) + '!:' + pe.rhs.accept(this);
+    return pe.lhs.accept(this) + ':!' + pe.rhs.accept(this);
   }
   visitLake(pe: Lake): string {
     return '<< ' + pe.operand.accept(this) + ' >>';
