@@ -120,7 +120,7 @@ export class PikaParsingEnv extends BaseParsingEnv {
     if (isFirstEval) {
       this.memo[pos.offset].set(pe, null);
     }
-    const result = pe.parse(this, pos);
+    const result = pe.accept(this.recognizer, pos);
     const oldResult = this.memo[pos.offset].get(pe) as
       | null
       | [IParseTree, Position];

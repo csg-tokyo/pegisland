@@ -99,7 +99,7 @@ export class PackratParsingEnv extends BaseParsingEnv {
       this.maxIndex = pos.offset;
       this.deepestStack = [...this.currentStack];
     }
-    const result = pe.parse(this, pos);
+    const result = pe.accept(this.recognizer, pos);
     this.currentStack.pop();
     return result;
   }
@@ -270,7 +270,7 @@ export class PackratParsingEnv2 extends BaseParsingEnv {
       this.maxIndex = pos.offset;
       this.deepestStack = [...this.currentStack];
     }
-    const result = pe.parse(this, pos);
+    const result = pe.accept(this.recognizer, pos);
     this.currentStack.pop();
     return result;
   }

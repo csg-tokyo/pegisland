@@ -1,22 +1,8 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { strict as assert } from 'assert';
-import {
-  IParseTree,
-  NodeNonterminal,
-  NodeOneOrMore,
-  NodeZeroOrMore,
-  NodeOptional,
-  NodeTerminal,
-  NodeAnd,
-  NodeNot,
-  NodeSequence,
-  NodeOrderedChoice,
-  NodeGrouping,
-  NodeRewriting,
-  Range,
-  NodeLake,
-} from './ParseTree';
+import { IParseTree, NodeNonterminal, Range } from './ParseTree';
 import { Peg } from './Peg';
+import { Recognizer } from './Recognizer';
 
 export class Position {
   constructor(
@@ -33,21 +19,21 @@ export class Position {
   }
 }
 
-export interface IParsingExpressionVisitor<T = void> {
-  visitNonterminal(pe: Nonterminal): T;
-  visitTerminal(pe: Terminal): T;
-  visitZeroOrMore(pe: ZeroOrMore): T;
-  visitOneOrMore(pe: OneOrMore): T;
-  visitOptional(pe: Optional): T;
-  visitAnd(pe: And): T;
-  visitNot(pe: Not): T;
-  visitSequence(pe: Sequence): T;
-  visitOrderedChoice(pe: OrderedChoice): T;
-  visitGrouping(pe: Grouping): T;
-  visitRewriting(pe: Rewriting): T;
-  visitColon(pe: Colon): T;
-  visitColonNot(pe: ColonNot): T;
-  visitLake(pe: Lake): T;
+export interface IParsingExpressionVisitor<T = void, U = void> {
+  visitNonterminal(pe: Nonterminal, arg?: U): T;
+  visitTerminal(pe: Terminal, arg?: U): T;
+  visitZeroOrMore(pe: ZeroOrMore, arg?: U): T;
+  visitOneOrMore(pe: OneOrMore, arg?: U): T;
+  visitOptional(pe: Optional, arg?: U): T;
+  visitAnd(pe: Not, arg?: U): T;
+  visitNot(pe: Not, arg?: U): T;
+  visitSequence(pe: Sequence, arg?: U): T;
+  visitOrderedChoice(pe: OrderedChoice, arg?: U): T;
+  visitGrouping(pe: Grouping, arg?: U): T;
+  visitRewriting(pe: Rewriting, arg?: U): T;
+  visitColon(pe: Colon, arg?: U): T;
+  visitColonNot(pe: ColonNot, arg?: U): T;
+  visitLake(pe: Lake, arg?: U): T;
 }
 
 export class DefaultParsingExpressionVisitor
@@ -206,6 +192,7 @@ export interface IParsingEnv {
 }
 
 export abstract class BaseParsingEnv implements IParsingEnv {
+  recognizer = new Recognizer(this);
   abstract s: string;
   private symbolStack: { [name: string]: string }[] = [];
   push(): void {
@@ -249,22 +236,21 @@ export class ParsingEnvPlayer extends BaseParsingEnv {
     if (pos.offset >= this.maxIndex) {
       this.maxIndex = pos.offset;
     }
-    const result = pe.parse(this, pos);
+    const result = pe.accept(this.recognizer, pos);
     this.currentStack.pop();
     return result;
   }
 }
 
 export interface IParsingExpression {
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null;
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T;
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T;
 }
 
 export class NullParsingExpression implements IParsingExpression {
   parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
     return null;
   }
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
     assert(false);
     return null as T;
   }
@@ -278,29 +264,8 @@ export class Nonterminal implements IParsingExpression {
     this.name = name;
   }
 
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
-    //const result = this.rule.parse(env, pos);
-    const result = env.parseRule(this.rule, pos);
-    if (this.name == '') {
-      return result;
-    }
-    if (result == null) {
-      return result;
-    }
-    const [_, end] = result;
-    const value = env.s.substring(pos.offset, end.offset).trim();
-    if (!env.has(this.name)) {
-      env.register(this.name, value);
-    } else {
-      if (value != env.lookup(this.name)) {
-        return null;
-      }
-    }
-    return result;
-  }
-
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
-    return visitor.visitNonterminal(this);
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+    return visitor.visitNonterminal(this, arg);
   }
 }
 
@@ -316,124 +281,40 @@ export class Terminal implements IParsingExpression {
     this.source = source;
   }
 
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
-    this.regex.lastIndex = pos.offset;
-    const m = env.s.match(this.regex);
-    if (m == null) {
-      return null;
-    }
-    const text = m[0];
-    const length = text.length;
-    const nextIndex = pos.offset + length;
-    const lines = text.split('\n');
-    const baseCol = lines.length == 1 ? pos.column : 1;
-    const nextPos = new Position(
-      nextIndex,
-      pos.line + lines.length - 1,
-      baseCol + lines[lines.length - 1].length
-    );
-    return [
-      new NodeTerminal(new Range(pos, nextPos), this.regex, text),
-      nextPos,
-    ];
-  }
-
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
-    return visitor.visitTerminal(this);
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+    return visitor.visitTerminal(this, arg);
   }
 }
 
 export class ZeroOrMore implements IParsingExpression {
   constructor(public operand: IParsingExpression) {}
 
-  parse(env: IParsingEnv, index: Position): [IParseTree, Position] | null {
-    const start = index;
-    const values: IParseTree[] = [];
-    let prevIndex = null;
-    let nextIndex = index;
-    while (nextIndex != prevIndex) {
-      prevIndex = nextIndex;
-      const result = env.parse(this.operand, nextIndex);
-      if (!result) {
-        break;
-      }
-      let value;
-      [value, nextIndex] = result;
-      values.push(value);
-    }
-    return [new NodeZeroOrMore(new Range(start, nextIndex), values), nextIndex];
-  }
-
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
-    return visitor.visitZeroOrMore(this);
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+    return visitor.visitZeroOrMore(this, arg);
   }
 }
 
 export class OneOrMore implements IParsingExpression {
   constructor(public operand: IParsingExpression) {}
 
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
-    const start = pos;
-    let prevIndex = pos;
-    const result = env.parse(this.operand, pos);
-    if (!result) {
-      return null;
-    }
-    let [value, nextIndex] = result;
-    const values: IParseTree[] = [value];
-    while (nextIndex != prevIndex) {
-      prevIndex = nextIndex;
-      const result = env.parse(this.operand, nextIndex);
-      if (!result) {
-        break;
-      }
-      [value, nextIndex] = result;
-      values.push(value);
-    }
-    return [new NodeOneOrMore(new Range(start, nextIndex), values), nextIndex];
-  }
-
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
-    return visitor.visitOneOrMore(this);
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+    return visitor.visitOneOrMore(this, arg);
   }
 }
 
 export class Optional implements IParsingExpression {
   constructor(public operand: IParsingExpression) {}
 
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
-    const start = pos;
-    const values: IParseTree[] = [];
-    let nextIndex = pos;
-    const result = env.parse(this.operand, nextIndex);
-    if (result) {
-      let value;
-      [value, nextIndex] = result;
-      values.push(value);
-    }
-    return [new NodeOptional(new Range(start, nextIndex), values), nextIndex];
-  }
-
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
-    return visitor.visitOptional(this);
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+    return visitor.visitOptional(this, arg);
   }
 }
 
 export class And implements IParsingExpression {
   constructor(public operand: IParsingExpression) {}
 
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
-    const start = pos;
-    const result = env.parse(this.operand, pos);
-    if (result == null) {
-      return null;
-    }
-    const [value, nextIndex] = result;
-    return [new NodeAnd(new Range(start, nextIndex), value), start];
-  }
-
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
-    return visitor.visitAnd(this);
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+    return visitor.visitAnd(this, arg);
   }
 }
 
@@ -443,150 +324,56 @@ export class Not implements IParsingExpression {
     this.operand = operand;
   }
 
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
-    const result = env.parse(this.operand, pos);
-    if (result != null) {
-      return null;
-    }
-    return [new NodeNot(new Range(pos, pos)), pos];
-  }
-
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
-    return visitor.visitNot(this);
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+    return visitor.visitNot(this, arg);
   }
 }
 
 export class Colon implements IParsingExpression {
   constructor(public lhs: IParsingExpression, public rhs: IParsingExpression) {}
 
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
-    const lhsResult = env.parse(this.lhs, pos);
-    if (lhsResult == null) {
-      return null;
-    }
-    const [_lhsValue, lhsNextIndex] = lhsResult;
-    const rhsResult = env.parse(this.rhs, pos);
-    if (rhsResult == null) {
-      return null;
-    }
-    const [_rhsValue, rhsNextIndex] = rhsResult;
-    if (lhsNextIndex.offset != rhsNextIndex.offset) {
-      return null;
-    }
-    return rhsResult;
-  }
-
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
-    return visitor.visitColon(this);
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+    return visitor.visitColon(this, arg);
   }
 }
 
 export class ColonNot implements IParsingExpression {
   constructor(public lhs: IParsingExpression, public rhs: IParsingExpression) {}
 
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
-    const lhsResult = env.parse(this.lhs, pos);
-    if (lhsResult == null) {
-      return null;
-    }
-    const rhsResult = env.parse(this.rhs, pos);
-    if (rhsResult != null) {
-      const [_lhsValue, lhsNextIndex] = lhsResult;
-      const [_rhsValue, rhsNextIndex] = rhsResult;
-      if (lhsNextIndex.offset == rhsNextIndex.offset) {
-        return null;
-      }
-    }
-    return lhsResult;
-  }
-
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
-    return visitor.visitColonNot(this);
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+    return visitor.visitColonNot(this, arg);
   }
 }
 
 export class Sequence implements IParsingExpression {
   constructor(public operands: IParsingExpression[]) {}
 
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
-    const start = pos;
-    const values = [];
-    let nextIndex = pos;
-    for (const operand of this.operands) {
-      const result = env.parse(operand, nextIndex);
-      if (result == null) {
-        return null;
-      }
-      let value;
-      [value, nextIndex] = result;
-      values.push(value);
-    }
-    return [new NodeSequence(new Range(start, nextIndex), values), nextIndex];
-  }
-
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
-    return visitor.visitSequence(this);
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+    return visitor.visitSequence(this, arg);
   }
 }
 
 export class OrderedChoice implements IParsingExpression {
   constructor(public operands: IParsingExpression[]) {}
 
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
-    let i = 0;
-    for (const operand of this.operands) {
-      const result = env.parse(operand, pos);
-      if (result != null) {
-        const [value, nextIndex] = result;
-        return [
-          new NodeOrderedChoice(new Range(pos, nextIndex), value, i),
-          nextIndex,
-        ];
-      }
-      i++;
-    }
-    return null;
-  }
-
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
-    return visitor.visitOrderedChoice(this);
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+    return visitor.visitOrderedChoice(this, arg);
   }
 }
 
 export class Grouping implements IParsingExpression {
   constructor(public operand: IParsingExpression) {}
 
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
-    const result = env.parse(this.operand, pos);
-    if (result == null) {
-      return null;
-    }
-    const [childNode, nextIndex] = result;
-    return [new NodeGrouping(new Range(pos, nextIndex), childNode), nextIndex];
-  }
-
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
-    return visitor.visitGrouping(this);
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+    return visitor.visitGrouping(this, arg);
   }
 }
 
 export class Rewriting implements IParsingExpression {
   constructor(public operand: IParsingExpression, public spec: string) {}
 
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
-    const result = env.parse(this.operand, pos);
-    if (result == null) {
-      return null;
-    }
-    const [childNode, nextIndex] = result;
-    return [
-      new NodeRewriting(new Range(pos, nextIndex), childNode, this),
-      nextIndex,
-    ];
-  }
-
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
-    return visitor.visitRewriting(this);
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+    return visitor.visitRewriting(this, arg);
   }
 }
 
@@ -604,34 +391,22 @@ export class Lake implements IParsingExpression {
         new Terminal(/./, '.'),
       ]),
     ]);
+    const allwaysFailExpression = new Sequence([
+      new Not(new Terminal(/./, '.')),
+      new And(new Terminal(/./, '.')),
+    ]);
     this.semantics = new ZeroOrMore(
       new Grouping(
         new OrderedChoice([
-          operandIsEpsilon ? new NullParsingExpression() : this.operand,
+          operandIsEpsilon ? allwaysFailExpression : this.operand,
           wildcard,
         ])
       )
     );
   }
 
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
-    const result = env.parse(this.semantics, pos);
-    // console.log(pegToString(this.semantics));
-    if (result == null) {
-      return null;
-    }
-    const [childNode, nextIndex] = result;
-    const zeroOrMore = childNode as NodeZeroOrMore;
-    const group = zeroOrMore.childNodes[0];
-    const islands = zeroOrMore.childNodes
-      .map((group) => group.childNodes[0])
-      .filter((childNode) => (childNode as NodeOrderedChoice).index == 0)
-      .map((childNode) => (childNode as NodeOrderedChoice).childNodes[0]);
-    return [new NodeLake(new Range(pos, nextIndex), islands, this), nextIndex];
-  }
-
-  accept<T>(visitor: IParsingExpressionVisitor<T>): T {
-    return visitor.visitLake(this);
+  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+    return visitor.visitLake(this, arg);
   }
 }
 

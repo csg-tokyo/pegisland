@@ -42,10 +42,8 @@ describe('Terminal', () => {
     const s = '1980/10/28';
     const term = new Terminal(/\d+/, "r'\\d+'");
     it('should consume digits from the beginning of a string', () => {
-      const result = term.parse(
-        new PackratParsingEnv(s),
-        new Position(0, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = term.accept(env.recognizer, new Position(0, -1, -1));
       assert(result);
       if (result != null) {
         const [leaf, pos] = result;
@@ -59,17 +57,13 @@ describe('Terminal', () => {
       }
     });
     it('should consume nothing if the pattern does not match', () => {
-      const result = term.parse(
-        new PackratParsingEnv(s),
-        new Position(4, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = env.parse(term, new Position(4, -1, -1));
       assert(!result);
     });
     it('shoud consume digits from the middle of a string', () => {
-      const result = term.parse(
-        new PackratParsingEnv(s),
-        new Position(5, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = env.parse(term, new Position(5, -1, -1));
       assert(result);
       if (result) {
         const [leaf, pos] = result;
@@ -104,17 +98,13 @@ describe('Nonterminal', () => {
       }
     });
     it('should consume nothing if the pattern does not match', () => {
-      const result = nonterm.rhs.parse(
-        new PackratParsingEnv(s),
-        new Position(4, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = env.parse(nonterm.rhs, new Position(4, -1, -1));
       assert(!result);
     });
     it('should consume nothing if the pattern does not match for the second time', () => {
-      const result = nonterm.rhs.parse(
-        new PackratParsingEnv(s),
-        new Position(4, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = env.parse(nonterm.rhs, new Position(4, -1, -1));
       assert(!result);
     });
   });
@@ -126,10 +116,8 @@ describe('ZeroOrMore', () => {
   const star = new ZeroOrMore(term);
   describe('#parse()', () => {
     it('should recognize empty string', () => {
-      const result = star.parse(
-        new PackratParsingEnv(s),
-        new Position(s.length, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = env.parse(star, new Position(s.length, -1, -1));
       assert(result);
       if (result) {
         const [node, index] = result;
@@ -143,10 +131,8 @@ describe('ZeroOrMore', () => {
       }
     });
     it('should consume multiple prepetition of the pattern of the operand', () => {
-      const result = star.parse(
-        new PackratParsingEnv(s),
-        new Position(5, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = env.parse(star, new Position(5, -1, -1));
       if (result) {
         assert(result);
         const [node, pos] = result;
@@ -168,17 +154,13 @@ describe('OneOrMore', () => {
   const plus = new OneOrMore(term);
   describe('#parse()', () => {
     it('should not recognize empty string', () => {
-      const result = plus.parse(
-        new PackratParsingEnv(s),
-        new Position(s.length, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = env.parse(plus, new Position(s.length, -1, -1));
       assert.equal(result, null);
     });
     it('should consume multiple prepetition of the pattern of the operand', () => {
-      const result = plus.parse(
-        new PackratParsingEnv(s),
-        new Position(5, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = env.parse(plus, new Position(5, -1, -1));
       if (result) {
         assert(result);
         const [node, pos] = result;
@@ -200,10 +182,8 @@ describe('Optional', () => {
   const opt = new Optional(term);
   describe('#parse()', () => {
     it('should recognize empty string', () => {
-      const result = opt.parse(
-        new PackratParsingEnv(s),
-        new Position(s.length, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = env.parse(opt, new Position(s.length, -1, -1));
       assert(result);
       if (result) {
         const [node, index] = result;
@@ -217,10 +197,8 @@ describe('Optional', () => {
       }
     });
     it('should consume a string matching the pattern of the operand', () => {
-      const result = opt.parse(
-        new PackratParsingEnv(s),
-        new Position(5, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = env.parse(opt, new Position(5, -1, -1));
       if (result) {
         assert(result);
         const [node, pos] = result;
@@ -242,17 +220,14 @@ describe('And', () => {
   const and = new And(term);
   describe('#parse()', () => {
     it('should return null if the pattern does not match', () => {
-      const result = and.parse(
-        new PackratParsingEnv(s),
-        new Position(s.length, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = and.accept(env.recognizer, new Position(s.length, -1, -1));
       assert.equal(result, null);
     });
     it('should not consume any input even if the pattern matches', () => {
-      const result = and.parse(
-        new PackratParsingEnv(s),
-        new Position(5, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      new PackratParsingEnv(s);
+      const result = and.accept(env.recognizer, new Position(5, -1, -1));
       if (result) {
         assert(result);
         const [node, pos] = result;
@@ -276,17 +251,13 @@ describe('Not', () => {
   const not = new Not(term);
   describe('#parse()', () => {
     it('should return null if the pattern matches', () => {
-      const result = not.parse(
-        new PackratParsingEnv(s),
-        new Position(5, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = not.accept(env.recognizer, new Position(5, -1, -1));
       assert.equal(result, null);
     });
     it('should not consume any input even when the pattern does not match', () => {
-      const result = not.parse(
-        new PackratParsingEnv(s),
-        new Position(2, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = not.accept(env.recognizer, new Position(2, -1, -1));
       if (result) {
         assert(result);
         const [node, pos] = result;
@@ -309,10 +280,8 @@ describe('Sequence', () => {
   const seq = new Sequence([numbers, letters]);
   describe('#parse()', () => {
     it('should recognize the sequence of patterns', () => {
-      const result = seq.parse(
-        new PackratParsingEnv(s),
-        new Position(1, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = env.parse(seq, new Position(1, -1, -1));
       assert(result);
       if (result) {
         const [node, index] = result;
@@ -326,10 +295,8 @@ describe('Sequence', () => {
       }
     });
     it('should return null if the sequence does not match', () => {
-      const result = seq.parse(
-        new PackratParsingEnv(s),
-        new Position(7, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = env.parse(seq, new Position(7, -1, -1));
       assert.equal(result, null);
     });
   });
@@ -342,10 +309,8 @@ describe('OrderedChoice', () => {
   const choice = new OrderedChoice([numbers, letters]);
   describe('#parse()', () => {
     it('should recognize the first pattern', () => {
-      const result = choice.parse(
-        new PackratParsingEnv(s),
-        new Position(1, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = env.parse(choice, new Position(1, -1, -1));
       assert(result);
       if (result) {
         const [node, index] = result;
@@ -360,10 +325,8 @@ describe('OrderedChoice', () => {
     });
 
     it('should recognize the last pattern', () => {
-      const result = choice.parse(
-        new PackratParsingEnv(s),
-        new Position('o1234'.length, -1, -1)
-      );
+      const env = new PackratParsingEnv(s);
+      const result = env.parse(choice, new Position('o1234'.length, -1, -1));
       assert(result);
       if (result) {
         const [node, index] = result;
@@ -378,8 +341,9 @@ describe('OrderedChoice', () => {
     });
 
     it('should return null if no pattern matches', () => {
-      const result = choice.parse(
-        new PackratParsingEnv(s),
+      const env = new PackratParsingEnv(s);
+      const result = env.parse(
+        choice,
         new Position('o1234ab789'.length, -1, -1)
       );
       assert.equal(result, null);

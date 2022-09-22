@@ -93,7 +93,7 @@ export class BottomupParsingEnv extends BaseParsingEnv {
   }
 
   parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null {
-    return pe.parse(this, pos);
+    return pe.accept(this.recognizer, pos);
   }
 
   isGrowing(
