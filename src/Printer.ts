@@ -2,7 +2,6 @@
 import {
   IParsingExpressionVisitor,
   IParsingExpression,
-  PostorderExpressionTraverser,
   Nonterminal,
   Terminal,
   ZeroOrMore,
@@ -19,76 +18,51 @@ import {
   Lake,
 } from './ParsingExpression';
 
-class Printer implements IParsingExpressionVisitor {
-  private stack: string[] = [];
-
+class Printer implements IParsingExpressionVisitor<string> {
   buildString(pe: IParsingExpression) {
-    const traverser = new PostorderExpressionTraverser(this);
-    traverser.traverse(pe);
-    return this.stack.pop() as string;
+    return pe.accept(this);
   }
-  push(s: string) {
-    this.stack.push(s);
+  visitNonterminal(pe: Nonterminal): string {
+    return pe.rule.symbol;
   }
-  pop(): string {
-    return this.stack.pop() as string;
+  visitTerminal(pe: Terminal): string {
+    return pe.source;
   }
-
-  visitNonterminal(pe: Nonterminal): void {
-    this.push(pe.rule.symbol);
+  visitZeroOrMore(pe: ZeroOrMore): string {
+    return pe.operand.accept(this) + '*';
   }
-  visitTerminal(pe: Terminal): void {
-    this.push(pe.source);
+  visitOneOrMore(pe: OneOrMore): string {
+    return pe.operand.accept(this) + '+';
   }
-  visitZeroOrMore(pe: ZeroOrMore): void {
-    this.push(this.pop() + '*');
+  visitOptional(pe: Optional): string {
+    return pe.operand.accept(this) + '?';
   }
-  visitOneOrMore(pe: OneOrMore): void {
-    this.push(this.pop() + '+');
+  visitAnd(pe: And): string {
+    return '&' + pe.operand.accept(this);
   }
-  visitOptional(pe: Optional): void {
-    this.push(this.pop() + '?');
+  visitNot(pe: Not): string {
+    return '!' + pe.operand.accept(this);
   }
-  visitAnd(pe: And): void {
-    this.push('&' + this.pop());
+  visitSequence(pe: Sequence): string {
+    return pe.operands.map((operand) => operand.accept(this)).join(' ');
   }
-  visitNot(pe: Not): void {
-    this.push('!' + this.pop());
+  visitOrderedChoice(pe: OrderedChoice): string {
+    return pe.operands.map((operand) => operand.accept(this)).join(' / ');
   }
-  visitSequence(pe: Sequence): void {
-    this.push(
-      pe.operands
-        .map(() => this.pop())
-        .reverse()
-        .join(' ')
-    );
+  visitGrouping(pe: Grouping): string {
+    return '( ' + pe.operand.accept(this) + ' )';
   }
-  visitOrderedChoice(pe: OrderedChoice): void {
-    this.push(
-      pe.operands
-        .map(() => this.pop())
-        .reverse()
-        .join(' / ')
-    );
+  visitRewriting(pe: Rewriting): string {
+    return pe.operand.accept(this);
   }
-  visitGrouping(pe: Grouping): void {
-    this.push('( ' + this.pop() + ' )');
+  visitColon(pe: Colon): string {
+    return pe.lhs.accept(this) + ':' + pe.rhs.accept(this);
   }
-  visitRewriting(pe: Rewriting): void {
-    this.push(this.pop());
+  visitColonNot(pe: ColonNot): string {
+    return pe.lhs.accept(this) + '!:' + pe.rhs.accept(this);
   }
-  visitColon(pe: Colon): void {
-    const rhs = this.pop();
-    const lhs = this.pop();
-    this.push(lhs + ':' + rhs);
-  }
-  visitColonNot(pe: ColonNot): void {
-    const rhs = this.pop();
-    const lhs = this.pop();
-    this.push(lhs + '!:' + rhs);
-  }
-  visitLake(pe: Lake): void {
-    this.push('<< ' + this.pop() + ' >>');
+  visitLake(pe: Lake): string {
+    return '<< ' + pe.operand.accept(this) + ' >>';
   }
 }
 
