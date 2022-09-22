@@ -156,3 +156,21 @@ export class NodeRewriting implements IParseTree {
     childNode.parentNode = this;
   }
 }
+
+export function traverseNonterminals(
+  parseTree: IParseTree,
+  func: (node: NodeNonterminal) => void
+): void {
+  traverseTree(parseTree, (node) => {
+    if (node instanceof NodeNonterminal) {
+      func(node);
+    }
+  });
+}
+
+function traverseTree(parseTree: IParseTree, func: (node: IParseTree) => void) {
+  parseTree.childNodes.forEach((node) => {
+    func(node);
+    traverseTree(node, func);
+  });
+}

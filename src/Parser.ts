@@ -10,7 +10,9 @@ import {
 } from './ParsingExpression';
 import { Peg } from './Peg';
 import { BottomUpParser } from './BottomUpParser';
-import { isLake } from './lake';
+import { isLake, processLakes } from './lake';
+import { measure } from './utils';
+import { Stats } from './Stats';
 
 export function parseGrammar(grammar: string): Peg | ParsingError | Error {
   const builder = new GeneralPegBuilder();
@@ -40,7 +42,7 @@ function isLeftRecursive(peg: Peg): boolean {
 export class Parser {
   private pegInterpreter: PackratParser | BottomUpParser;
 
-  constructor(peg: Peg) {
+  constructor(peg: Peg, public stats = new Stats()) {
     if (isLeftRecursive(peg)) {
       this.pegInterpreter = new BottomUpParser(peg);
     } else {
@@ -52,6 +54,26 @@ export class Parser {
     s: string,
     startSymbol?: string
   ): IParseTree | ParsingError | Error {
-    return this.pegInterpreter.parse(s, startSymbol);
+    const [result, time] = measure(() =>
+      this.pegInterpreter.parse(s, startSymbol)
+    );
+    this.stats.parsingTime += time;
+    return result;
   }
+}
+
+export function createParser(
+  grammar: string,
+  waterSymbols = ['water']
+): Parser | Error {
+  const stats = new Stats();
+  const [peg, grammarConstructionTime] = measure(() => parseGrammar(grammar));
+  if (peg instanceof Error) {
+    return peg;
+  }
+  stats.grammarConstructionTime = grammarConstructionTime;
+  const [, time] = measure(() => processLakes(peg, waterSymbols));
+  stats.lakeProcessingTime = time;
+  const parser = new Parser(peg, stats);
+  return parser;
 }
