@@ -13,6 +13,7 @@ import {
   NodeLake,
   printTree,
   NodeNonterminal,
+  traverseNonterminals,
 } from '../src/ParseTree';
 import { Peg } from '../src/Peg';
 import {
@@ -267,6 +268,36 @@ describe('Parser', () => {
         const tree = parser.parse('b', 'program');
         //assert(tree instanceof Error);
       }
+    });
+
+    it("should work with lake and Mouse's operators", () => {
+      const grammar = `
+      program     <- foo+ ';'
+      foo         <- '*' (r'\\w+':<< >>):!r'\\d+'
+      `;
+      //const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
+      const s = '*first*second*third;';
+      const tree = parser.parse(s, 'program') as IParseTree;
+      assert(tree != null);
+      let count = 0;
+      traverseNonterminals(tree, () => count++);
+      assert.equal(count, 3);
+    });
+
+    it("should work with lake and Mouse's operators", () => {
+      const grammar = `
+      program     <- foo+ ';'
+      foo         <- '*' &r'\\w+' !r'\\d+' (<<>> -> "a")
+      `;
+      //const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
+      const s = '*first*second*third;';
+      const tree = parser.parse(s, 'program') as IParseTree;
+      assert(tree != null);
+      let count = 0;
+      traverseNonterminals(tree, () => count++);
+      assert.equal(count, 3);
     });
 
     it('should work with nonterminal', () => {
