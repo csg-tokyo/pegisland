@@ -1,4 +1,5 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
+import { isLake } from './lake';
 import { OrderedChoice, Rule } from './ParsingExpression';
 import { peToString } from './Printer';
 
@@ -23,10 +24,10 @@ export class Peg {
 
   toString(): string {
     return Array.from(this.rules)
-      .map(
-        ([symbol, rule]) =>
-          `${makeAnnotation(rule)}${symbol} <- ${ruleToString(rule)}`
-      )
+      .filter(([symbol]) => !isLake(symbol))
+      .map(([symbol, rule]) => {
+        return `${makeAnnotation(rule)}${symbol} <- ${ruleToString(rule)}`;
+      })
       .join('\n');
   }
 }
