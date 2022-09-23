@@ -11,8 +11,8 @@ import {
   Sequence,
   Terminal,
   ZeroOrMore,
-} from './ParsingExpression';
-import { Peg } from './Peg';
+} from '../ParsingExpression';
+import { Peg } from '../Peg';
 
 function symbolName(operand: IParsingExpression) {
   const nonterminal = operand as Nonterminal;

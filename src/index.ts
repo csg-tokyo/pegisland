@@ -6,7 +6,7 @@ export { ParsingError } from './PackratParser';
 export * from './Parser';
 export * from './example';
 export * from './search';
-export * from './NodeTypeGenerator';
+//export * from './experiment/NodeTypeGenerator';
 export * from './ParsingExpression';
 export * from './ParseTree';
 export * from './Printer';
