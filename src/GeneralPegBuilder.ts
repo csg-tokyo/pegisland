@@ -38,10 +38,6 @@ export class GeneralPegBuilder {
   visitedRules = new Set<Rule>();
   lakes = 0;
 
-  makeLakeSymbol(): string {
-    return `<${this.lakes++}>`;
-  }
-
   getRule(symbol: string): Rule {
     if (!this.rules.has(symbol)) {
       this.rules.set(symbol, new Rule(symbol, new NullParsingExpression()));
@@ -192,18 +188,12 @@ export class GeneralPegBuilder {
     assert(node instanceof NodeNonterminal);
     const choice = node.childNodes[0] as NodeOrderedChoice;
     let result: IParsingExpression = new NullParsingExpression();
+    assert(choice.index <= 6);
     switch (choice.index) {
       case 0:
         result = this.processRegexp(choice.childNodes[0]);
         break;
       case 1: {
-        /*
-        const seq = choice.childNodes[0];
-        const lakeSymbol = this.makeLakeSymbol();
-        const rule = this.getRule(lakeSymbol);
-        rule.rhs = this.processExpression(seq.childNodes[1]);
-        result = new ZeroOrMore(new Nonterminal(rule));
-        */
         const seq = choice.childNodes[0];
         const operand = this.processExpression(seq.childNodes[1]);
         result = new Lake(operand);
@@ -227,8 +217,6 @@ export class GeneralPegBuilder {
       case 6:
         result = this.processDot(choice.childNodes[0]);
         break;
-      default:
-        assert(false, 'unexpected index');
     }
     return result;
   }
