@@ -225,10 +225,6 @@ function getHeapCreator(peg: Peg, childrenMap: Map<Rule, Set<Rule>>) {
 
     return [heap, indexMap];
   };
-
-  function hasChild(rule: Rule) {
-    return childrenMap.has(rule);
-  }
 }
 
 function createParentsMap(peg: Peg) {
