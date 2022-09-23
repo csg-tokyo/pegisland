@@ -151,13 +151,17 @@ export class GeneralPegBuilder {
           switch (choice.index) {
             case 0:
               operand = new Sequence([
-                new ZeroOrMore(new Sequence([new Not(rhsOperand), operand])),
+                new ZeroOrMore(
+                  new Grouping(new Sequence([new Not(rhsOperand), operand]))
+                ),
                 rhsOperand,
               ]);
               break;
             case 1:
               operand = new Sequence([
-                new OneOrMore(new Sequence([new Not(rhsOperand), operand])),
+                new OneOrMore(
+                  new Grouping(new Sequence([new Not(rhsOperand), operand]))
+                ),
                 rhsOperand,
               ]);
               break;
