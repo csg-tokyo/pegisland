@@ -3,9 +3,6 @@ import { Lake, Position } from './ParsingExpression';
 
 export class Range {
   constructor(public start: Position, public end: Position) {}
-  equal(other: Range): boolean {
-    return this.start.equal(other.start) && this.end.equal(other.end);
-  }
 }
 
 let seq = 0;
