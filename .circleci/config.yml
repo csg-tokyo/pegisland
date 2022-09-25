@@ -5,6 +5,8 @@ version: 2.1
 # See: https://circleci.com/docs/2.0/orb-intro/
 orbs:
   node: circleci/node@4.7
+#  codecov: codecov/codecov@3.2.3
+
 jobs:
   build:
     # These next lines define a Docker executor: https://circleci.com/docs/2.0/executor-types/
@@ -27,3 +29,5 @@ jobs:
           path: reports/junit
       - store_artifacts:
           path: coverage
+#      - codecov/upload:
+#          file: ./coverage/lcov.info
