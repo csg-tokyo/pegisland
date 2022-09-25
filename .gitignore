@@ -9,10 +9,6 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log\*
 
-# XXX
-
-grammar/
-
 # Diagnostic reports (https://nodejs.org/api/report.html)
 
 report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
@@ -157,4 +153,5 @@ dist
 
 .DS_Store
 
+# test results
 reports/
