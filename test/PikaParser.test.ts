@@ -20,6 +20,20 @@ describe('PikaParser', () => {
         expect(result.range.end.offset).toEqual(s.length);
       }
     });
+    it('should use the first rule as a start rule', () => {
+      const grammar = `
+        program <- (x / y)*
+        x <- program [a-b] / [a-b]
+        y <- program [0-9] / [0-9]
+        `;
+      const parser = new PikaParser(parseGrammar(grammar) as Peg);
+      const s = 'aba012b0a';
+      if (!(parser instanceof Error)) {
+        const result = parser.parse(s);
+        assert(!(result instanceof Error));
+        expect(result.range.end.offset).toEqual(s.length);
+      }
+    });
     it('should handle various operators', () => {
       const grammar = `
         Compilation <- Word:While -> "a"
@@ -43,6 +57,31 @@ describe('PikaParser', () => {
       const result = parser.parse(s, 'Compilation');
       assert(!(result instanceof Error));
       expect(result.range.end.offset).toEqual(s.length);
+    });
+    it('should report an error when the start symbol is not found', () => {
+      const grammar = `
+        program <- (x / y)*
+        x <- program [a-b] / [a-b]
+        y <- program [0-9] / [0-9]
+        `;
+      const parser = new PikaParser(parseGrammar(grammar) as Peg);
+      const s = 'aba012b0a';
+      if (!(parser instanceof Error)) {
+        const result = parser.parse(s, 'z');
+        expect(result).toBeInstanceOf(Error);
+      }
+    });
+    it('should report an error when failing to parse', () => {
+      const grammar = `
+        program <- foo
+        foo <- 'a'
+        `;
+      const parser = new PikaParser(parseGrammar(grammar) as Peg);
+      const s = 'b';
+      if (!(parser instanceof Error)) {
+        const result = parser.parse(s, 'program');
+        expect(result).toBeInstanceOf(Error);
+      }
     });
   });
 });

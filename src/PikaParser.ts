@@ -45,7 +45,7 @@ export class PikaParsingEnv extends BaseParsingEnv {
     this.createHeap = getHeapCreator(this.peg);
   }
 
-  parseString(s: string, start: string): [IParseTree, Position] | null {
+  parseString(s: string, start: string): [IParseTree, Position] | Error {
     for (let pos = s.length; pos >= 0; pos--) {
       const [heap, _indexMap] = this.createHeap();
       const set = new Set<IParsingExpression>(heap.toArray());
@@ -76,14 +76,15 @@ export class PikaParsingEnv extends BaseParsingEnv {
         }
       }
     }
-    if (!this.peg.rules.has(start)) {
-      return null;
-    }
-    const startRule = this.peg.rules.get(start) as Rule;
+    const startRule = this.peg.rules.get(start);
     if (startRule == undefined) {
-      return null;
+      return Error(`${start} is not a valid nonterminal symbol.`);
     }
-    return startRule.parse(this, new Position(0, 1, 1));
+    const result = startRule.parse(this, new Position(0, 1, 1));
+    if (result == null) {
+      return Error(`Failed to recognize ${start}`);
+    }
+    return result;
   }
 
   parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null {
@@ -253,12 +254,12 @@ export class PikaParser {
 
   parse(s: string, start?: string): IParseTree | Error {
     const env = new PikaParsingEnv(s, this.peg);
-    if (start == undefined) {
-      return Error('start symbol must be given.');
-    }
-    const result = env.parseString(s, start);
-    if (result == null) {
-      return Error('error');
+    const result = env.parseString(
+      s,
+      start ? start : this.peg.rules.keys().next().value
+    );
+    if (result instanceof Error) {
+      return result;
     }
     const [tree, _pos] = result;
     return tree;
