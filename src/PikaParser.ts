@@ -54,15 +54,15 @@ export class PikaParsingEnv extends BaseParsingEnv {
       while (!heap.empty()) {
         const pe = heap.pop() as IParsingExpression;
         set.delete(pe);
-        const isGlowing = this.glow(pe, new Position(pos, -1, -1)); // XXX
+        const isGrowing = this.grow(pe, new Position(pos, -1, -1)); // XXX
         /*
         console.log(
           pos,
           heap.size(),
-          show(pe) + indexMap.get(pe) + ' was poped!' + isGlowing
+          show(pe) + indexMap.get(pe) + ' was poped!' + isGrowing
         );
         */
-        if (isGlowing) {
+        if (isGrowing) {
           const parents = this.parentsMap.get(pe);
           if (parents != undefined) {
             parents.forEach((parent) => {
@@ -97,7 +97,7 @@ export class PikaParsingEnv extends BaseParsingEnv {
     return this.memo[pos.offset].get(pe) as [IParseTree, Position] | null;
   }
 
-  isGlowing(
+  isGrowing(
     result: [IParseTree, Position] | null,
     oldResult: [IParseTree, Position] | null
   ): boolean {
@@ -114,9 +114,9 @@ export class PikaParsingEnv extends BaseParsingEnv {
     }
   }
 
-  glow(pe: IParsingExpression, pos: Position): boolean {
+  grow(pe: IParsingExpression, pos: Position): boolean {
     const isFirstEval = !this.memo[pos.offset].has(pe);
-    //console.log('glow ' + show(pe));
+    //console.log('grow ' + show(pe));
     if (isFirstEval) {
       this.memo[pos.offset].set(pe, null);
     }
@@ -124,7 +124,7 @@ export class PikaParsingEnv extends BaseParsingEnv {
     const oldResult = this.memo[pos.offset].get(pe) as
       | null
       | [IParseTree, Position];
-    if (isFirstEval || this.isGlowing(result, oldResult)) {
+    if (isFirstEval || this.isGrowing(result, oldResult)) {
       this.memo[pos.offset].set(pe, result);
       //console.log(result);
       return true;

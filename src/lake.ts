@@ -172,17 +172,13 @@ function updateLakeRule(
       .map((s) => new Nonterminal(peg.rules.get(s) as Rule)),
   ] as IParsingExpression[];
   waters = [...waterExps, ...waters];
-  const hasRhs = !(rule.rhs instanceof NullParsingExpression);
-  if (hasRhs) {
-    if (rule.rhs instanceof OrderedChoice) {
-      rule.rhs.operands = [...rule.rhs.operands, ...waters];
-    } else if (isDummy(rule.rhs)) {
-      rule.rhs = createRhs([...waters]);
-    } else {
-      rule.rhs = createRhs([rule.rhs, ...waters]);
-    }
+  assert(!(rule.rhs instanceof NullParsingExpression));
+  if (rule.rhs instanceof OrderedChoice) {
+    rule.rhs.operands = [...rule.rhs.operands, ...waters];
+  } else if (isDummy(rule.rhs)) {
+    rule.rhs = createRhs([...waters]);
   } else {
-    rule.rhs = createRhs(waters);
+    rule.rhs = createRhs([rule.rhs, ...waters]);
   }
 }
 

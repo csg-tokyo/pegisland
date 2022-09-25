@@ -20,13 +20,15 @@ describe('PikaParser', () => {
         expect(result.range.end.offset).toEqual(s.length);
       }
     });
-    it("should handle Mouse's operators", () => {
+    it('should handle various operators', () => {
       const grammar = `
-        Compilation <- Word:While
+        Compilation <- Word:While -> "a"
         Word <- r'\\w+'
         While <- 'while'
         `;
-      const parser = new PikaParser(parseGrammar(grammar) as Peg);
+      const peg = parseGrammar(grammar);
+      assert(peg instanceof Peg);
+      const parser = new PikaParser(peg);
       const s = `while`;
       const result = parser.parse(s, 'Compilation');
       assert(!(result instanceof Error));

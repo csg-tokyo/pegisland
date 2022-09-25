@@ -118,7 +118,6 @@ describe('BottomUpParser', () => {
     const parser = new BottomUpParser(parseGrammar(grammar) as Peg);
     const s = `b`;
     const result = parser.parse(s, 'program');
-    assert(result! instanceof Error);
     expect(result instanceof Error).toBeTruthy();
   });
 });

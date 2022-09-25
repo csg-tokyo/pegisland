@@ -431,7 +431,8 @@ describe('Parser', () => {
     it('should work with a lake symbol', () => {
       const grammar = `
       program     <- stmt
-      stmt        <- <foo>* ';'
+      stmt        <- <lake>* ';'
+      <lake>      <- "1"
       foo         <- r'[a-z]'
       `;
       const parser = createParser(grammar, ['foo', 'bar']);

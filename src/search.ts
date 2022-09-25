@@ -1,34 +1,27 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { IParseTree } from './ParseTree';
+import { IParseTree, Range } from './ParseTree';
 
 function flatten<T>(array: T[][]): T[] {
   return ([] as T[]).concat(...array);
 }
 
-function inRange(
-  node: IParseTree,
+export function inRange(
+  range: Range,
   startLine: number,
   startCol: number,
   endLine: number,
   endCol: number
 ): boolean {
-  if (node.range.start.equal(node.range.end)) {
-    // Remove zero length symbols
+  if (range.start.line < startLine) {
     return false;
   }
-  if (node.range.start.line < startLine) {
+  if (range.end.line > endLine) {
     return false;
   }
-  if (node.range.end.line > endLine) {
+  if (range.start.line == startLine && range.start.column < startCol) {
     return false;
   }
-  if (
-    node.range.start.line == startLine &&
-    node.range.start.column < startCol
-  ) {
-    return false;
-  }
-  if (node.range.end.line == endLine && node.range.end.column > endCol) {
+  if (range.end.line == endLine && range.end.column > endCol) {
     return false;
   }
   return true;
@@ -71,7 +64,7 @@ export function searchExpressions(
 ): IParseTree[] {
   const nodeIsLeaf = node.childNodes.length == 0;
   if (nodeIsLeaf) {
-    if (inRange(node, startLine, startCol, endLine, endCol)) {
+    if (inRange(node.range, startLine, startCol, endLine, endCol)) {
       return [node];
     } else {
       return [];
@@ -103,7 +96,8 @@ export function search(
       search(child, startLine, startCol, endLine, endCol)
     )
   );
-  if (inRange(node, startLine, startCol, endLine, endCol)) {
+  const isEmpty = node.range.start.equal(node.range.end);
+  if (!isEmpty && inRange(node.range, startLine, startCol, endLine, endCol)) {
     //  if (node instanceof NNonterminal || node instanceof NTerminal) {
     return [[node, trees]];
     //  }
