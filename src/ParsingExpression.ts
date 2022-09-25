@@ -381,6 +381,7 @@ export class Lake implements IParsingExpression {
         ])
       )
     );
+    this.operand = this.semantics;
   }
 
   accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {

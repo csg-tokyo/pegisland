@@ -1,4 +1,5 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
+import assert from 'assert';
 import Heap from 'heap';
 import { BeginningCalculator } from './BeginningCalculator';
 import { DepthFirstTraverser } from './DepthFirstTraverser';
@@ -105,9 +106,8 @@ export class PikaParsingEnv extends BaseParsingEnv {
     if (oldResult == null) {
       // console.log('oldResult is null');
       return result != null;
-    } else if (result == null) {
-      return false;
     } else {
+      assert(result != null, "result can't be null once it was not null");
       const [_tree, pos] = result;
       const [_oldTree, oldPos] = oldResult;
       //console.log(pos.offset, oldPos.offset);
