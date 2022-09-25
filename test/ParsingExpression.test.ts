@@ -11,6 +11,7 @@ import {
   NullParsingExpression,
   Position,
   Rule,
+  IParsingExpressionVisitor,
 } from '../src/ParsingExpression';
 import {
   NodeTerminal,
@@ -347,6 +348,17 @@ describe('OrderedChoice', () => {
         new Position('o1234ab789'.length, -1, -1)
       );
       assert.equal(result, null);
+    });
+  });
+
+  describe('NullParsingExpression', () => {
+    const nullPe = new NullParsingExpression();
+    describe('#accept()', () => {
+      it('should recognize the first pattern', () => {
+        expect(() =>
+          nullPe.accept({} as IParsingExpressionVisitor)
+        ).toThrowError();
+      });
     });
   });
 });

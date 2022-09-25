@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import { strict as assert } from 'assert';
 import { parseGrammar, Parser } from '../src/Parser';
 import {
@@ -11,7 +10,6 @@ import {
   NodeRewriting,
   IParseTree,
   NodeLake,
-  printTree,
   NodeNonterminal,
   traverseNonterminals,
 } from '../src/ParseTree';
@@ -28,6 +26,7 @@ import {
 import { createParser } from '../src';
 import { create } from 'domain';
 import { ChildProcess } from 'child_process';
+import exp from 'constants';
 
 function doit(name: string, pe: IParsingExpression): void {
   if (pe instanceof Sequence) {
@@ -272,12 +271,12 @@ describe('Parser', () => {
 
     it("should work with lake and Mouse's operators", () => {
       const grammar = `
-      program     <- foo+ ';'
+      program     <- .++ ':' .*+ ':' foo+ ';'
       foo         <- '*' (r'\\w+':<< >>):!r'\\d+'
       `;
       //const parser = new Parser(parseGrammar(grammar) as Peg);
       const parser = createParser(grammar) as Parser;
-      const s = '*first*second*third;';
+      const s = 'aa::*first*second*third;';
       const tree = parser.parse(s, 'program') as IParseTree;
       assert(tree != null);
       let count = 0;
@@ -310,6 +309,29 @@ describe('Parser', () => {
       const choice = tree.childNodes[0];
       assert(choice instanceof NodeSequence);
       assert.equal(choice.range.end.offset, 6);
+    });
+
+    it('should work with nonterminal', () => {
+      const grammar = `
+      program     <- foo@B / name@A name@A
+      A           <- r'[abc][abc][abc]'
+      B           <- r'\\d+'
+      `;
+      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const tree = parser.parse('abcabc', 'program') as IParseTree;
+      const choice = tree.childNodes[0];
+      assert(choice instanceof NodeOrderedChoice);
+      assert.equal(choice.range.end.offset, 6);
+    });
+
+    it('should report an error when named nonterminals have not the same value', () => {
+      const grammar = `
+      program     <- name@A name@A
+      A           <- r'[abc][abc][abc]'
+      `;
+      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const tree = parser.parse('aaabbb', 'program') as IParseTree;
+      expect(tree).toBeInstanceOf(Error);
     });
 
     it('should recognize a grammar written in PEG', () => {
@@ -406,6 +428,24 @@ describe('Parser', () => {
       //printTree(result);
     });
 
+    it('should work with a lake symbol', () => {
+      const grammar = `
+      program     <- stmt
+      stmt        <- <foo>* ';'
+      foo         <- r'[a-z]'
+      `;
+      const parser = createParser(grammar, ['foo', 'bar']);
+      if (parser instanceof Error) {
+        return;
+      }
+      const s = 'abcdefg;';
+      const result = parser.parse(s, 'program') as IParseTree;
+      assert.equal(result.range.end.offset, s.length);
+
+      //console.log(result);
+      //printTree(result);
+    });
+
     it('should work with lake operators', () => {
       const grammar = `
       program     <- stmt
@@ -472,5 +512,36 @@ describe('Parser', () => {
       const parser = createParser(grammar);
       assert(!(parser instanceof Error));
     });
+  });
+
+  it('should report an error when the input grammar is incorrect', () => {
+    const grammar = `
+    program     <- <- 
+    `;
+    const parser = createParser(grammar);
+    assert(parser instanceof Error);
+  });
+
+  it('should work with various operators in a left-recursive grammar', () => {
+    const grammar = `
+    program     <- <<>> foo -> "a"
+    foo         <- foo 'a' / 'a'
+    `;
+    //const parser = new Parser(parseGrammar(grammar) as Peg);
+    const parser = createParser(grammar) as Parser;
+    const s = 'aaaaa';
+    const tree = parser.parse(s, 'program') as IParseTree;
+    assert(tree != null);
+    expect(tree.range.end.offset).toEqual(s.length);
+  });
+
+  it('Should report an error when the given symbol does not have a rule', () => {
+    const grammar = `
+      program     <- .*
+      `;
+    const parser = createParser(grammar) as Parser;
+
+    const tree = parser.parse('abc', 'unknown_symbol') as IParseTree;
+    expect(tree).toBeInstanceOf(Error);
   });
 });

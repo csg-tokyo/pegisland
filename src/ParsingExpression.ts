@@ -1,7 +1,6 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { strict as assert } from 'assert';
 import { IParseTree, NodeNonterminal, Range } from './ParseTree';
-import { Peg } from './Peg';
 import { Recognizer } from './Recognizer';
 
 export class Position {
@@ -221,27 +220,6 @@ export abstract class BaseParsingEnv implements IParsingEnv {
   }
 }
 
-export class ParsingEnvPlayer extends BaseParsingEnv {
-  private currentStack: IParsingExpression[] = [];
-  constructor(
-    public s: string,
-    public deepestStack: IParsingExpression[],
-    public maxIndex: number
-  ) {
-    super();
-  }
-
-  parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null {
-    this.currentStack.push(pe);
-    if (pos.offset >= this.maxIndex) {
-      this.maxIndex = pos.offset;
-    }
-    const result = pe.accept(this.recognizer, pos);
-    this.currentStack.pop();
-    return result;
-  }
-}
-
 export interface IParsingExpression {
   accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T;
 }
@@ -251,8 +229,8 @@ export class NullParsingExpression implements IParsingExpression {
     return null;
   }
   accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
-    assert(false);
-    return null as T;
+    throw Error('Should not be called');
+    //    return null as T;
   }
 }
 

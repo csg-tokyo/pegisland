@@ -21,7 +21,7 @@ describe('BottomUpParser', () => {
         expect(result.range.end.offset).toEqual(s.length);
       }
     });
-    it("should handle Mouse's operators", () => {
+    it('should handle various operators', () => {
       const grammar = `
         Compilation <- Word:While
         Word <- r'\\w+'
@@ -110,6 +110,15 @@ describe('BottomUpParser', () => {
     const parser = new BottomUpParser(parseGrammar(grammar) as Peg);
     const s = `cdb`;
     const result = parser.parse(s, 'X');
+    expect(result instanceof Error).toBeTruthy();
+  });
+
+  it('should report an error when then input text is not in the language', () => {
+    const grammar = `program <- 'a'+`;
+    const parser = new BottomUpParser(parseGrammar(grammar) as Peg);
+    const s = `b`;
+    const result = parser.parse(s, 'program');
+    assert(result! instanceof Error);
     expect(result instanceof Error).toBeTruthy();
   });
 });

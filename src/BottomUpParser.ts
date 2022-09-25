@@ -43,17 +43,15 @@ export class BottomupParsingEnv extends BaseParsingEnv {
 
       while (!heap.empty()) {
         const rule = heap.pop() as Rule;
-        const info = finder.fromIndex(pos) as {
-          line: number;
-          col: number;
-        };
-        const isGlowing = this.grow(
+        const info = finder.fromIndex(pos);
+        assert(info != null);
+        const isGrowing = this.grow(
           rule,
           new Position(pos, info.line, info.col)
         );
 
         /*
-        if (isGlowing)
+        if (isGrowing)
           console.log(
             pos,
             heap.size(),
@@ -61,7 +59,7 @@ export class BottomupParsingEnv extends BaseParsingEnv {
           );
         */
 
-        if (isGlowing) {
+        if (isGrowing) {
           const parents = this.parentsMap.get(rule);
           if (parents != undefined) {
             parents.forEach((parent) => {
@@ -79,7 +77,7 @@ export class BottomupParsingEnv extends BaseParsingEnv {
     }
     const result = this.parseRule(startRule, new Position(0, 1, 1));
     if (result == null) {
-      return Error(`${peToString(startRule.rhs)} is not found`);
+      return Error(`Failed to recognize ${start}`);
     }
     return result;
   }
@@ -103,9 +101,8 @@ export class BottomupParsingEnv extends BaseParsingEnv {
     if (oldResult == null) {
       // console.log('oldResult is null');
       return result != null;
-    } else if (result == null) {
-      return false;
     } else {
+      assert(result != null, "result can't be null onece it was not null");
       const [_tree, pos] = result;
       const [_oldTree, oldPos] = oldResult;
       //console.log(pos.offset, oldPos.offset);
@@ -115,7 +112,7 @@ export class BottomupParsingEnv extends BaseParsingEnv {
 
   grow(rule: Rule, pos: Position): boolean {
     const isFirstEval = !this.memo[pos.offset].has(rule);
-    //console.log('glow ' + show(pe));
+    //console.log('Grow ' + show(pe));
     if (isFirstEval) {
       this.memo[pos.offset].set(rule, null);
     }

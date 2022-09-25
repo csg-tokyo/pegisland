@@ -1,4 +1,5 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
+import assert from 'assert';
 import {
   IParseTree,
   NodeAnd,
@@ -39,13 +40,6 @@ export class Recognizer
   implements IParsingExpressionVisitor<[IParseTree, Position] | null, Position>
 {
   constructor(private env: IParsingEnv) {}
-
-  recognize(
-    pe: IParsingExpression,
-    pos: Position
-  ): [IParseTree, Position] | null {
-    return pe.accept(this, pos);
-  }
 
   visitNonterminal(
     pe: Nonterminal,
@@ -249,9 +243,10 @@ export class Recognizer
 
   visitLake(pe: Lake, pos: Position): [IParseTree, Position] | null {
     const result = this.env.parse(pe.semantics, pos);
-    if (result == null) {
-      return null;
-    }
+    assert(
+      result != null,
+      'Lake should not fail since it accepts an empyt string'
+    );
     const [childNode, nextIndex] = result;
     const zeroOrMore = childNode as NodeZeroOrMore;
     const group = zeroOrMore.childNodes[0];
