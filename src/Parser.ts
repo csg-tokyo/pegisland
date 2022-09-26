@@ -4,15 +4,31 @@ import { GeneralPegBuilder } from './GeneralPegBuilder';
 import { PackratParser, ParsingError } from './PackratParser';
 import { IParseTree } from './ParseTree';
 import {
+  And,
+  Colon,
+  ColonNot,
+  Grouping,
   IParsingExpression,
+  IParsingExpressionVisitor,
+  Lake,
   Nonterminal,
+  Not,
   NullParsingExpression,
+  OneOrMore,
+  Optional,
+  OrderedChoice,
+  PostorderExpressionTraverser,
+  Rewriting,
+  Sequence,
+  Terminal,
+  ZeroOrMore,
 } from './ParsingExpression';
 import { Peg } from './Peg';
 import { BottomUpParser } from './BottomUpParser';
 import { isLake, processLakes } from './lake';
 import { measure } from './utils';
-import { Stats } from './Stats';
+import { GrammarInfo, Stats } from './Stats';
+import { stat } from 'fs';
 
 export function parseGrammar(grammar: string): Peg | ParsingError | Error {
   const builder = new GeneralPegBuilder();
@@ -58,6 +74,7 @@ export class Parser {
       this.pegInterpreter.parse(s, startSymbol)
     );
     this.stats.parsingTime += time;
+    this.stats.totalTextLength += s.length;
     return result;
   }
 }
@@ -67,13 +84,80 @@ export function createParser(
   waterSymbols = ['water']
 ): Parser | Error {
   const stats = new Stats();
+
+  // Parse a grammar specification
   const [peg, grammarConstructionTime] = measure(() => parseGrammar(grammar));
   if (peg instanceof Error) {
     return peg;
   }
   stats.grammarConstructionTime = grammarConstructionTime;
+
+  // Summerize the grammar
+  analyzeGrammar(peg, stats.grammarInfo);
+
+  // Process lakes
   const [, time] = measure(() => processLakes(peg, waterSymbols));
   stats.lakeProcessingTime = time;
+
+  // Create a parser
   const parser = new Parser(peg, stats);
   return parser;
+}
+
+function analyzeGrammar(peg: Peg, info: GrammarInfo) {
+  const traverser = new PostorderExpressionTraverser(
+    new (class implements IParsingExpressionVisitor {
+      visitNonterminal(pe: Nonterminal): void {
+        info.nonterminalCount++;
+        if (isLake(pe.rule.symbol)) {
+          info.lakeSymbolCount++;
+        }
+      }
+      visitTerminal(pe: Terminal): void {
+        info.terminalCount++;
+      }
+      visitAnd(pe: And): void {
+        info.andCount++;
+      }
+      visitNot(pe: Not): void {
+        info.notCount++;
+      }
+      visitColon(pe: Colon): void {
+        info.colonCount++;
+      }
+      visitColonNot(pe: ColonNot): void {
+        info.colonNotCount++;
+      }
+      visitGrouping(pe: Grouping): void {
+        info.groupingCount++;
+      }
+      visitLake(pe: Lake): void {
+        info.lakeCount++;
+      }
+      visitZeroOrMore(pe: ZeroOrMore): void {
+        info.zeroOrMoreCount++;
+      }
+      visitOneOrMore(pe: OneOrMore): void {
+        info.oneOrMoreCount++;
+      }
+      visitOptional(pe: Optional): void {
+        info.optionalCount++;
+      }
+      visitOrderedChoice(pe: OrderedChoice): void {
+        info.orderedChoiceCount++;
+      }
+      visitRewriting(pe: Rewriting): void {
+        info.rewritingCount++;
+      }
+      visitSequence(pe: Sequence): void {
+        info.sequenceCount++;
+      }
+    })()
+  );
+  peg.rules.forEach((rule) => {
+    if (!(rule.rhs instanceof NullParsingExpression)) {
+      info.ruleCount++;
+      traverser.traverse(rule.rhs);
+    }
+  });
 }
