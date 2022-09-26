@@ -1,3 +1,4 @@
+// Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
 import { digraph, INode, toDot } from 'ts-graphviz';
 import { Rule } from './ParsingExpression';
 import { Peg } from './Peg';

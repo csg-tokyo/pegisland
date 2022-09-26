@@ -1,3 +1,4 @@
+// Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import Heap from 'heap';
 
 export class PriorityQueue<T> {
