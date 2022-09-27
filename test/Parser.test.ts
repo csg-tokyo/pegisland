@@ -1,67 +1,20 @@
 import { strict as assert } from 'assert';
+import { createParser } from '../src';
 import { parseGrammar, Parser } from '../src/Parser';
 import {
-  NodeZeroOrMore,
-  NodeOneOrMore,
-  NodeOrderedChoice,
-  NodeSequence,
-  NodeTerminal,
-  NodeOptional,
-  NodeRewriting,
   IParseTree,
   NodeLake,
   NodeNonterminal,
+  NodeOneOrMore,
+  NodeOptional,
+  NodeOrderedChoice,
+  NodeRewriting,
+  NodeSequence,
+  NodeTerminal,
+  NodeZeroOrMore,
   traverseNonterminals,
 } from '../src/ParseTree';
 import { Peg } from '../src/Peg';
-import {
-  IParsingExpression,
-  Nonterminal,
-  OneOrMore,
-  Optional,
-  OrderedChoice,
-  Sequence,
-  ZeroOrMore,
-} from '../src/ParsingExpression';
-import { createParser } from '../src';
-import { create } from 'domain';
-import { ChildProcess } from 'child_process';
-import exp from 'constants';
-
-function doit(name: string, pe: IParsingExpression): void {
-  if (pe instanceof Sequence) {
-    const ok = pe.operands.every((operand) => {
-      if (
-        operand instanceof ZeroOrMore ||
-        operand instanceof OneOrMore ||
-        operand instanceof Optional
-      ) {
-        operand = operand.operand;
-      }
-      return operand instanceof Nonterminal;
-    });
-    if (ok) {
-      const args = pe.operands.map((operand) => {
-        let array = false;
-        if (
-          operand instanceof ZeroOrMore ||
-          operand instanceof OneOrMore ||
-          operand instanceof Optional
-        ) {
-          operand = operand.operand;
-          array = true;
-        }
-        const nonterminal = operand as Nonterminal;
-        return nonterminal.rule.symbol + ': Node' + (array ? '[]' : '');
-      });
-      const s = name + '(' + args.join(', ') + ')';
-    }
-  } else if (pe instanceof OrderedChoice) {
-    // XXX
-  } else {
-    //console.log(pe);
-  }
-}
 
 describe('Parser', () => {
   describe('#constructor()', () => {
@@ -78,7 +31,7 @@ describe('Parser', () => {
       const grammar = `
       program     <- '[]'
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       const tree = parser.parse('[]', 'program') as IParseTree;
       assert(tree.childNodes[0] instanceof NodeTerminal);
     });
@@ -87,7 +40,7 @@ describe('Parser', () => {
       const grammar = `
       program     <- r'[a-z]*'
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       const tree = parser.parse('ijk', 'program') as IParseTree;
       assert(tree.childNodes[0] instanceof NodeTerminal);
     });
@@ -96,7 +49,7 @@ describe('Parser', () => {
       const grammar = `
       program     <- ^[0-9]*
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       const tree = parser.parse('ijk', 'program') as IParseTree;
       assert(tree.childNodes[0] instanceof NodeZeroOrMore);
     });
@@ -105,7 +58,7 @@ describe('Parser', () => {
       const grammar = `
       program     <- "a" "b"
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       const tree = parser.parse('ab', 'program') as IParseTree;
       assert(tree.childNodes[0] instanceof NodeSequence);
     });
@@ -114,7 +67,7 @@ describe('Parser', () => {
       const grammar = `
       program     <- "a" / "b"
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       const tree = parser.parse('b', 'program') as IParseTree;
       const choice = tree.childNodes[0];
       assert(choice instanceof NodeOrderedChoice);
@@ -125,7 +78,7 @@ describe('Parser', () => {
       const grammar = `
       program     <- "a" *
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       {
         const tree = parser.parse('aa', 'program') as IParseTree;
         const choice = tree.childNodes[0];
@@ -144,7 +97,7 @@ describe('Parser', () => {
       const grammar = `
       program     <- "a" ?
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       {
         const tree = parser.parse('a', 'program') as IParseTree;
         const choice = tree.childNodes[0];
@@ -163,7 +116,7 @@ describe('Parser', () => {
       const grammar = `
       program     <- "a" +
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       {
         const tree = parser.parse('aa', 'program') as IParseTree;
         const choice = tree.childNodes[0];
@@ -180,7 +133,7 @@ describe('Parser', () => {
       const grammar = `
       program     <- ! "a" [a-z]+
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       const tree = parser.parse('baba', 'program') as IParseTree;
       const choice = tree.childNodes[0];
       assert(choice instanceof NodeSequence);
@@ -191,7 +144,7 @@ describe('Parser', () => {
       const grammar = `
       program     <- & "a" [a-z]+
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       const tree = parser.parse('aaba', 'program') as IParseTree;
       const choice = tree.childNodes[0];
       assert(choice instanceof NodeSequence);
@@ -202,7 +155,7 @@ describe('Parser', () => {
       const grammar = `
       program     <- ([a-z]+):"xyz" 
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       const tree = parser.parse('xyz', 'program') as IParseTree;
       assert.equal(tree.range.end.offset, 3);
       const tree2 = parser.parse('xyza', 'program') as IParseTree;
@@ -213,7 +166,7 @@ describe('Parser', () => {
       const grammar = `
       program     <- ([a-z]+):!"xyz" 
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       const tree = parser.parse('xyza', 'program') as IParseTree;
       assert.equal(tree.range.end.offset, 4);
       const tree2 = parser.parse('xyz', 'program') as IParseTree;
@@ -224,7 +177,7 @@ describe('Parser', () => {
       const grammar = `
       program     <- ('a' 'b')+
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       const tree = parser.parse('abab', 'program') as IParseTree;
       const choice = tree.childNodes[0];
       assert(choice instanceof NodeOneOrMore);
@@ -235,7 +188,7 @@ describe('Parser', () => {
       const grammar = `
       program     <- "a" -> "b"
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       {
         const tree = parser.parse('a', 'program') as IParseTree;
         const choice = tree.childNodes[0];
@@ -253,7 +206,6 @@ describe('Parser', () => {
       program     <- << block >>
       block       <- '{' << block >> '}'
       `;
-      //const parser = new Parser(parseGrammar(grammar) as Peg);
       const parser = createParser(grammar) as Parser;
       {
         const s = '{aaa{} }  ';
@@ -264,7 +216,6 @@ describe('Parser', () => {
         assert.equal(choice.range.end.offset, s.length);
       }
       {
-        const tree = parser.parse('b', 'program');
         //assert(tree instanceof Error);
       }
     });
@@ -274,7 +225,6 @@ describe('Parser', () => {
       program     <- .++ ':' .*+ ':' foo+ ';'
       foo         <- '*' (r'\\w+':<< >>):!r'\\d+'
       `;
-      //const parser = new Parser(parseGrammar(grammar) as Peg);
       const parser = createParser(grammar) as Parser;
       const s = 'aa::*first*second*third;';
       const tree = parser.parse(s, 'program') as IParseTree;
@@ -289,7 +239,6 @@ describe('Parser', () => {
       program     <- foo+ ';'
       foo         <- '*' &r'\\w+' !r'\\d+' (<<>> -> "a")
       `;
-      //const parser = new Parser(parseGrammar(grammar) as Peg);
       const parser = createParser(grammar) as Parser;
       const s = '*first*second*third;';
       const tree = parser.parse(s, 'program') as IParseTree;
@@ -304,7 +253,7 @@ describe('Parser', () => {
       program     <- name@A name@A
       A           <- r'[abc][abc][abc]'
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       const tree = parser.parse('abcabc', 'program') as IParseTree;
       const choice = tree.childNodes[0];
       assert(choice instanceof NodeSequence);
@@ -317,7 +266,7 @@ describe('Parser', () => {
       A           <- r'[abc][abc][abc]'
       B           <- r'\\d+'
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       const tree = parser.parse('abcabc', 'program') as IParseTree;
       const choice = tree.childNodes[0];
       assert(choice instanceof NodeOrderedChoice);
@@ -329,7 +278,7 @@ describe('Parser', () => {
       program     <- name@A name@A
       A           <- r'[abc][abc][abc]'
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       const tree = parser.parse('aaabbb', 'program') as IParseTree;
       expect(tree).toBeInstanceOf(Error);
     });
@@ -343,7 +292,7 @@ describe('Parser', () => {
       ID          <- r'[a-z]+' spacing
       ASSIGN      <- '=' spacing
       `;
-      const parser = new Parser(parseGrammar(grammar) as Peg);
+      const parser = createParser(grammar) as Parser;
       const s = '   xyz = abc  lmn = opq    ';
       const result = parser.parse(s, 'program') as IParseTree;
       assert.equal(result.range.end.offset, s.length);
@@ -372,8 +321,7 @@ describe('Parser', () => {
       expr     <- expr '-' number / number
       number   <- r'\\d+'
       `;
-      const peg = parseGrammar(grammar) as Peg;
-      const parser = new Parser(peg);
+      const parser = createParser(grammar) as Parser;
       const s = '1';
       const result = parser.parse(s, 'start') as IParseTree;
       if (result instanceof Error) {
@@ -388,8 +336,7 @@ describe('Parser', () => {
       expr     <- expr '-' number / number
       number   <- r'\\d+'
       `;
-      const peg = parseGrammar(grammar) as Peg;
-      const parser = new Parser(peg);
+      const parser = createParser(grammar) as Parser;
       const s = '1-1-1';
       const result = parser.parse(s, 'start') as IParseTree;
       assert.equal(result.range.end.offset, s.length);
@@ -402,8 +349,7 @@ describe('Parser', () => {
       expr     <- x '-' number / number 
       number   <- r'\\d+'
       `;
-      const peg = parseGrammar(grammar) as Peg;
-      const parser = new Parser(peg);
+      const parser = createParser(grammar) as Parser;
       const s = '1-1-1';
       const result = parser.parse(s, 'start') as IParseTree;
       assert.equal(result.range.end.offset, s.length);
@@ -416,11 +362,7 @@ describe('Parser', () => {
       statement   <- a@ID b@ID a@ID b@ID
       ID          <- r'[a-z]+' spacing
       `;
-      const peg = parseGrammar(grammar) as Peg;
-      peg.rules.forEach((rule) => {
-        doit(rule.symbol, rule.rhs);
-      });
-      const parser = new Parser(peg);
+      const parser = createParser(grammar) as Parser;
       const s = '   abc xyz abc xyz';
       const result = parser.parse(s, 'program') as IParseTree;
       assert.equal(result.range.end.offset, s.length);

@@ -60,6 +60,7 @@ export class Parser {
 
   constructor(peg: Peg, public stats = new Stats()) {
     if (isLeftRecursive(peg)) {
+      stats.grammarInfo.isLeftRecursive = true;
       this.pegInterpreter = new BottomUpParser(peg);
     } else {
       this.pegInterpreter = new PackratParser(peg.rules);
@@ -71,7 +72,7 @@ export class Parser {
     startSymbol?: string
   ): IParseTree | ParsingError | Error {
     const [result, time] = measure(() =>
-      this.pegInterpreter.parse(s, startSymbol)
+      this.pegInterpreter.parse(s, startSymbol, this.stats)
     );
     this.stats.parsingTime += time;
     this.stats.totalTextLength += s.length;
@@ -108,48 +109,62 @@ function analyzeGrammar(peg: Peg, info: GrammarInfo) {
   const traverser = new PostorderExpressionTraverser(
     new (class implements IParsingExpressionVisitor {
       visitNonterminal(pe: Nonterminal): void {
+        info.expressionCount++;
         info.nonterminalCount++;
         if (isLake(pe.rule.symbol)) {
           info.lakeSymbolCount++;
         }
       }
       visitTerminal(pe: Terminal): void {
+        info.expressionCount++;
         info.terminalCount++;
       }
       visitAnd(pe: And): void {
+        info.expressionCount++;
         info.andCount++;
       }
       visitNot(pe: Not): void {
+        info.expressionCount++;
         info.notCount++;
       }
       visitColon(pe: Colon): void {
+        info.expressionCount++;
         info.colonCount++;
       }
       visitColonNot(pe: ColonNot): void {
+        info.expressionCount++;
         info.colonNotCount++;
       }
       visitGrouping(pe: Grouping): void {
+        info.expressionCount++;
         info.groupingCount++;
       }
       visitLake(pe: Lake): void {
+        info.expressionCount++;
         info.lakeCount++;
       }
       visitZeroOrMore(pe: ZeroOrMore): void {
+        info.expressionCount++;
         info.zeroOrMoreCount++;
       }
       visitOneOrMore(pe: OneOrMore): void {
+        info.expressionCount++;
         info.oneOrMoreCount++;
       }
       visitOptional(pe: Optional): void {
+        info.expressionCount++;
         info.optionalCount++;
       }
       visitOrderedChoice(pe: OrderedChoice): void {
+        info.expressionCount++;
         info.orderedChoiceCount++;
       }
       visitRewriting(pe: Rewriting): void {
+        info.expressionCount++;
         info.rewritingCount++;
       }
       visitSequence(pe: Sequence): void {
+        info.expressionCount++;
         info.sequenceCount++;
       }
     })()

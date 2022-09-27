@@ -1,5 +1,6 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
 export class GrammarInfo {
+  isLeftRecursive = false;
   ruleCount = 0;
   expressionCount = 0;
   terminalCount = 0;
@@ -24,5 +25,8 @@ export class Stats {
   lakeProcessingTime = 0;
   grammarConstructionTime = 0;
   totalTextLength = 0;
+  memoAccessCount = 0;
+  memoMissCount = 0;
+  failureCount = 0;
   grammarInfo = new GrammarInfo();
 }

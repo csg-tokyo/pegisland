@@ -8,6 +8,7 @@ import {
   BaseParsingEnv,
 } from './ParsingExpression';
 import { peToString } from './Printer';
+import { Stats } from './Stats';
 
 function makeErrorMessage(env: PackratParsingEnv) {
   const finder = lineColumn(env.s);
@@ -29,11 +30,7 @@ export class ParsingError extends Error {
 }
 
 export class PackratParser {
-  rules: Map<string, Rule>;
-
-  constructor(nonterminals: Map<string, Rule>) {
-    this.rules = nonterminals;
-  }
+  constructor(public rules: Map<string, Rule>) {}
 
   private getStartRule(startSymbol?: string): Rule | Error {
     let rule = this.rules.values().next().value;
@@ -51,13 +48,14 @@ export class PackratParser {
 
   public parse(
     s: string,
-    startSymbol?: string
+    startSymbol?: string,
+    stats?: Stats
   ): IParseTree | ParsingError | Error {
     const rule = this.getStartRule(startSymbol);
     if (rule instanceof Error) {
       return rule;
     }
-    const env = new PackratParsingEnv(s);
+    const env = new PackratParsingEnv(s, stats);
     const result = rule.parse(env, new Position(0, 1, 1));
     if (result == null) {
       return new ParsingError(env);
@@ -75,21 +73,26 @@ export class PackratParsingEnv extends BaseParsingEnv {
   deepestStack: IParsingExpression[] = [];
   public maxIndex = 0;
 
-  memo: Map<Rule, [IParseTree, Position] | null> = new Map();
+  private memo: Map<Rule, [IParseTree, Position] | null>[] = [];
 
-  constructor(public s: string) {
+  constructor(public s: string, private stats: Stats = new Stats()) {
     super();
+    for (let i = 0; i <= s.length; i++) {
+      this.memo.push(new Map<Rule, [IParseTree, Position] | null>());
+    }
   }
 
-  parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
-    return rule.parse(this, pos);
-    /*
-    if (!this.memo.has(rule)) {
+  override parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
+    if (!this.memo[pos.offset].has(rule)) {
       const result = rule.parse(this, pos);
-      this.memo.set(rule, result);
+      this.memo[pos.offset].set(rule, result);
+      if (result == null) {
+        this.stats.failureCount++;
+      }
+      this.stats.memoMissCount++;
     }
-    return this.memo.get(rule) as [IParseTree, Position] | null;
-    */
+    this.stats.memoAccessCount++;
+    return this.memo[pos.offset].get(rule) as [IParseTree, Position] | null;
   }
 
   parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null {
