@@ -1,3 +1,4 @@
+// Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
 import { DepthFirstTraverser } from './DepthFirstTraverser';
 import {
   And,

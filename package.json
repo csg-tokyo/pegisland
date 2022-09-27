@@ -1,6 +1,6 @@
 {
   "name": "pegisland",
-  "version": "2.1.7",
+  "version": "2.1.8",
   "description": "General PEG-based parser supporting island grammars with lake symbols",
   "main": "dist/src/index.js",
   "directories": {
