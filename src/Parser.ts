@@ -114,55 +114,55 @@ function analyzeGrammar(peg: Peg, info: GrammarInfo) {
           info.lakeSymbolCount++;
         }
       }
-      visitTerminal(pe: Terminal): void {
+      visitTerminal(_pe: Terminal): void {
         info.expressionCount++;
         info.terminalCount++;
       }
-      visitAnd(pe: And): void {
+      visitAnd(_pe: And): void {
         info.expressionCount++;
         info.andCount++;
       }
-      visitNot(pe: Not): void {
+      visitNot(_pe: Not): void {
         info.expressionCount++;
         info.notCount++;
       }
-      visitColon(pe: Colon): void {
+      visitColon(_pe: Colon): void {
         info.expressionCount++;
         info.colonCount++;
       }
-      visitColonNot(pe: ColonNot): void {
+      visitColonNot(_pe: ColonNot): void {
         info.expressionCount++;
         info.colonNotCount++;
       }
-      visitGrouping(pe: Grouping): void {
+      visitGrouping(_pe: Grouping): void {
         info.expressionCount++;
         info.groupingCount++;
       }
-      visitLake(pe: Lake): void {
+      visitLake(_pe: Lake): void {
         info.expressionCount++;
         info.lakeCount++;
       }
-      visitZeroOrMore(pe: ZeroOrMore): void {
+      visitZeroOrMore(_pe: ZeroOrMore): void {
         info.expressionCount++;
         info.zeroOrMoreCount++;
       }
-      visitOneOrMore(pe: OneOrMore): void {
+      visitOneOrMore(_pe: OneOrMore): void {
         info.expressionCount++;
         info.oneOrMoreCount++;
       }
-      visitOptional(pe: Optional): void {
+      visitOptional(_pe: Optional): void {
         info.expressionCount++;
         info.optionalCount++;
       }
-      visitOrderedChoice(pe: OrderedChoice): void {
+      visitOrderedChoice(_pe: OrderedChoice): void {
         info.expressionCount++;
         info.orderedChoiceCount++;
       }
-      visitRewriting(pe: Rewriting): void {
+      visitRewriting(_pe: Rewriting): void {
         info.expressionCount++;
         info.rewritingCount++;
       }
-      visitSequence(pe: Sequence): void {
+      visitSequence(_pe: Sequence): void {
         info.expressionCount++;
         info.sequenceCount++;
       }

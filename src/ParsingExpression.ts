@@ -37,46 +37,46 @@ export interface IParsingExpressionVisitor<T = void, U = void> {
 export class DefaultParsingExpressionVisitor
   implements IParsingExpressionVisitor
 {
-  visitNonterminal(pe: Nonterminal): void {
+  visitNonterminal(_pe: Nonterminal): void {
     // Do nothing
   }
-  visitTerminal(pe: Terminal): void {
+  visitTerminal(_pe: Terminal): void {
     // Do nothing
   }
-  visitOrderedChoice(pe: OrderedChoice): void {
+  visitOrderedChoice(_pe: OrderedChoice): void {
     // Do nothing
   }
-  visitSequence(pe: Sequence): void {
+  visitSequence(_pe: Sequence): void {
     // Do nothing
   }
-  visitAnd(pe: And): void {
+  visitAnd(_pe: And): void {
     // Do nothing
   }
-  visitColon(pe: Colon): void {
+  visitColon(_pe: Colon): void {
     // Do nothing
   }
-  visitColonNot(pe: ColonNot): void {
+  visitColonNot(_pe: ColonNot): void {
     // Do nothing
   }
-  visitGrouping(pe: Grouping): void {
+  visitGrouping(_pe: Grouping): void {
     // Do nothing
   }
-  visitLake(pe: Lake): void {
+  visitLake(_pe: Lake): void {
     // Do nothing
   }
-  visitNot(pe: Not): void {
+  visitNot(_pe: Not): void {
     // Do nothing
   }
-  visitOneOrMore(pe: OneOrMore): void {
+  visitOneOrMore(_pe: OneOrMore): void {
     // Do nothing
   }
-  visitOptional(pe: Optional): void {
+  visitOptional(_pe: Optional): void {
     // Do nothing
   }
-  visitRewriting(pe: Rewriting): void {
+  visitRewriting(_pe: Rewriting): void {
     // Do nothing
   }
-  visitZeroOrMore(pe: ZeroOrMore): void {
+  visitZeroOrMore(_pe: ZeroOrMore): void {
     // Do nothing
   }
 }
@@ -224,10 +224,10 @@ export interface IParsingExpression {
 }
 
 export class NullParsingExpression implements IParsingExpression {
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
+  parse(_env: IParsingEnv, _pos: Position): [IParseTree, Position] | null {
     return null;
   }
-  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+  accept<T, U>(_visitor: IParsingExpressionVisitor<T, U>, _arg?: U): T {
     throw Error('Should not be called');
     //    return null as T;
   }

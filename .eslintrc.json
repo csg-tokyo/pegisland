@@ -11,6 +11,11 @@
   },
   "plugins": ["@typescript-eslint"],
   "rules": {
-    "@typescript-eslint/no-unused-vars": ["error", { "args": "none" }]
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ]
   }
 }

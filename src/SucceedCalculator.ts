@@ -37,7 +37,7 @@ export class SucceedCalculator extends SetCalculator {
     this.set(pe.rule.rhs, union(this.get(pe.rule.rhs), this.get(pe)));
   }
 
-  visitTerminal(pe: Terminal): void {
+  visitTerminal(_pe: Terminal): void {
     assert(true);
   }
 
@@ -59,11 +59,11 @@ export class SucceedCalculator extends SetCalculator {
     this.set(pe.operand, new Set(this.get(pe)));
   }
 
-  visitAnd(pe: And): void {
+  visitAnd(_pe: And): void {
     assert(true);
   }
 
-  visitNot(pe: Not): void {
+  visitNot(_pe: Not): void {
     assert(true);
   }
 
