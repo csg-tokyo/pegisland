@@ -245,7 +245,7 @@ export class Recognizer
     const result = this.env.parse(pe.semantics, pos);
     assert(
       result != null,
-      'Lake should not fail since it accepts an empyt string'
+      'Lake should not fail since it accepts an empty string'
     );
     const [childNode, nextIndex] = result;
     const zeroOrMore = childNode as NodeZeroOrMore;
