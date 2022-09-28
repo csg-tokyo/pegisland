@@ -1,5 +1,4 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { strict as assert } from 'assert';
 import { IParseTree, NodeNonterminal, Range } from './ParseTree';
 import { Recognizer } from './Recognizer';
 
