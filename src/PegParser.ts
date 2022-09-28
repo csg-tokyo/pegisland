@@ -24,7 +24,7 @@ export type Nonterminals =
   | 'Identifier'
   | 'LAKE_CLOSE'
   | 'LAKE_OPEN'
-  | 'LEFTARROW'
+  | 'LEFT_ARROW'
   | 'NamedIdentifier'
   | 'NOT'
   | 'OPEN'
@@ -36,7 +36,7 @@ export type Nonterminals =
   | 'QUESTION'
   | 'Regexp'
   | 'Rewriting'
-  | 'RIGHTARROW'
+  | 'RIGHT_ARROW'
   | 'SEMICOLON'
   | 'Sequence'
   | 'SLASH'
@@ -54,13 +54,13 @@ const grammar: { [name in Nonterminals]: SimpleTree } = {
     '',
     'OptAnnotations',
     'Identifier',
-    'LEFTARROW',
+    'LEFT_ARROW',
     'Expression',
     ['?', 'SEMICOLON'],
   ],
   Expression: ['', 'Rewriting', ['*', ['', 'SLASH', 'Rewriting']]],
-  Rewriting: ['', 'Sequence', ['?', ['', 'RIGHTARROW', 'String']]],
-  Sequence: ['*', ['', 'Prefix', ['!', 'LEFTARROW']]],
+  Rewriting: ['', 'Sequence', ['?', ['', 'RIGHT_ARROW', 'String']]],
+  Sequence: ['*', ['', 'Prefix', ['!', 'LEFT_ARROW']]],
   Prefix: ['', ['?', ['/', 'AND', 'NOT']], 'Suffix'],
   Suffix: [
     '',
@@ -83,13 +83,13 @@ const grammar: { [name in Nonterminals]: SimpleTree } = {
     '/',
     'Regexp',
     ['', 'LAKE_OPEN', 'Expression', 'LAKE_CLOSE'],
-    'NamedItendifier',
+    'NamedIdentifier',
     ['', 'OPEN', 'Expression', 'CLOSE'],
     'String',
     'Class',
     'DOT',
   ],
-  NamedItendifier: [
+  NamedIdentifier: [
     '',
     [
       '?',
@@ -124,8 +124,8 @@ const grammar: { [name in Nonterminals]: SimpleTree } = {
     ['terminal', /\\[0-7][0-7]?/],
     ['terminal', /[^\\]/],
   ],
-  LEFTARROW: ['', ['terminal', /=|<-/], 'Spacing'],
-  RIGHTARROW: ['', ['terminal', /->/], 'Spacing'],
+  LEFT_ARROW: ['', ['terminal', /=|<-/], 'Spacing'],
+  RIGHT_ARROW: ['', ['terminal', /->/], 'Spacing'],
   SEMICOLON: ['', ['terminal', /;/], 'Spacing'],
   SLASH: ['', ['terminal', /\//], 'Spacing'],
   AND: ['', ['terminal', /&/], 'Spacing'],
