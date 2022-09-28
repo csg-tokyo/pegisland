@@ -1,6 +1,8 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
+import { BottomUpParser } from './BottomUpParser';
 import { FirstCalculator } from './FirstCalculator';
 import { GeneralPegBuilder } from './GeneralPegBuilder';
+import { isLake, processLakes } from './lake';
 import { PackratParser, ParsingError } from './PackratParser';
 import { IParseTree } from './ParseTree';
 import {
@@ -24,11 +26,8 @@ import {
   ZeroOrMore,
 } from './ParsingExpression';
 import { Peg } from './Peg';
-import { BottomUpParser } from './BottomUpParser';
-import { isLake, processLakes } from './lake';
-import { measure } from './utils';
 import { GrammarInfo, Stats } from './Stats';
-import { stat } from 'fs';
+import { measure } from './utils';
 
 export function parseGrammar(grammar: string): Peg | ParsingError | Error {
   const builder = new GeneralPegBuilder();
