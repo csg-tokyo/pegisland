@@ -15,7 +15,7 @@ import {
 import { Peg } from './Peg';
 import { PriorityQueue } from './PriorityQueue';
 
-export class BottomupParsingEnv extends BaseParsingEnv {
+export class BottomUpParsingEnv extends BaseParsingEnv {
   private memo: Map<Rule, [IParseTree, Position] | null>[] = [];
   private createHeap;
   private parentsMap: Map<Rule, Set<Rule>>;
@@ -53,7 +53,7 @@ export class BottomupParsingEnv extends BaseParsingEnv {
           console.log(
             pos,
             heap.size(),
-            peToString(pe) + ' was poped!' + (this.memo[pos].get(pe) != null)
+            peToString(pe) + ' was popped!' + (this.memo[pos].get(pe) != null)
           );
         */
 
@@ -100,7 +100,7 @@ export class BottomupParsingEnv extends BaseParsingEnv {
       // console.log('oldResult is null');
       return result != null;
     } else {
-      assert(result != null, "result can't be null onece it was not null");
+      assert(result != null, "The result can't be null once it was not null");
       const [, pos] = result;
       const [, oldPos] = oldResult;
       //console.log(pos.offset, oldPos.offset);
@@ -231,7 +231,7 @@ export class BottomUpParser {
   constructor(private peg: Peg) {}
 
   parse(s: string, start?: string): IParseTree | Error {
-    const env = new BottomupParsingEnv(s, this.peg);
+    const env = new BottomUpParsingEnv(s, this.peg);
     const result = env.parseString(
       s,
       start ? start : this.peg.rules.keys().next().value

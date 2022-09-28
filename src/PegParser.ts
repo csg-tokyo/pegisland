@@ -25,7 +25,7 @@ export type Nonterminals =
   | 'LAKE_CLOSE'
   | 'LAKE_OPEN'
   | 'LEFTARROW'
-  | 'NamedItendifier'
+  | 'NamedIdentifier'
   | 'NOT'
   | 'OPEN'
   | 'OptAnnotations'

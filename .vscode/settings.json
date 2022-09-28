@@ -15,5 +15,16 @@
     "**/**.js": { "when": "$(basename).tsx" },
     "**/*.d.ts": true,
     "**/*.d.ts.map": true
-  }
+  },
+  "cSpell.words": [
+    "graphviz",
+    "Katsumi",
+    "Nonterminal",
+    "Nonterminals",
+    "Okuda",
+    "Packrat",
+    "Postorder",
+    "subexp",
+    "subname"
+  ]
 }
