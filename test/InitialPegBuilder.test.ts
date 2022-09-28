@@ -1,17 +1,16 @@
 import { strict as assert } from 'assert';
 import { InitialPegBuilder } from '../src/InitialPegBuilder';
 import {
-  Terminal,
-  ZeroOrMore,
+  And,
+  Nonterminal,
+  Not,
   OneOrMore,
   Optional,
-  And,
-  Not,
-  Sequence,
   OrderedChoice,
-  NullParsingExpression,
-  Nonterminal,
   Rule,
+  Sequence,
+  Terminal,
+  ZeroOrMore,
 } from '../src/ParsingExpression';
 
 describe('IntialPegBuilder', () => {

@@ -19,7 +19,7 @@ import { SimpleTree } from './PegParser';
 export class InitialPegBuilder {
   rules = new Map<string, Rule>();
 
-  public build(peg: { [name: string]: SimpleTree }): void {
+  public build(peg: { [name: string]: SimpleTree }): Map<string, Rule> {
     this.rules = new Map<string, Rule>();
     for (const key in peg) {
       this.rules.set(key, new Rule(key, new NullParsingExpression()));
@@ -28,6 +28,7 @@ export class InitialPegBuilder {
       const rule = this.rules.get(key) as Rule;
       rule.rhs = this.compileExpression(peg[key]);
     }
+    return this.rules;
   }
 
   compileExpression(expression: SimpleTree): IParsingExpression {

@@ -152,7 +152,7 @@ export class PegParser {
   constructor() {
     const builder = new InitialPegBuilder();
     const rules = builder.build(grammar);
-    this.pegInterpreter = new PackratParser(builder.rules);
+    this.pegInterpreter = new PackratParser(rules);
   }
 
   parse(s: string): IParseTree | ParsingError | Error {

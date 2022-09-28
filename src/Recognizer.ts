@@ -52,7 +52,7 @@ export class Recognizer
     if (result == null) {
       return result;
     }
-    const [_, end] = result;
+    const [, end] = result;
     const value = this.env.s.substring(pos.offset, end.offset).trim();
     if (!this.env.has(pe.name)) {
       this.env.register(pe.name, value);
@@ -212,12 +212,12 @@ export class Recognizer
     if (lhsResult == null) {
       return null;
     }
-    const [_lhsValue, lhsNextIndex] = lhsResult;
+    const [, lhsNextIndex] = lhsResult;
     const rhsResult = this.env.parse(pe.rhs, pos);
     if (rhsResult == null) {
       return null;
     }
-    const [_rhsValue, rhsNextIndex] = rhsResult;
+    const [, rhsNextIndex] = rhsResult;
     if (lhsNextIndex.offset != rhsNextIndex.offset) {
       return null;
     }
@@ -231,8 +231,8 @@ export class Recognizer
     }
     const rhsResult = this.env.parse(pe.rhs, pos);
     if (rhsResult != null) {
-      const [_lhsValue, lhsNextIndex] = lhsResult;
-      const [_rhsValue, rhsNextIndex] = rhsResult;
+      const [, lhsNextIndex] = lhsResult;
+      const [, rhsNextIndex] = rhsResult;
       if (lhsNextIndex.offset == rhsNextIndex.offset) {
         return null;
       }

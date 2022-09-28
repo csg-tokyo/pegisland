@@ -111,7 +111,6 @@ function expandLakes(
 function removeLakes(
   altSymbols: Map<string, Set<Terminal | Nonterminal>>
 ): void {
-  const lakes = new Set([...altSymbols.keys()].filter(isLake));
   [...altSymbols.keys()].forEach((key) => {
     const alts = altSymbols.get(key) as Set<Terminal | Nonterminal>;
     const altsWithoutLakes = new Set(

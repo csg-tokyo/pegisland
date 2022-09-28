@@ -1,7 +1,5 @@
-import { assert } from 'console';
 import {
   DefaultParsingExpressionVisitor,
-  IParsingExpression,
   Lake,
   parseGrammar,
   Peg,
@@ -23,10 +21,10 @@ describe('DepthFirstTraverser', () => {
       const startPe = startRule.rhs;
 
       class Visitor extends DefaultParsingExpressionVisitor {
-        visitLake(pe: Lake): void {
+        visitLake(_pe: Lake): void {
           count++;
         }
-        visitRewriting(pe: Rewriting): void {
+        visitRewriting(_pe: Rewriting): void {
           count++;
         }
       }

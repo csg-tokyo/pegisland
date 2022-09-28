@@ -48,7 +48,7 @@ export class PikaParsingEnv extends BaseParsingEnv {
 
   parseString(s: string, start: string): [IParseTree, Position] | Error {
     for (let pos = s.length; pos >= 0; pos--) {
-      const [heap, _indexMap] = this.createHeap();
+      const [heap] = this.createHeap();
       const set = new Set<IParsingExpression>(heap.toArray());
       // console.log('heap was created for ' + pos, heap.size());
 
@@ -108,8 +108,8 @@ export class PikaParsingEnv extends BaseParsingEnv {
       return result != null;
     } else {
       assert(result != null, "result can't be null once it was not null");
-      const [_tree, pos] = result;
-      const [_oldTree, oldPos] = oldResult;
+      const [, pos] = result;
+      const [, oldPos] = oldResult;
       //console.log(pos.offset, oldPos.offset);
       return pos.offset > oldPos.offset;
     }
@@ -261,7 +261,7 @@ export class PikaParser {
     if (result instanceof Error) {
       return result;
     }
-    const [tree, _pos] = result;
+    const [tree] = result;
     return tree;
   }
 }

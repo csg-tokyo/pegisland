@@ -36,7 +36,7 @@ export class BottomupParsingEnv extends BaseParsingEnv {
     const dummy = ' ';
     const finder = lineColumn(s + dummy);
     for (let pos = s.length; pos >= 0; pos--) {
-      const [heap, _indexMap] = this.createHeap();
+      const [heap] = this.createHeap();
       // console.log('heap was created for ' + pos, heap.size());
 
       while (!heap.empty()) {
@@ -101,8 +101,8 @@ export class BottomupParsingEnv extends BaseParsingEnv {
       return result != null;
     } else {
       assert(result != null, "result can't be null onece it was not null");
-      const [_tree, pos] = result;
-      const [_oldTree, oldPos] = oldResult;
+      const [, pos] = result;
+      const [, oldPos] = oldResult;
       //console.log(pos.offset, oldPos.offset);
       return pos.offset > oldPos.offset;
     }
@@ -173,7 +173,7 @@ class DFSTraverser {
 
 function getHeapCreator(peg: Peg, childrenMap: Map<Rule, Set<Rule>>) {
   const indexer = new Indexer();
-  const [indexMap, terminals] = indexer.build(peg);
+  const [indexMap] = indexer.build(peg);
   assert(
     peg.toplevelRules.length > 0,
     'One or more top-level rules are needed.'
@@ -181,7 +181,6 @@ function getHeapCreator(peg: Peg, childrenMap: Map<Rule, Set<Rule>>) {
 
   const traverser = new DFSTraverser(childrenMap, peg.toplevelRules);
   traverser.traverse();
-  const bottoms = traverser.bottoms;
 
   const b = new BeginningCalculator(peg.rules, true).calculate();
   const beginWithTerminal = (rule: Rule) =>
@@ -240,7 +239,7 @@ export class BottomUpParser {
     if (result instanceof Error) {
       return result;
     }
-    const [tree, _pos] = result;
+    const [tree] = result;
     return tree;
   }
 }
