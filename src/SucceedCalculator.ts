@@ -1,25 +1,25 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { SetCalculator, EPSILON } from './SetCalculator';
+import { strict as assert } from 'assert';
 import {
   And,
+  Colon,
+  ColonNot,
   Grouping,
+  IParsingExpression,
+  Lake,
   Nonterminal,
   Not,
   OneOrMore,
   Optional,
   OrderedChoice,
-  IParsingExpression,
   Rewriting,
   Rule,
   Sequence,
   Terminal,
   ZeroOrMore,
-  Colon,
-  ColonNot,
-  Lake,
 } from './ParsingExpression';
 import { difference, union } from './set-operations';
-import { strict as assert } from 'assert';
+import { EPSILON, SetCalculator } from './SetCalculator';
 
 export class SucceedCalculator extends SetCalculator {
   constructor(

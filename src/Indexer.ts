@@ -1,4 +1,5 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
+import { getTopLevelExpressions } from './BottomUpParser';
 import { DepthFirstTraverser } from './DepthFirstTraverser';
 import {
   And,
@@ -19,7 +20,6 @@ import {
   ZeroOrMore,
 } from './ParsingExpression';
 import { Peg } from './Peg';
-import { getTopLevelExpressions } from './BottomUpParser';
 
 export class Indexer implements IParsingExpressionVisitor {
   private indexMap: Map<IParsingExpression, number> = new Map();

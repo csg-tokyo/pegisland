@@ -1,20 +1,20 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
 import {
-  IParsingExpressionVisitor,
+  And,
+  Colon,
+  Grouping,
   IParsingExpression,
+  IParsingExpressionVisitor,
+  Lake,
   Nonterminal,
-  Terminal,
-  ZeroOrMore,
+  Not,
   OneOrMore,
   Optional,
-  And,
-  Not,
-  Sequence,
   OrderedChoice,
-  Grouping,
   Rewriting,
-  Colon,
-  Lake,
+  Sequence,
+  Terminal,
+  ZeroOrMore,
 } from './ParsingExpression';
 
 export class DepthFirstTraverser implements IParsingExpressionVisitor {

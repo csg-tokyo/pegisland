@@ -2,10 +2,10 @@
 import lineColumn from 'line-column';
 import { IParseTree } from './ParseTree';
 import {
-  Rule,
-  Position,
-  IParsingExpression,
   BaseParsingEnv,
+  IParsingExpression,
+  Position,
+  Rule,
 } from './ParsingExpression';
 import { peToString } from './Printer';
 import { Stats } from './Stats';

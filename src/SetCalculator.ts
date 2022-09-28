@@ -2,22 +2,22 @@
 import { ExpressionCollector } from './ExpressionCollector';
 import {
   And,
+  Colon,
+  ColonNot,
   Grouping,
+  IParsingExpression,
+  IParsingExpressionVisitor,
+  Lake,
   Nonterminal,
   Not,
   OneOrMore,
   Optional,
   OrderedChoice,
-  IParsingExpression,
-  IParsingExpressionVisitor,
   Rewriting,
   Rule,
   Sequence,
   Terminal,
   ZeroOrMore,
-  Colon,
-  ColonNot,
-  Lake,
 } from './ParsingExpression';
 
 export const EPSILON = new Sequence([]);

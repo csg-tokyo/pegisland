@@ -1,20 +1,18 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
-import assert from 'assert';
+import { strict as assert } from 'assert';
 import lineColumn from 'line-column';
 import { BeginningCalculator } from './BeginningCalculator';
 import { GraphBuilder } from './GraphBuilder';
-import { genDot } from './GraphPrinter';
 import { Indexer } from './Indexer';
 import { IParseTree } from './ParseTree';
 import {
   BaseParsingEnv,
-  Rule,
   IParsingExpression,
   Position,
+  Rule,
   Terminal,
 } from './ParsingExpression';
 import { Peg } from './Peg';
-import { peToString } from './Printer';
 import { PriorityQueue } from './PriorityQueue';
 
 export class BottomupParsingEnv extends BaseParsingEnv {

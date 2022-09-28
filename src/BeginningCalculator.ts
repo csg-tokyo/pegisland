@@ -1,24 +1,24 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { SetCalculator, EPSILON } from './SetCalculator';
 import {
   And,
+  Colon,
+  ColonNot,
   Grouping,
+  IParsingExpression,
+  Lake,
   Nonterminal,
   Not,
   OneOrMore,
   Optional,
   OrderedChoice,
-  IParsingExpression,
   Rewriting,
   Rule,
   Sequence,
   Terminal,
   ZeroOrMore,
-  Colon,
-  ColonNot,
-  Lake,
 } from './ParsingExpression';
 import { union } from './set-operations';
+import { EPSILON, SetCalculator } from './SetCalculator';
 
 export class BeginningCalculator extends SetCalculator {
   constructor(rules: Map<string, Rule>, private isSpecial = false) {

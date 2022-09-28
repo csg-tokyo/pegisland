@@ -1,37 +1,36 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { strict as assert } from 'assert';
-import { PegParser } from './PegParser';
+import { ParsingError } from './PackratParser';
 import {
-  And,
-  Rule,
-  Nonterminal,
-  Not,
-  NullParsingExpression,
-  OrderedChoice,
-  IParsingExpression,
-  Sequence,
-  Optional,
-  ZeroOrMore,
-  OneOrMore,
-  Grouping,
-  Terminal,
-  Rewriting,
-  Colon,
-  ColonNot,
-  Lake,
-} from './ParsingExpression';
-import {
+  IParseTree,
   NodeNonterminal,
+  NodeOptional,
   NodeOrderedChoice,
   NodeSequence,
   NodeTerminal,
-  IParseTree,
-  NodeOptional,
-  NodeZeroOrMore,
 } from './ParseTree';
+import {
+  And,
+  Colon,
+  ColonNot,
+  Grouping,
+  IParsingExpression,
+  Lake,
+  Nonterminal,
+  Not,
+  NullParsingExpression,
+  OneOrMore,
+  Optional,
+  OrderedChoice,
+  Rewriting,
+  Rule,
+  Sequence,
+  Terminal,
+  ZeroOrMore,
+} from './ParsingExpression';
 import { Peg } from './Peg';
+import { PegParser } from './PegParser';
 import { difference } from './set-operations';
-import { ParsingError } from './PackratParser';
 
 export class GeneralPegBuilder {
   rules = new Map<string, Rule>();

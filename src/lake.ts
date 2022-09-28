@@ -1,19 +1,19 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import assert from 'assert';
+import { strict as assert } from 'assert';
 import { AltCalculator } from './AltCalculator';
 import { BeginningCalculator } from './BeginningCalculator';
 import {
+  DefaultParsingExpressionVisitor,
+  IParsingExpression,
+  Lake,
+  Nonterminal,
   Not,
   NullParsingExpression,
   OrderedChoice,
-  IParsingExpression,
+  PostorderExpressionTraverser,
+  Rule,
   Sequence,
   Terminal,
-  Rule,
-  Nonterminal,
-  Lake,
-  PostorderExpressionTraverser,
-  DefaultParsingExpressionVisitor,
 } from './ParsingExpression';
 import { Peg } from './Peg';
 import { areEqualSets } from './set-operations';

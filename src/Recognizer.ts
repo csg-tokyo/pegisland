@@ -1,5 +1,5 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
-import assert from 'assert';
+import { strict as assert } from 'assert';
 import {
   IParseTree,
   NodeAnd,

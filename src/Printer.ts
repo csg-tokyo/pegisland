@@ -1,21 +1,21 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
 import {
-  IParsingExpressionVisitor,
-  IParsingExpression,
-  Nonterminal,
-  Terminal,
-  ZeroOrMore,
-  OneOrMore,
-  Optional,
   And,
-  Not,
-  Sequence,
-  OrderedChoice,
-  Grouping,
-  Rewriting,
   Colon,
   ColonNot,
+  Grouping,
+  IParsingExpression,
+  IParsingExpressionVisitor,
   Lake,
+  Nonterminal,
+  Not,
+  OneOrMore,
+  Optional,
+  OrderedChoice,
+  Rewriting,
+  Sequence,
+  Terminal,
+  ZeroOrMore,
 } from './ParsingExpression';
 
 class Printer implements IParsingExpressionVisitor<string> {

@@ -1,25 +1,25 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { SetCalculator, EPSILON } from './SetCalculator';
+import { strict as assert } from 'assert';
 import {
   And,
+  Colon,
+  ColonNot,
   Grouping,
+  IParsingExpression,
+  Lake,
   Nonterminal,
   Not,
   OneOrMore,
   Optional,
   OrderedChoice,
-  IParsingExpression,
   Rewriting,
   Rule,
   Sequence,
   Terminal,
   ZeroOrMore,
-  Colon,
-  ColonNot,
-  Lake,
 } from './ParsingExpression';
 import { difference, union } from './set-operations';
-import { strict as assert } from 'assert';
+import { EPSILON, SetCalculator } from './SetCalculator';
 
 export class AltCalculator extends SetCalculator {
   constructor(
@@ -42,7 +42,7 @@ export class AltCalculator extends SetCalculator {
     this.set(pe.rule.rhs, union(this.get(pe.rule.rhs), this.get(pe)));
   }
 
-  visitTerminal(pe: Terminal): void {
+  visitTerminal(_pe: Terminal): void {
     assert(true);
   }
 
@@ -58,11 +58,11 @@ export class AltCalculator extends SetCalculator {
     this.set(pe.operand, union(this.get(pe), this.getSucceed(pe)));
   }
 
-  visitAnd(pe: And): void {
+  visitAnd(_pe: And): void {
     assert(true);
   }
 
-  visitNot(pe: Not): void {
+  visitNot(_pe: Not): void {
     assert(true);
   }
 
@@ -85,7 +85,7 @@ export class AltCalculator extends SetCalculator {
             union(
               new Set([]),
               ...pe.operands
-                .filter((ej, j) => j > i)
+                .filter((_ej, j) => j > i)
                 .map((ej) => this.getBeginning(ej))
             ),
             new Set([EPSILON])
