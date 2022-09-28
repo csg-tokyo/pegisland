@@ -17,7 +17,6 @@ import {
 } from './ParseTree';
 import {
   IParsingExpressionVisitor,
-  IParsingExpression,
   Nonterminal,
   Terminal,
   ZeroOrMore,
@@ -249,7 +248,6 @@ export class Recognizer
     );
     const [childNode, nextIndex] = result;
     const zeroOrMore = childNode as NodeZeroOrMore;
-    const group = zeroOrMore.childNodes[0];
     const islands = zeroOrMore.childNodes
       .map((group) => group.childNodes[0])
       .filter((childNode) => (childNode as NodeOrderedChoice).index == 0)
