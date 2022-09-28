@@ -1,21 +1,20 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { strict as assert } from 'assert';
 import {
+  And,
   IParsingExpression,
-  Terminal,
-  ZeroOrMore,
+  Nonterminal,
+  Not,
+  NullParsingExpression,
   OneOrMore,
   Optional,
-  And,
-  Not,
-  Sequence,
   OrderedChoice,
   Rule,
-  NullParsingExpression,
-  Nonterminal,
+  Sequence,
+  Terminal,
+  ZeroOrMore,
 } from './ParsingExpression';
-
-import { Nonterminals, SimpleTree } from './PegParser';
+import { SimpleTree } from './PegParser';
 
 export class InitialPegBuilder {
   rules = new Map<string, Rule>();
