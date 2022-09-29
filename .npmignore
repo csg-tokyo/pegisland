@@ -14,3 +14,6 @@ doc
 jest.config.ts
 reports
 .circleci
+dist/jest.config.*
+junit.xml
+*.tgz
