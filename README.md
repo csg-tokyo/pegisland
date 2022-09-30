@@ -1,6 +1,7 @@
 # PEGIsland: a general PEG-based parser supporting lake symbols
 
 [![csg-tokyo](https://circleci.com/gh/csg-tokyo/pegisland.svg?style=svg)](https://circleci.com/gh/csg-tokyo/pegisland)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcsg-tokyo%2Fpegisland.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcsg-tokyo%2Fpegisland?ref=badge_shield)
 
 PEGIsland is a general parser supporting island grammars with `lake symbols`.
 PEGIsland parses any text based on a given parsing expression grammar (PEG).
@@ -195,3 +196,6 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/csg-to
 ## License
 
 PEGIsland is available as open-source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcsg-tokyo%2Fpegisland.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcsg-tokyo%2Fpegisland?ref=badge_large)
