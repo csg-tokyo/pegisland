@@ -6,7 +6,6 @@ import {
   ColonNot,
   Grouping,
   IParsingExpression,
-  IParsingExpressionVisitor,
   Lake,
   Nonterminal,
   Not,
@@ -18,6 +17,7 @@ import {
   Terminal,
   ZeroOrMore,
 } from './ParsingExpression';
+import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
 import { Rule } from './Rule';
 
 export const EPSILON = new Sequence([]);

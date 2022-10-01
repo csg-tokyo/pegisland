@@ -5,7 +5,6 @@ import {
   ColonNot,
   Grouping,
   IParsingExpression,
-  IParsingExpressionVisitor,
   Lake,
   Nonterminal,
   Not,
@@ -17,6 +16,7 @@ import {
   Terminal,
   ZeroOrMore,
 } from './ParsingExpression';
+import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
 import { PostorderExpressionTraverser } from './PostorderExpressionTraverser';
 import { Rule } from './Rule';
 

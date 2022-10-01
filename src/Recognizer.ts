@@ -20,7 +20,6 @@ import {
   Colon,
   ColonNot,
   Grouping,
-  IParsingExpressionVisitor,
   Lake,
   Nonterminal,
   Not,
@@ -32,6 +31,7 @@ import {
   Terminal,
   ZeroOrMore,
 } from './ParsingExpression';
+import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
 import { IParsingEnv } from './IParsingEnv';
 import { Position } from './Position';
 

@@ -10,3 +10,4 @@ export { Peg } from './Peg';
 export * from './Printer';
 export * from './search';
 export * from './Rule';
+export * from './IParsingExpressionVisitor';

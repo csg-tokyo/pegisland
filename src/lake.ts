@@ -3,7 +3,6 @@ import { strict as assert } from 'assert';
 import { AltCalculator } from './AltCalculator';
 import { BeginningCalculator } from './BeginningCalculator';
 import {
-  DefaultParsingExpressionVisitor,
   IParsingExpression,
   Lake,
   Nonterminal,
@@ -13,6 +12,7 @@ import {
   Sequence,
   Terminal,
 } from './ParsingExpression';
+import { DefaultParsingExpressionVisitor } from './IParsingExpressionVisitor';
 import { PostorderExpressionTraverser } from './PostorderExpressionTraverser';
 import { Rule } from './Rule';
 import { Peg } from './Peg';

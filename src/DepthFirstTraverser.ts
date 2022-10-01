@@ -4,7 +4,6 @@ import {
   Colon,
   Grouping,
   IParsingExpression,
-  IParsingExpressionVisitor,
   Lake,
   Nonterminal,
   Not,
@@ -16,6 +15,7 @@ import {
   Terminal,
   ZeroOrMore,
 } from './ParsingExpression';
+import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
 
 export class DepthFirstTraverser implements IParsingExpressionVisitor {
   visitor: IParsingExpressionVisitor;

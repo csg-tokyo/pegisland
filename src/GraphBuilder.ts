@@ -1,11 +1,11 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
 import { BeginningCalculator } from './BeginningCalculator';
 import {
-  DefaultParsingExpressionVisitor,
   IParsingExpression,
   Nonterminal,
   NullParsingExpression,
 } from './ParsingExpression';
+import { DefaultParsingExpressionVisitor } from './IParsingExpressionVisitor';
 import { PostorderExpressionTraverser } from './PostorderExpressionTraverser';
 import { Rule } from './Rule';
 import { Peg } from './Peg';

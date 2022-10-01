@@ -1,5 +1,4 @@
 import {
-  IParsingExpressionVisitor,
   IParsingExpression,
   Nonterminal,
   Terminal,
@@ -15,6 +14,7 @@ import {
   Colon,
   Lake,
 } from './ParsingExpression';
+import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
 
 export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
   visitor: IParsingExpressionVisitor;

@@ -11,7 +11,6 @@ import {
   ColonNot,
   Grouping,
   IParsingExpression,
-  IParsingExpressionVisitor,
   Nonterminal,
   Not,
   OneOrMore,
@@ -23,6 +22,7 @@ import {
   ZeroOrMore,
   Lake,
 } from './ParsingExpression';
+import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
 import { BaseParsingEnv } from './IParsingEnv';
 import { Rule } from './Rule';
 import { Position } from './Position';
