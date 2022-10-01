@@ -5,21 +5,13 @@ export class Range {
   constructor(public start: Position, public end: Position) {}
 }
 
-let seq = 0;
-
-function getSeq() {
-  return seq++;
-}
-
 export interface IParseTree {
-  id: number;
   range: Range;
   childNodes: IParseTree[];
   parentNode: IParseTree;
 }
 
 export class NodeTerminal implements IParseTree {
-  id = getSeq();
   childNodes: IParseTree[] = [];
   parentNode: IParseTree = this;
 
@@ -31,7 +23,6 @@ export class NodeTerminal implements IParseTree {
 }
 
 export class NodeNonterminal implements IParseTree {
-  id = getSeq();
   childNodes: IParseTree[];
   parentNode: IParseTree = this;
   constructor(
@@ -45,7 +36,6 @@ export class NodeNonterminal implements IParseTree {
 }
 
 export class NodeZeroOrMore implements IParseTree {
-  id = getSeq();
   parentNode: IParseTree = this;
   constructor(public range: Range, public childNodes: IParseTree[]) {
     childNodes.forEach((n) => (n.parentNode = this));
@@ -53,7 +43,6 @@ export class NodeZeroOrMore implements IParseTree {
 }
 
 export class NodeOneOrMore implements IParseTree {
-  id = getSeq();
   parentNode: IParseTree = this;
   constructor(public range: Range, public childNodes: IParseTree[]) {
     childNodes.forEach((n) => (n.parentNode = this));
@@ -61,7 +50,6 @@ export class NodeOneOrMore implements IParseTree {
 }
 
 export class NodeOptional implements IParseTree {
-  id = getSeq();
   parentNode: IParseTree = this;
   constructor(public range: Range, public childNodes: IParseTree[]) {
     childNodes.forEach((n) => (n.parentNode = this));
@@ -69,7 +57,6 @@ export class NodeOptional implements IParseTree {
 }
 
 export class NodeAnd implements IParseTree {
-  id = getSeq();
   childNodes: IParseTree[];
   parentNode: IParseTree = this;
   constructor(public range: Range, childNode: IParseTree) {
@@ -79,14 +66,12 @@ export class NodeAnd implements IParseTree {
 }
 
 export class NodeNot implements IParseTree {
-  id = getSeq();
   childNodes: IParseTree[] = [];
   parentNode: IParseTree = this;
   constructor(public range: Range) {}
 }
 
 export class NodeSequence implements IParseTree {
-  id = getSeq();
   parentNode: IParseTree = this;
   constructor(public range: Range, public childNodes: IParseTree[]) {
     childNodes.forEach((n) => (n.parentNode = this));
@@ -94,7 +79,6 @@ export class NodeSequence implements IParseTree {
 }
 
 export class NodeOrderedChoice implements IParseTree {
-  id = getSeq();
   childNodes: IParseTree[];
   parentNode: IParseTree = this;
   constructor(
@@ -108,7 +92,6 @@ export class NodeOrderedChoice implements IParseTree {
 }
 
 export class NodeGrouping implements IParseTree {
-  id = getSeq();
   childNodes: IParseTree[];
   parentNode: IParseTree = this;
   constructor(public range: Range, childNode: IParseTree) {
@@ -118,7 +101,6 @@ export class NodeGrouping implements IParseTree {
 }
 
 export class NodeLake implements IParseTree {
-  id = getSeq();
   parentNode: IParseTree = this;
   constructor(
     public range: Range,
@@ -132,7 +114,6 @@ export class NodeLake implements IParseTree {
 declare class Rewriting {}
 
 export class NodeRewriting implements IParseTree {
-  id = getSeq();
   childNodes: IParseTree[];
   parentNode: IParseTree = this;
   constructor(
