@@ -47,15 +47,19 @@ export class AltCalculator extends SetCalculator {
   }
 
   visitZeroOrMore(pe: ZeroOrMore): void {
+    this.propagateWithSucceed(pe);
+  }
+
+  private propagateWithSucceed(pe: ZeroOrMore) {
     this.set(pe.operand, union(this.get(pe), this.getSucceed(pe)));
   }
 
   visitOneOrMore(pe: OneOrMore): void {
-    this.set(pe.operand, union(this.get(pe), this.getSucceed(pe)));
+    this.propagateWithSucceed(pe);
   }
 
   visitOptional(pe: Optional): void {
-    this.set(pe.operand, union(this.get(pe), this.getSucceed(pe)));
+    this.propagateWithSucceed(pe);
   }
 
   visitAnd(_pe: And): void {
@@ -96,19 +100,27 @@ export class AltCalculator extends SetCalculator {
   }
 
   visitGrouping(pe: Grouping): void {
-    this.set(pe.operand, new Set(this.get(pe)));
+    this.propagateToOperand(pe);
+  }
+
+  private propagate(pe: IParsingExpression, operand: IParsingExpression) {
+    this.set(operand, new Set(this.get(pe)));
+  }
+
+  private propagateToOperand(pe: Grouping) {
+    this.propagate(pe, pe.operand);
   }
 
   visitRewriting(pe: Rewriting): void {
-    this.set(pe.operand, new Set(this.get(pe)));
+    this.propagateToOperand(pe);
   }
 
   visitColon(pe: Colon): void {
-    this.set(pe.rhs, new Set(this.get(pe)));
+    this.propagate(pe, pe.rhs);
   }
 
   visitColonNot(pe: ColonNot): void {
-    this.set(pe.lhs, new Set(this.get(pe)));
+    this.propagate(pe, pe.lhs);
   }
 
   visitLake(pe: Lake): void {
