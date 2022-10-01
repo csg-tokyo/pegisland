@@ -9,8 +9,8 @@ import {
   Sequence,
   OrderedChoice,
   NullParsingExpression,
-  IParsingExpressionVisitor,
 } from '../src/ParsingExpression';
+import { IParsingExpressionVisitor } from '../src/IParsingExpressionVisitor';
 import { Rule } from '../src/Rule';
 import { Position } from '../src/Position';
 import {
