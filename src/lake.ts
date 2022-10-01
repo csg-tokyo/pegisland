@@ -10,10 +10,10 @@ import {
   Not,
   NullParsingExpression,
   OrderedChoice,
-  PostorderExpressionTraverser,
   Sequence,
   Terminal,
 } from './ParsingExpression';
+import { PostorderExpressionTraverser } from './PostorderExpressionTraverser';
 import { Rule } from './Rule';
 import { Peg } from './Peg';
 import { areEqualSets } from './set-operations';

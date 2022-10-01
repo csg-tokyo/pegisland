@@ -19,12 +19,12 @@ import {
   OneOrMore,
   Optional,
   OrderedChoice,
-  PostorderExpressionTraverser,
   Rewriting,
   Sequence,
   Terminal,
   ZeroOrMore,
 } from './ParsingExpression';
+import { PostorderExpressionTraverser } from './PostorderExpressionTraverser';
 import { Peg } from './Peg';
 import { GrammarInfo, Stats } from './Stats';
 import { measure } from './utils';

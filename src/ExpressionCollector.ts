@@ -12,12 +12,12 @@ import {
   OneOrMore,
   Optional,
   OrderedChoice,
-  PostorderExpressionTraverser,
   Rewriting,
   Sequence,
   Terminal,
   ZeroOrMore,
 } from './ParsingExpression';
+import { PostorderExpressionTraverser } from './PostorderExpressionTraverser';
 import { Rule } from './Rule';
 
 export class ExpressionCollector implements IParsingExpressionVisitor {

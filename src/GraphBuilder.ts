@@ -5,8 +5,8 @@ import {
   IParsingExpression,
   Nonterminal,
   NullParsingExpression,
-  PostorderExpressionTraverser,
 } from './ParsingExpression';
+import { PostorderExpressionTraverser } from './PostorderExpressionTraverser';
 import { Rule } from './Rule';
 import { Peg } from './Peg';
 
