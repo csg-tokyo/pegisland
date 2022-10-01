@@ -1,5 +1,6 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { Lake, Position } from './ParsingExpression';
+import { Lake } from './ParsingExpression';
+import { Position } from './Position';
 
 export class Range {
   constructor(public start: Position, public end: Position) {}

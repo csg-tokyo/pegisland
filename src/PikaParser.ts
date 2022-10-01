@@ -19,13 +19,13 @@ import {
   OneOrMore,
   Optional,
   OrderedChoice,
-  Position,
   Rewriting,
   Sequence,
   Terminal,
   ZeroOrMore,
   Lake,
 } from './ParsingExpression';
+import { Position } from './Position';
 import { Peg } from './Peg';
 import { EPSILON } from './SetCalculator';
 

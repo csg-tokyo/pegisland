@@ -1,9 +1,6 @@
 import { IParseTree } from '../ParseTree';
-import {
-  BaseParsingEnv,
-  IParsingExpression,
-  Position,
-} from '../ParsingExpression';
+import { BaseParsingEnv, IParsingExpression } from '../ParsingExpression';
+import { Position } from '../Position';
 
 export class ParsingEnvPlayer extends BaseParsingEnv {
   private currentStack: IParsingExpression[] = [];

@@ -9,10 +9,10 @@ import {
   Sequence,
   OrderedChoice,
   NullParsingExpression,
-  Position,
   Rule,
   IParsingExpressionVisitor,
 } from '../src/ParsingExpression';
+import { Position } from '../src/Position';
 import {
   NodeTerminal,
   NodeZeroOrMore,

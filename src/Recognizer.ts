@@ -28,12 +28,12 @@ import {
   OneOrMore,
   Optional,
   OrderedChoice,
-  Position,
   Rewriting,
   Sequence,
   Terminal,
   ZeroOrMore,
 } from './ParsingExpression';
+import { Position } from './Position';
 
 export class Recognizer
   implements IParsingExpressionVisitor<[IParseTree, Position] | null, Position>

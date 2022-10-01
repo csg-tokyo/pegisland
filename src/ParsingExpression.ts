@@ -1,21 +1,7 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { IParseTree, NodeNonterminal, Range } from './ParseTree';
+import { Position } from './Position';
 import { Recognizer } from './Recognizer';
-
-export class Position {
-  constructor(
-    public offset: number,
-    public line: number,
-    public column: number
-  ) {}
-  equal(other: Position): boolean {
-    return (
-      this.offset == other.offset &&
-      this.line == other.line &&
-      this.column == other.column
-    );
-  }
-}
 
 export interface IParsingExpressionVisitor<T = void, U = void> {
   visitNonterminal(pe: Nonterminal, arg?: U): T;

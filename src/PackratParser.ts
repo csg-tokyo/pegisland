@@ -1,12 +1,8 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import lineColumn from 'line-column';
 import { IParseTree } from './ParseTree';
-import {
-  BaseParsingEnv,
-  IParsingExpression,
-  Position,
-  Rule,
-} from './ParsingExpression';
+import { BaseParsingEnv, IParsingExpression, Rule } from './ParsingExpression';
+import { Position } from './Position';
 import { peToString } from './Printer';
 import { Stats } from './Stats';
 

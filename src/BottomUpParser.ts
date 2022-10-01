@@ -8,10 +8,10 @@ import { IParseTree } from './ParseTree';
 import {
   BaseParsingEnv,
   IParsingExpression,
-  Position,
   Rule,
   Terminal,
 } from './ParsingExpression';
+import { Position } from './Position';
 import { Peg } from './Peg';
 import { PriorityQueue } from './PriorityQueue';
 

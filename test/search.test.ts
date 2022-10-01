@@ -1,6 +1,6 @@
 import { strict as assert } from 'assert';
 import { NodeSequence, NodeTerminal, Range } from '../src/ParseTree';
-import { Position } from '../src/ParsingExpression';
+import { Position } from '../src/Position';
 import { min, max, searchExpressions, search, inRange } from '../src/search';
 
 describe('inRange', () => {

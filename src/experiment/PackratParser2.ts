@@ -1,11 +1,7 @@
 import assert from 'assert';
 import { IParseTree } from '../ParseTree';
-import {
-  Rule,
-  Position,
-  IParsingExpression,
-  BaseParsingEnv,
-} from '../ParsingExpression';
+import { Rule, IParsingExpression, BaseParsingEnv } from '../ParsingExpression';
+import { Position } from '../Position';
 
 class Head {
   constructor(
