@@ -12,118 +12,86 @@ export interface IParseTree {
   parentNode: IParseTree;
 }
 
-export class NodeTerminal implements IParseTree {
-  childNodes: IParseTree[] = [];
+class ParseTree implements IParseTree {
   parentNode: IParseTree = this;
-
-  constructor(
-    public range: Range,
-    public pattern: RegExp,
-    public text: string
-  ) {}
-}
-
-export class NodeNonterminal implements IParseTree {
-  childNodes: IParseTree[];
-  parentNode: IParseTree = this;
-  constructor(
-    public symbol: string,
-    public range: Range,
-    childNode: IParseTree
-  ) {
-    this.childNodes = [childNode];
-    childNode.parentNode = this;
-  }
-}
-
-export class NodeZeroOrMore implements IParseTree {
-  parentNode: IParseTree = this;
-  constructor(public range: Range, public childNodes: IParseTree[]) {
+  constructor(public childNodes: IParseTree[], public range: Range) {
+    this.childNodes = childNodes;
+    this.range = range;
     childNodes.forEach((n) => (n.parentNode = this));
   }
 }
 
-export class NodeOneOrMore implements IParseTree {
-  parentNode: IParseTree = this;
-  constructor(public range: Range, public childNodes: IParseTree[]) {
-    childNodes.forEach((n) => (n.parentNode = this));
+export class NodeTerminal extends ParseTree {
+  constructor(range: Range, pattern: RegExp, public text: string) {
+    super([], range);
   }
 }
 
-export class NodeOptional implements IParseTree {
-  parentNode: IParseTree = this;
-  constructor(public range: Range, public childNodes: IParseTree[]) {
-    childNodes.forEach((n) => (n.parentNode = this));
+export class NodeNonterminal extends ParseTree {
+  constructor(public symbol: string, range: Range, childNode: IParseTree) {
+    super([childNode], range);
   }
 }
 
-export class NodeAnd implements IParseTree {
-  childNodes: IParseTree[];
-  parentNode: IParseTree = this;
-  constructor(public range: Range, childNode: IParseTree) {
-    this.childNodes = [childNode];
-    childNode.parentNode = this;
+export class NodeZeroOrMore extends ParseTree {
+  constructor(range: Range, childNodes: IParseTree[]) {
+    super(childNodes, range);
   }
 }
 
-export class NodeNot implements IParseTree {
-  childNodes: IParseTree[] = [];
-  parentNode: IParseTree = this;
-  constructor(public range: Range) {}
-}
-
-export class NodeSequence implements IParseTree {
-  parentNode: IParseTree = this;
-  constructor(public range: Range, public childNodes: IParseTree[]) {
-    childNodes.forEach((n) => (n.parentNode = this));
+export class NodeOneOrMore extends ParseTree {
+  constructor(range: Range, childNodes: IParseTree[]) {
+    super(childNodes, range);
   }
 }
 
-export class NodeOrderedChoice implements IParseTree {
-  childNodes: IParseTree[];
-  parentNode: IParseTree = this;
-  constructor(
-    public range: Range,
-    childNode: IParseTree,
-    public index: number
-  ) {
-    this.childNodes = [childNode];
-    childNode.parentNode = this;
+export class NodeOptional extends ParseTree {
+  constructor(range: Range, childNodes: IParseTree[]) {
+    super(childNodes, range);
   }
 }
 
-export class NodeGrouping implements IParseTree {
-  childNodes: IParseTree[];
-  parentNode: IParseTree = this;
-  constructor(public range: Range, childNode: IParseTree) {
-    this.childNodes = [childNode];
-    childNode.parentNode = this;
+export class NodeAnd extends ParseTree {
+  constructor(range: Range, childNode: IParseTree) {
+    super([childNode], range);
   }
 }
 
-export class NodeLake implements IParseTree {
-  parentNode: IParseTree = this;
-  constructor(
-    public range: Range,
-    public childNodes: IParseTree[],
-    public pe: Lake
-  ) {
-    childNodes.forEach((n) => (n.parentNode = this));
+export class NodeNot extends ParseTree {
+  constructor(range: Range) {
+    super([], range);
+  }
+}
+
+export class NodeSequence extends ParseTree {
+  constructor(range: Range, childNodes: IParseTree[]) {
+    super(childNodes, range);
+  }
+}
+
+export class NodeOrderedChoice extends ParseTree {
+  constructor(range: Range, childNode: IParseTree, public index: number) {
+    super([childNode], range);
+  }
+}
+
+export class NodeGrouping extends ParseTree {
+  constructor(range: Range, childNode: IParseTree) {
+    super([childNode], range);
+  }
+}
+
+export class NodeLake extends ParseTree {
+  constructor(range: Range, childNodes: IParseTree[], public pe: Lake) {
+    super(childNodes, range);
   }
 }
 
 declare class Rewriting {}
 
-export class NodeRewriting implements IParseTree {
-  childNodes: IParseTree[];
-  parentNode: IParseTree = this;
-  constructor(
-    public range: Range,
-    childNode: IParseTree,
-    public spec: Rewriting
-  ) {
-    this.childNodes = [childNode];
-    childNode.parentNode = this;
+export class NodeRewriting extends ParseTree {
+  constructor(range: Range, childNode: IParseTree, public spec: Rewriting) {
+    super([childNode], range);
   }
 }
 
