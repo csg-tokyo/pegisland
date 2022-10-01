@@ -10,7 +10,8 @@ import {
   NodeTerminal,
 } from './ParseTree';
 import * as pe from './ParsingExpression';
-import { IParsingExpression, Rule } from './ParsingExpression';
+import { IParsingExpression } from './ParsingExpression';
+import { Rule } from './Rule';
 import { Peg } from './Peg';
 import { PegParser } from './PegParser';
 import { difference } from './set-operations';
@@ -193,7 +194,7 @@ export class GeneralPegBuilder {
     {
       const seq = id.childNodes[0];
       const term = seq.childNodes[0] as NodeTerminal;
-      const rule = this.getRule(term.text) as pe.Rule;
+      const rule = this.getRule(term.text) as Rule;
       this.visitedRules.add(rule);
       return new pe.Nonterminal(rule, subname);
     }

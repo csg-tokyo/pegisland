@@ -14,11 +14,11 @@ import {
   OrderedChoice,
   PostorderExpressionTraverser,
   Rewriting,
-  Rule,
   Sequence,
   Terminal,
   ZeroOrMore,
 } from './ParsingExpression';
+import { Rule } from './Rule';
 
 export class ExpressionCollector implements IParsingExpressionVisitor {
   expressions: IParsingExpression[] = [];

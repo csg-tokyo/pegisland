@@ -13,11 +13,11 @@ import {
   Optional,
   OrderedChoice,
   Rewriting,
-  Rule,
   Sequence,
   Terminal,
   ZeroOrMore,
 } from './ParsingExpression';
+import { Rule } from './Rule';
 import { difference, union } from './set-operations';
 import { EPSILON, SetCalculator } from './SetCalculator';
 

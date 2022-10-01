@@ -8,7 +8,6 @@ import { IParseTree } from './ParseTree';
 import {
   And,
   BaseParsingEnv,
-  Rule,
   Colon,
   ColonNot,
   Grouping,
@@ -25,6 +24,7 @@ import {
   ZeroOrMore,
   Lake,
 } from './ParsingExpression';
+import { Rule } from './Rule';
 import { Position } from './Position';
 import { Peg } from './Peg';
 import { EPSILON } from './SetCalculator';

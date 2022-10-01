@@ -6,8 +6,8 @@ import {
   Nonterminal,
   NullParsingExpression,
   PostorderExpressionTraverser,
-  Rule,
 } from './ParsingExpression';
+import { Rule } from './Rule';
 import { Peg } from './Peg';
 
 export class GraphBuilder extends DefaultParsingExpressionVisitor {

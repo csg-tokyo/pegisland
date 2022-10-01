@@ -9,3 +9,4 @@ export * from './ParsingExpression';
 export { Peg } from './Peg';
 export * from './Printer';
 export * from './search';
+export * from './Rule';

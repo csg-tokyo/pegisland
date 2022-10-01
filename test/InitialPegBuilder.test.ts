@@ -7,11 +7,11 @@ import {
   OneOrMore,
   Optional,
   OrderedChoice,
-  Rule,
   Sequence,
   Terminal,
   ZeroOrMore,
 } from '../src/ParsingExpression';
+import { Rule } from '../src/Rule';
 
 describe('IntialPegBuilder', () => {
   const builder = new InitialPegBuilder();

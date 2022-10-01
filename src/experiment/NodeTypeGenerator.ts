@@ -7,11 +7,11 @@ import {
   OneOrMore,
   Optional,
   OrderedChoice,
-  Rule,
   Sequence,
   Terminal,
   ZeroOrMore,
 } from '../ParsingExpression';
+import { Rule } from '../Rule';
 import { Peg } from '../Peg';
 
 function symbolName(operand: IParsingExpression) {

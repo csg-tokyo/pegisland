@@ -9,11 +9,11 @@ import {
   OneOrMore,
   Optional,
   OrderedChoice,
-  Rule,
   Sequence,
   Terminal,
   ZeroOrMore,
 } from './ParsingExpression';
+import { Rule } from './Rule';
 import { SimpleTree } from './PegParser';
 
 export class InitialPegBuilder {

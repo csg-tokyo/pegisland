@@ -8,9 +8,9 @@ import { IParseTree } from './ParseTree';
 import {
   BaseParsingEnv,
   IParsingExpression,
-  Rule,
   Terminal,
 } from './ParsingExpression';
+import { Rule } from './Rule';
 import { Position } from './Position';
 import { Peg } from './Peg';
 import { PriorityQueue } from './PriorityQueue';

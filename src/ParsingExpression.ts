@@ -1,7 +1,8 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { IParseTree, NodeNonterminal, Range } from './ParseTree';
+import { IParseTree } from './ParseTree';
 import { Position } from './Position';
 import { Recognizer } from './Recognizer';
+import { Rule } from './Rule';
 
 export interface IParsingExpressionVisitor<T = void, U = void> {
   visitNonterminal(pe: Nonterminal, arg?: U): T;
@@ -133,34 +134,6 @@ export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
   visitLake(pe: Lake): void {
     pe.operand.accept(this);
     pe.accept(this.visitor);
-  }
-}
-
-export class Rule {
-  constructor(
-    public symbol: string,
-    public rhs: IParsingExpression,
-    public isWater = false
-  ) {}
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
-    return this.parseWithoutMemo(env, pos);
-  }
-
-  parseWithoutMemo(
-    env: IParsingEnv,
-    pos: Position
-  ): [IParseTree, Position] | null {
-    env.push();
-    const result = env.parse(this.rhs, pos);
-    env.pop();
-    if (result == null) {
-      return null;
-    }
-    const [childNode, nextIndex] = result;
-    return [
-      new NodeNonterminal(this.symbol, new Range(pos, nextIndex), childNode),
-      nextIndex,
-    ];
   }
 }
 
