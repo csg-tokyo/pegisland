@@ -20,7 +20,6 @@ import {
   Colon,
   ColonNot,
   Grouping,
-  IParsingEnv,
   IParsingExpressionVisitor,
   Lake,
   Nonterminal,
@@ -33,6 +32,7 @@ import {
   Terminal,
   ZeroOrMore,
 } from './ParsingExpression';
+import { IParsingEnv } from './IParsingEnv';
 import { Position } from './Position';
 
 export class Recognizer

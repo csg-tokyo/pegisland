@@ -5,11 +5,8 @@ import { BeginningCalculator } from './BeginningCalculator';
 import { GraphBuilder } from './GraphBuilder';
 import { Indexer } from './Indexer';
 import { IParseTree } from './ParseTree';
-import {
-  BaseParsingEnv,
-  IParsingExpression,
-  Terminal,
-} from './ParsingExpression';
+import { IParsingExpression, Terminal } from './ParsingExpression';
+import { BaseParsingEnv } from './IParsingEnv';
 import { Rule } from './Rule';
 import { Position } from './Position';
 import { Peg } from './Peg';

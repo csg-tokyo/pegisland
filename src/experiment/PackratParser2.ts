@@ -1,6 +1,7 @@
 import assert from 'assert';
 import { IParseTree } from '../ParseTree';
-import { IParsingExpression, BaseParsingEnv } from '../ParsingExpression';
+import { IParsingExpression } from '../ParsingExpression';
+import { BaseParsingEnv } from '../IParsingEnv';
 import { Rule } from '../Rule';
 import { Position } from '../Position';
 

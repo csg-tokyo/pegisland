@@ -1,6 +1,7 @@
 import { IParseTree, NodeNonterminal, Range } from './ParseTree';
 import { Position } from './Position';
-import { IParsingExpression, IParsingEnv } from './ParsingExpression';
+import { IParsingExpression } from './ParsingExpression';
+import { IParsingEnv } from './IParsingEnv';
 
 export class Rule {
   constructor(

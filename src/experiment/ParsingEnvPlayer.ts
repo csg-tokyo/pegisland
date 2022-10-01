@@ -1,5 +1,6 @@
 import { IParseTree } from '../ParseTree';
-import { BaseParsingEnv, IParsingExpression } from '../ParsingExpression';
+import { IParsingExpression } from '../ParsingExpression';
+import { BaseParsingEnv } from '../IParsingEnv';
 import { Position } from '../Position';
 
 export class ParsingEnvPlayer extends BaseParsingEnv {

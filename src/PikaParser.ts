@@ -7,7 +7,6 @@ import { Indexer } from './Indexer';
 import { IParseTree } from './ParseTree';
 import {
   And,
-  BaseParsingEnv,
   Colon,
   ColonNot,
   Grouping,
@@ -24,6 +23,7 @@ import {
   ZeroOrMore,
   Lake,
 } from './ParsingExpression';
+import { BaseParsingEnv } from './IParsingEnv';
 import { Rule } from './Rule';
 import { Position } from './Position';
 import { Peg } from './Peg';
