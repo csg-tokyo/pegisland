@@ -1,24 +1,24 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { SetCalculator, EPSILON } from './SetCalculator';
 import {
   And,
+  Colon,
+  ColonNot,
   Grouping,
+  IParsingExpression,
+  Lake,
   Nonterminal,
   Not,
   OneOrMore,
   Optional,
   OrderedChoice,
-  IParsingExpression,
   Rewriting,
-  Rule,
   Sequence,
   Terminal,
   ZeroOrMore,
-  Colon,
-  ColonNot,
-  Lake,
 } from './ParsingExpression';
+import { Rule } from './Rule';
 import { union } from './set-operations';
+import { EPSILON, SetCalculator } from './SetCalculator';
 
 export class FirstCalculator extends SetCalculator {
   constructor(rules: Map<string, Rule>) {
@@ -34,19 +34,27 @@ export class FirstCalculator extends SetCalculator {
   }
 
   visitZeroOrMore(pe: ZeroOrMore): void {
+    this.propagateOperandWithEpsilon(pe);
+  }
+
+  private propagateOperandWithEpsilon(pe: ZeroOrMore | Optional | Lake): void {
     this.set(pe, union(this.get(pe.operand), new Set([EPSILON])));
   }
 
   visitOneOrMore(pe: OneOrMore): void {
-    this.set(pe, new Set(this.get(pe.operand)));
+    this.propagateOperand(pe);
+  }
+
+  private propagateOperand(pe: OneOrMore | And | Grouping | Rewriting): void {
+    this.propagate(pe.operand, pe);
   }
 
   visitOptional(pe: Optional): void {
-    this.set(pe, union(this.get(pe.operand), new Set([EPSILON])));
+    this.propagateOperandWithEpsilon(pe);
   }
 
   visitAnd(pe: And): void {
-    this.set(pe, new Set(this.get(pe.operand)));
+    this.propagateOperand(pe);
   }
 
   visitNot(pe: Not): void {
@@ -71,22 +79,22 @@ export class FirstCalculator extends SetCalculator {
   }
 
   visitGrouping(pe: Grouping): void {
-    this.set(pe, new Set(this.get(pe.operand)));
+    this.propagateOperand(pe);
   }
 
   visitRewriting(pe: Rewriting): void {
-    this.set(pe, new Set(this.get(pe.operand)));
+    this.propagateOperand(pe);
   }
 
   visitColon(pe: Colon): void {
-    this.set(pe, new Set(this.get(pe.rhs)));
+    this.propagate(pe.rhs, pe);
   }
 
   visitColonNot(pe: ColonNot): void {
-    this.set(pe, new Set(this.get(pe.lhs)));
+    this.propagate(pe.lhs, pe);
   }
 
   visitLake(pe: Lake): void {
-    this.set(pe, union(this.get(pe.operand), new Set([EPSILON])));
+    this.propagateOperandWithEpsilon(pe);
   }
 }

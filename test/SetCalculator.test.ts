@@ -2,7 +2,7 @@ import { strict as assert } from 'assert';
 import { BeginningCalculator } from '../src/BeginningCalculator';
 import { SucceedCalculator } from '../src/SucceedCalculator';
 import { GeneralPegBuilder } from '../src/GeneralPegBuilder';
-import { Rule } from '../src/ParsingExpression';
+import { Rule } from '../src/Rule';
 import { AltCalculator } from '../src/AltCalculator';
 
 describe('BeginningCalculator', () => {

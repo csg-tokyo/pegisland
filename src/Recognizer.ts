@@ -1,5 +1,5 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
-import assert from 'assert';
+import { strict as assert } from 'assert';
 import {
   IParseTree,
   NodeAnd,
@@ -16,25 +16,24 @@ import {
   Range,
 } from './ParseTree';
 import {
-  IParsingExpressionVisitor,
-  IParsingExpression,
-  Nonterminal,
-  Terminal,
-  ZeroOrMore,
-  OneOrMore,
-  Optional,
   And,
-  Not,
-  Sequence,
-  OrderedChoice,
-  Grouping,
-  Rewriting,
   Colon,
   ColonNot,
+  Grouping,
   Lake,
-  Position,
-  IParsingEnv,
+  Nonterminal,
+  Not,
+  OneOrMore,
+  Optional,
+  OrderedChoice,
+  Rewriting,
+  Sequence,
+  Terminal,
+  ZeroOrMore,
 } from './ParsingExpression';
+import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
+import { IParsingEnv } from './IParsingEnv';
+import { Position } from './Position';
 
 export class Recognizer
   implements IParsingExpressionVisitor<[IParseTree, Position] | null, Position>
@@ -47,21 +46,17 @@ export class Recognizer
   ): [IParseTree, Position] | null {
     //const result = this.rule.parse(env, pos);
     const result = this.env.parseRule(pe.rule, pos);
-    if (pe.name == '') {
+    if (result == null || pe.name == '') {
       return result;
     }
-    if (result == null) {
-      return result;
-    }
-    const [_, end] = result;
+    const [, end] = result;
     const value = this.env.s.substring(pos.offset, end.offset).trim();
     if (!this.env.has(pe.name)) {
       this.env.register(pe.name, value);
-    } else {
-      if (value != this.env.lookup(pe.name)) {
-        return null;
-      }
+    } else if (value != this.env.lookup(pe.name)) {
+      return null;
     }
+
     return result;
   }
 
@@ -213,12 +208,12 @@ export class Recognizer
     if (lhsResult == null) {
       return null;
     }
-    const [_lhsValue, lhsNextIndex] = lhsResult;
+    const [, lhsNextIndex] = lhsResult;
     const rhsResult = this.env.parse(pe.rhs, pos);
     if (rhsResult == null) {
       return null;
     }
-    const [_rhsValue, rhsNextIndex] = rhsResult;
+    const [, rhsNextIndex] = rhsResult;
     if (lhsNextIndex.offset != rhsNextIndex.offset) {
       return null;
     }
@@ -232,8 +227,8 @@ export class Recognizer
     }
     const rhsResult = this.env.parse(pe.rhs, pos);
     if (rhsResult != null) {
-      const [_lhsValue, lhsNextIndex] = lhsResult;
-      const [_rhsValue, rhsNextIndex] = rhsResult;
+      const [, lhsNextIndex] = lhsResult;
+      const [, rhsNextIndex] = rhsResult;
       if (lhsNextIndex.offset == rhsNextIndex.offset) {
         return null;
       }
@@ -245,11 +240,10 @@ export class Recognizer
     const result = this.env.parse(pe.semantics, pos);
     assert(
       result != null,
-      'Lake should not fail since it accepts an empyt string'
+      'Lake should not fail since it accepts an empty string'
     );
     const [childNode, nextIndex] = result;
     const zeroOrMore = childNode as NodeZeroOrMore;
-    const group = zeroOrMore.childNodes[0];
     const islands = zeroOrMore.childNodes
       .map((group) => group.childNodes[0])
       .filter((childNode) => (childNode as NodeOrderedChoice).index == 0)

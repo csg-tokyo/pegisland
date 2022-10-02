@@ -1,4 +1,5 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
+import assert from 'assert';
 import Heap from 'heap';
 import { BeginningCalculator } from './BeginningCalculator';
 import { DepthFirstTraverser } from './DepthFirstTraverser';
@@ -6,25 +7,25 @@ import { Indexer } from './Indexer';
 import { IParseTree } from './ParseTree';
 import {
   And,
-  BaseParsingEnv,
-  Rule,
   Colon,
   ColonNot,
   Grouping,
   IParsingExpression,
-  IParsingExpressionVisitor,
   Nonterminal,
   Not,
   OneOrMore,
   Optional,
   OrderedChoice,
-  Position,
   Rewriting,
   Sequence,
   Terminal,
   ZeroOrMore,
   Lake,
 } from './ParsingExpression';
+import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
+import { BaseParsingEnv } from './IParsingEnv';
+import { Rule } from './Rule';
+import { Position } from './Position';
 import { Peg } from './Peg';
 import { EPSILON } from './SetCalculator';
 
@@ -47,7 +48,7 @@ export class PikaParsingEnv extends BaseParsingEnv {
 
   parseString(s: string, start: string): [IParseTree, Position] | Error {
     for (let pos = s.length; pos >= 0; pos--) {
-      const [heap, _indexMap] = this.createHeap();
+      const [heap] = this.createHeap();
       const set = new Set<IParsingExpression>(heap.toArray());
       // console.log('heap was created for ' + pos, heap.size());
 
@@ -105,11 +106,10 @@ export class PikaParsingEnv extends BaseParsingEnv {
     if (oldResult == null) {
       // console.log('oldResult is null');
       return result != null;
-    } else if (result == null) {
-      return false;
     } else {
-      const [_tree, pos] = result;
-      const [_oldTree, oldPos] = oldResult;
+      assert(result != null, "result can't be null once it was not null");
+      const [, pos] = result;
+      const [, oldPos] = oldResult;
       //console.log(pos.offset, oldPos.offset);
       return pos.offset > oldPos.offset;
     }
@@ -261,7 +261,7 @@ export class PikaParser {
     if (result instanceof Error) {
       return result;
     }
-    const [tree, _pos] = result;
+    const [tree] = result;
     return tree;
   }
 }

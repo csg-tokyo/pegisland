@@ -1,31 +1,16 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { SetCalculator, EPSILON } from './SetCalculator';
-import {
-  And,
-  Grouping,
-  Nonterminal,
-  Not,
-  OneOrMore,
-  Optional,
-  OrderedChoice,
-  IParsingExpression,
-  Rewriting,
-  Rule,
-  Sequence,
-  Terminal,
-  ZeroOrMore,
-  Colon,
-  ColonNot,
-  Lake,
-} from './ParsingExpression';
+import { FirstCalculator } from './FirstCalculator';
+import { Colon, ColonNot, Nonterminal, Not } from './ParsingExpression';
+import { Rule } from './Rule';
 import { union } from './set-operations';
+import { EPSILON } from './SetCalculator';
 
-export class BeginningCalculator extends SetCalculator {
+export class BeginningCalculator extends FirstCalculator {
   constructor(rules: Map<string, Rule>, private isSpecial = false) {
-    super(rules, false);
+    super(rules);
   }
 
-  visitNonterminal(pe: Nonterminal): void {
+  override visitNonterminal(pe: Nonterminal): void {
     if (this.get(pe.rule.rhs).has(EPSILON)) {
       this.set(pe, new Set([pe, EPSILON]));
     } else {
@@ -33,27 +18,7 @@ export class BeginningCalculator extends SetCalculator {
     }
   }
 
-  visitTerminal(pe: Terminal): void {
-    this.set(pe, new Set([pe]));
-  }
-
-  visitZeroOrMore(pe: ZeroOrMore): void {
-    this.set(pe, union(this.get(pe.operand), new Set([EPSILON])));
-  }
-
-  visitOneOrMore(pe: OneOrMore): void {
-    this.set(pe, new Set(this.get(pe.operand)));
-  }
-
-  visitOptional(pe: Optional): void {
-    this.set(pe, union(this.get(pe.operand), new Set([EPSILON])));
-  }
-
-  visitAnd(pe: And): void {
-    this.set(pe, new Set(this.get(pe.operand)));
-  }
-
-  visitNot(pe: Not): void {
+  override visitNot(pe: Not): void {
     if (this.isSpecial) {
       this.set(pe, union(this.get(pe.operand), new Set([EPSILON])));
     } else {
@@ -61,32 +26,7 @@ export class BeginningCalculator extends SetCalculator {
     }
   }
 
-  visitSequence(pe: Sequence): void {
-    let newS = new Set<IParsingExpression>([EPSILON]);
-    for (const operand of pe.operands) {
-      const t = this.get(operand);
-      newS = union(newS, t);
-      if (!t.has(EPSILON)) {
-        newS.delete(EPSILON);
-        break;
-      }
-    }
-    this.set(pe, newS);
-  }
-
-  visitOrderedChoice(pe: OrderedChoice): void {
-    this.set(pe, union(...pe.operands.map((operand) => this.get(operand))));
-  }
-
-  visitGrouping(pe: Grouping): void {
-    this.set(pe, new Set(this.get(pe.operand)));
-  }
-
-  visitRewriting(pe: Rewriting): void {
-    this.set(pe, new Set(this.get(pe.operand)));
-  }
-
-  visitColon(pe: Colon): void {
+  override visitColon(pe: Colon): void {
     if (this.isSpecial) {
       this.set(pe, union(this.get(pe.lhs), this.get(pe.rhs)));
     } else {
@@ -94,15 +34,11 @@ export class BeginningCalculator extends SetCalculator {
     }
   }
 
-  visitColonNot(pe: ColonNot): void {
+  override visitColonNot(pe: ColonNot): void {
     if (this.isSpecial) {
       this.set(pe, union(this.get(pe.lhs), this.get(pe.rhs)));
     } else {
       this.set(pe, new Set(this.get(pe.lhs)));
     }
-  }
-
-  visitLake(pe: Lake): void {
-    this.set(pe, union(this.get(pe.operand), new Set([EPSILON])));
   }
 }

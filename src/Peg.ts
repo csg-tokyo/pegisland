@@ -1,6 +1,7 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { isLake } from './lake';
-import { OrderedChoice, Rule } from './ParsingExpression';
+import { OrderedChoice } from './ParsingExpression';
+import { Rule } from './Rule';
 import { peToString } from './Printer';
 
 function ruleToString(rule: Rule): string {

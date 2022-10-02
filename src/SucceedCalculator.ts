@@ -1,69 +1,62 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { SetCalculator, EPSILON } from './SetCalculator';
+import { strict as assert } from 'assert';
 import {
   And,
+  Colon,
+  ColonNot,
   Grouping,
-  Nonterminal,
+  IParsingExpression,
+  Lake,
   Not,
   OneOrMore,
   Optional,
   OrderedChoice,
-  IParsingExpression,
   Rewriting,
-  Rule,
   Sequence,
-  Terminal,
   ZeroOrMore,
-  Colon,
-  ColonNot,
-  Lake,
 } from './ParsingExpression';
+import { Rule } from './Rule';
 import { difference, union } from './set-operations';
-import { strict as assert } from 'assert';
+import { EPSILON } from './SetCalculator';
+import { TopDownSetCalculator } from './TopDownSetCalculator';
+import { getValue } from './utils';
 
-export class SucceedCalculator extends SetCalculator {
+export class SucceedCalculator extends TopDownSetCalculator {
   constructor(
     rules: Map<string, Rule>,
-    public beginning: Map<IParsingExpression, Set<IParsingExpression>>
+    beginning: Map<IParsingExpression, Set<IParsingExpression>>
   ) {
-    super(rules, false);
+    super(rules, beginning);
   }
 
   getBeginning(pe: IParsingExpression): Set<IParsingExpression> {
-    return this.beginning.get(pe) as Set<IParsingExpression>;
+    return getValue(this.beginning, pe);
   }
 
-  visitNonterminal(pe: Nonterminal): void {
-    this.set(pe.rule.rhs, union(this.get(pe.rule.rhs), this.get(pe)));
-  }
-
-  visitTerminal(pe: Terminal): void {
-    assert(true);
+  private propagateWithBeginning(pe: ZeroOrMore | OneOrMore): void {
+    this.set(
+      pe.operand,
+      union(this.get(pe), difference(this.getBeginning(pe), new Set([EPSILON])))
+    );
   }
 
   visitZeroOrMore(pe: ZeroOrMore): void {
-    this.set(
-      pe.operand,
-      union(this.get(pe), difference(this.getBeginning(pe), new Set([EPSILON])))
-    );
+    this.propagateWithBeginning(pe);
   }
 
   visitOneOrMore(pe: OneOrMore): void {
-    this.set(
-      pe.operand,
-      union(this.get(pe), difference(this.getBeginning(pe), new Set([EPSILON])))
-    );
+    this.propagateWithBeginning(pe);
   }
 
   visitOptional(pe: Optional): void {
-    this.set(pe.operand, new Set(this.get(pe)));
+    this.propagateToOperand(pe);
   }
 
-  visitAnd(pe: And): void {
+  visitAnd(_pe: And): void {
     assert(true);
   }
 
-  visitNot(pe: Not): void {
+  visitNot(_pe: Not): void {
     assert(true);
   }
 
@@ -89,22 +82,22 @@ export class SucceedCalculator extends SetCalculator {
   }
 
   visitGrouping(pe: Grouping): void {
-    this.set(pe.operand, new Set(this.get(pe)));
+    this.propagateToOperand(pe);
   }
 
   visitRewriting(pe: Rewriting): void {
-    this.set(pe.operand, new Set(this.get(pe)));
+    this.propagateToOperand(pe);
   }
 
   visitColon(pe: Colon): void {
-    this.set(pe.rhs, new Set(this.get(pe)));
+    this.propagate(pe, pe.rhs);
   }
 
   visitColonNot(pe: ColonNot): void {
-    this.set(pe.lhs, new Set(this.get(pe)));
+    this.propagate(pe, pe.lhs);
   }
 
   visitLake(pe: Lake): void {
-    this.set(pe.operand, new Set(this.get(pe)));
+    this.propagateToOperand(pe);
   }
 }

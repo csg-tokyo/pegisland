@@ -1,4 +1,4 @@
-import { Rule } from '../ParsingExpression';
+import { Rule } from '../Rule';
 import { Peg } from '../Peg';
 
 function sort(peg: Peg, parentsMap: Map<Rule, Set<Rule>>) {

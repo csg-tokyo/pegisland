@@ -1,234 +1,19 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { strict as assert } from 'assert';
-import { IParseTree, NodeNonterminal, Range } from './ParseTree';
-import { Recognizer } from './Recognizer';
-
-export class Position {
-  constructor(
-    public offset: number,
-    public line: number,
-    public column: number
-  ) {}
-  equal(other: Position): boolean {
-    return (
-      this.offset == other.offset &&
-      this.line == other.line &&
-      this.column == other.column
-    );
-  }
-}
-
-export interface IParsingExpressionVisitor<T = void, U = void> {
-  visitNonterminal(pe: Nonterminal, arg?: U): T;
-  visitTerminal(pe: Terminal, arg?: U): T;
-  visitZeroOrMore(pe: ZeroOrMore, arg?: U): T;
-  visitOneOrMore(pe: OneOrMore, arg?: U): T;
-  visitOptional(pe: Optional, arg?: U): T;
-  visitAnd(pe: Not, arg?: U): T;
-  visitNot(pe: Not, arg?: U): T;
-  visitSequence(pe: Sequence, arg?: U): T;
-  visitOrderedChoice(pe: OrderedChoice, arg?: U): T;
-  visitGrouping(pe: Grouping, arg?: U): T;
-  visitRewriting(pe: Rewriting, arg?: U): T;
-  visitColon(pe: Colon, arg?: U): T;
-  visitColonNot(pe: ColonNot, arg?: U): T;
-  visitLake(pe: Lake, arg?: U): T;
-}
-
-export class DefaultParsingExpressionVisitor
-  implements IParsingExpressionVisitor
-{
-  visitNonterminal(pe: Nonterminal): void {
-    // Do nothing
-  }
-  visitTerminal(pe: Terminal): void {
-    // Do nothing
-  }
-  visitOrderedChoice(pe: OrderedChoice): void {
-    // Do nothing
-  }
-  visitSequence(pe: Sequence): void {
-    // Do nothing
-  }
-  visitAnd(pe: And): void {
-    // Do nothing
-  }
-  visitColon(pe: Colon): void {
-    // Do nothing
-  }
-  visitColonNot(pe: ColonNot): void {
-    // Do nothing
-  }
-  visitGrouping(pe: Grouping): void {
-    // Do nothing
-  }
-  visitLake(pe: Lake): void {
-    // Do nothing
-  }
-  visitNot(pe: Not): void {
-    // Do nothing
-  }
-  visitOneOrMore(pe: OneOrMore): void {
-    // Do nothing
-  }
-  visitOptional(pe: Optional): void {
-    // Do nothing
-  }
-  visitRewriting(pe: Rewriting): void {
-    // Do nothing
-  }
-  visitZeroOrMore(pe: ZeroOrMore): void {
-    // Do nothing
-  }
-}
-
-export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
-  visitor: IParsingExpressionVisitor;
-
-  constructor(visitor: IParsingExpressionVisitor) {
-    this.visitor = visitor;
-  }
-
-  traverse(pe: IParsingExpression): void {
-    pe.accept(this);
-  }
-
-  visitNonterminal(pe: Nonterminal): void {
-    pe.accept(this.visitor);
-  }
-  visitTerminal(pe: Terminal): void {
-    pe.accept(this.visitor);
-  }
-  visitZeroOrMore(pe: ZeroOrMore): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
-  }
-  visitOneOrMore(pe: OneOrMore): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
-  }
-  visitOptional(pe: Optional): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
-  }
-  visitAnd(pe: And): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
-  }
-  visitNot(pe: Not): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
-  }
-  visitSequence(pe: Sequence): void {
-    pe.operands.forEach((operand) => operand.accept(this));
-    pe.accept(this.visitor);
-  }
-  visitOrderedChoice(pe: OrderedChoice): void {
-    pe.operands.forEach((operand) => operand.accept(this));
-    pe.accept(this.visitor);
-  }
-  visitGrouping(pe: Grouping): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
-  }
-  visitRewriting(pe: Rewriting): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
-  }
-  visitColon(pe: Colon): void {
-    pe.lhs.accept(this);
-    pe.rhs.accept(this);
-    pe.accept(this.visitor);
-  }
-  visitColonNot(pe: Colon): void {
-    pe.lhs.accept(this);
-    pe.rhs.accept(this);
-    pe.accept(this.visitor);
-  }
-  visitLake(pe: Lake): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
-  }
-}
-
-export class Rule {
-  constructor(
-    public symbol: string,
-    public rhs: IParsingExpression,
-    public isWater = false
-  ) {}
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
-    return this.parseWithoutMemo(env, pos);
-  }
-
-  parseWithoutMemo(
-    env: IParsingEnv,
-    pos: Position
-  ): [IParseTree, Position] | null {
-    env.push();
-    const result = env.parse(this.rhs, pos);
-    env.pop();
-    if (result == null) {
-      return null;
-    }
-    const [childNode, nextIndex] = result;
-    return [
-      new NodeNonterminal(this.symbol, new Range(pos, nextIndex), childNode),
-      nextIndex,
-    ];
-  }
-}
-
-export interface IParsingEnv {
-  s: string;
-  parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null;
-  parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null;
-  push(): void;
-  pop(): void;
-  has(name: string): boolean;
-  lookup(name: string): string;
-  register(name: string, value: string): void;
-}
-
-export abstract class BaseParsingEnv implements IParsingEnv {
-  recognizer = new Recognizer(this);
-  abstract s: string;
-  private symbolStack: { [name: string]: string }[] = [];
-  push(): void {
-    this.symbolStack.push({});
-  }
-  pop(): void {
-    this.symbolStack.pop();
-  }
-  has(name: string): boolean {
-    return name in this.symbolStack[this.symbolStack.length - 1];
-  }
-  lookup(name: string): string {
-    return this.symbolStack[this.symbolStack.length - 1][name];
-  }
-  register(name: string, value: string): void {
-    this.symbolStack[this.symbolStack.length - 1][name] = value;
-  }
-
-  abstract parse(
-    pe: IParsingExpression,
-    pos: Position
-  ): [IParseTree, Position] | null;
-
-  parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
-    return rule.parse(this, pos);
-  }
-}
+import { IParsingEnv } from './IParsingEnv';
+import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
+import { IParseTree } from './ParseTree';
+import { Position } from './Position';
+import { Rule } from './Rule';
 
 export interface IParsingExpression {
   accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T;
 }
 
 export class NullParsingExpression implements IParsingExpression {
-  parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
+  parse(_env: IParsingEnv, _pos: Position): [IParseTree, Position] | null {
     return null;
   }
-  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
+  accept<T, U>(_visitor: IParsingExpressionVisitor<T, U>, _arg?: U): T {
     throw Error('Should not be called');
     //    return null as T;
   }
@@ -381,6 +166,7 @@ export class Lake implements IParsingExpression {
         ])
       )
     );
+    this.operand = this.semantics;
   }
 
   accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {

@@ -1,23 +1,18 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
-import assert from 'assert';
+import { strict as assert } from 'assert';
 import lineColumn from 'line-column';
 import { BeginningCalculator } from './BeginningCalculator';
 import { GraphBuilder } from './GraphBuilder';
-import { genDot } from './GraphPrinter';
 import { Indexer } from './Indexer';
 import { IParseTree } from './ParseTree';
-import {
-  BaseParsingEnv,
-  Rule,
-  IParsingExpression,
-  Position,
-  Terminal,
-} from './ParsingExpression';
+import { IParsingExpression, Terminal } from './ParsingExpression';
+import { BaseParsingEnv } from './IParsingEnv';
+import { Rule } from './Rule';
+import { Position } from './Position';
 import { Peg } from './Peg';
-import { peToString } from './Printer';
 import { PriorityQueue } from './PriorityQueue';
 
-export class BottomupParsingEnv extends BaseParsingEnv {
+export class BottomUpParsingEnv extends BaseParsingEnv {
   private memo: Map<Rule, [IParseTree, Position] | null>[] = [];
   private createHeap;
   private parentsMap: Map<Rule, Set<Rule>>;
@@ -35,41 +30,7 @@ export class BottomupParsingEnv extends BaseParsingEnv {
   }
 
   parseString(s: string, start: string): [IParseTree, Position] | Error {
-    const dummy = ' ';
-    const finder = lineColumn(s + dummy);
-    for (let pos = s.length; pos >= 0; pos--) {
-      const [heap, _indexMap] = this.createHeap();
-      // console.log('heap was created for ' + pos, heap.size());
-
-      while (!heap.empty()) {
-        const rule = heap.pop() as Rule;
-        const info = finder.fromIndex(pos);
-        assert(info != null);
-        const isGrowing = this.grow(
-          rule,
-          new Position(pos, info.line, info.col)
-        );
-
-        /*
-        if (isGrowing)
-          console.log(
-            pos,
-            heap.size(),
-            peToString(pe) + ' was poped!' + (this.memo[pos].get(pe) != null)
-          );
-        */
-
-        if (isGrowing) {
-          const parents = this.parentsMap.get(rule);
-          if (parents != undefined) {
-            parents.forEach((parent) => {
-              heap.push(parent);
-              //console.log(peToString(parent) + ' was pushed!');
-            });
-          }
-        }
-      }
-    }
+    this.fillMemoTable(s);
 
     const startRule = this.peg.rules.get(start) as Rule;
     if (!startRule) {
@@ -80,6 +41,42 @@ export class BottomupParsingEnv extends BaseParsingEnv {
       return Error(`Failed to recognize ${start}`);
     }
     return result;
+  }
+
+  private fillMemoTable(s: string) {
+    const dummy = ' ';
+    const finder = lineColumn(s + dummy);
+    const makePos = (index: number) => {
+      const info = finder.fromIndex(index);
+      assert(info != null);
+      return new Position(index, info.line, info.col);
+    };
+
+    for (let pos = s.length; pos >= 0; pos--) {
+      this.fillMemoEntry(makePos, pos);
+    }
+  }
+
+  private fillMemoEntry(makePos: (index: number) => Position, pos: number) {
+    const [heap] = this.createHeap();
+    // console.log('heap was created for ' + pos, heap.size());
+    while (!heap.empty()) {
+      const rule = heap.pop() as Rule;
+      const isGrowing = this.grow(rule, makePos(pos));
+
+      /*
+      if (isGrowing)
+        console.log(
+          pos,
+          heap.size(),
+          peToString(pe) + ' was popped!' + (this.memo[pos].get(pe) != null)
+        );
+      */
+      if (!isGrowing) continue;
+      const parents = this.parentsMap.get(rule);
+      if (parents == undefined) continue;
+      parents.forEach((parent) => heap.push(parent));
+    }
   }
 
   parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
@@ -94,22 +91,6 @@ export class BottomupParsingEnv extends BaseParsingEnv {
     return pe.accept(this.recognizer, pos);
   }
 
-  isGrowing(
-    result: [IParseTree, Position] | null,
-    oldResult: [IParseTree, Position] | null
-  ): boolean {
-    if (oldResult == null) {
-      // console.log('oldResult is null');
-      return result != null;
-    } else {
-      assert(result != null, "result can't be null onece it was not null");
-      const [_tree, pos] = result;
-      const [_oldTree, oldPos] = oldResult;
-      //console.log(pos.offset, oldPos.offset);
-      return pos.offset > oldPos.offset;
-    }
-  }
-
   grow(rule: Rule, pos: Position): boolean {
     const isFirstEval = !this.memo[pos.offset].has(rule);
     //console.log('Grow ' + show(pe));
@@ -120,13 +101,29 @@ export class BottomupParsingEnv extends BaseParsingEnv {
     const oldResult = this.memo[pos.offset].get(rule) as
       | null
       | [IParseTree, Position];
-    if (isFirstEval || this.isGrowing(result, oldResult)) {
+    if (isFirstEval || isGrowing(result, oldResult)) {
       this.memo[pos.offset].set(rule, result);
       //console.log(result);
       return true;
     } else {
       return false;
     }
+  }
+}
+
+function isGrowing(
+  result: [IParseTree, Position] | null,
+  oldResult: [IParseTree, Position] | null
+): boolean {
+  if (oldResult == null) {
+    // console.log('oldResult is null');
+    return result != null;
+  } else {
+    assert(result != null, "The result can't be null once it was not null");
+    const [, pos] = result;
+    const [, oldPos] = oldResult;
+    //console.log(pos.offset, oldPos.offset);
+    return pos.offset > oldPos.offset;
   }
 }
 
@@ -175,7 +172,7 @@ class DFSTraverser {
 
 function getHeapCreator(peg: Peg, childrenMap: Map<Rule, Set<Rule>>) {
   const indexer = new Indexer();
-  const [indexMap, terminals] = indexer.build(peg);
+  const [indexMap] = indexer.build(peg);
   assert(
     peg.toplevelRules.length > 0,
     'One or more top-level rules are needed.'
@@ -183,7 +180,6 @@ function getHeapCreator(peg: Peg, childrenMap: Map<Rule, Set<Rule>>) {
 
   const traverser = new DFSTraverser(childrenMap, peg.toplevelRules);
   traverser.traverse();
-  const bottoms = traverser.bottoms;
 
   const b = new BeginningCalculator(peg.rules, true).calculate();
   const beginWithTerminal = (rule: Rule) =>
@@ -234,7 +230,7 @@ export class BottomUpParser {
   constructor(private peg: Peg) {}
 
   parse(s: string, start?: string): IParseTree | Error {
-    const env = new BottomupParsingEnv(s, this.peg);
+    const env = new BottomUpParsingEnv(s, this.peg);
     const result = env.parseString(
       s,
       start ? start : this.peg.rules.keys().next().value
@@ -242,7 +238,7 @@ export class BottomUpParser {
     if (result instanceof Error) {
       return result;
     }
-    const [tree, _pos] = result;
+    const [tree] = result;
     return tree;
   }
 }

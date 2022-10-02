@@ -1,20 +1,20 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import assert from 'assert';
+import { strict as assert } from 'assert';
 import { AltCalculator } from './AltCalculator';
 import { BeginningCalculator } from './BeginningCalculator';
 import {
+  IParsingExpression,
+  Lake,
+  Nonterminal,
   Not,
   NullParsingExpression,
   OrderedChoice,
-  IParsingExpression,
   Sequence,
   Terminal,
-  Rule,
-  Nonterminal,
-  Lake,
-  PostorderExpressionTraverser,
-  DefaultParsingExpressionVisitor,
 } from './ParsingExpression';
+import { DefaultParsingExpressionVisitor } from './IParsingExpressionVisitor';
+import { PostorderExpressionTraverser } from './PostorderExpressionTraverser';
+import { Rule } from './Rule';
 import { Peg } from './Peg';
 import { areEqualSets } from './set-operations';
 import { SucceedCalculator } from './SucceedCalculator';
@@ -111,7 +111,6 @@ function expandLakes(
 function removeLakes(
   altSymbols: Map<string, Set<Terminal | Nonterminal>>
 ): void {
-  const lakes = new Set([...altSymbols.keys()].filter(isLake));
   [...altSymbols.keys()].forEach((key) => {
     const alts = altSymbols.get(key) as Set<Terminal | Nonterminal>;
     const altsWithoutLakes = new Set(

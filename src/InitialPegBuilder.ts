@@ -1,26 +1,25 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { strict as assert } from 'assert';
 import {
+  And,
   IParsingExpression,
-  Terminal,
-  ZeroOrMore,
+  Nonterminal,
+  Not,
+  NullParsingExpression,
   OneOrMore,
   Optional,
-  And,
-  Not,
-  Sequence,
   OrderedChoice,
-  Rule,
-  NullParsingExpression,
-  Nonterminal,
+  Sequence,
+  Terminal,
+  ZeroOrMore,
 } from './ParsingExpression';
-
-import { Nonterminals, SimpleTree } from './PegParser';
+import { Rule } from './Rule';
+import { SimpleTree } from './PegParser';
 
 export class InitialPegBuilder {
   rules = new Map<string, Rule>();
 
-  public build(peg: { [name: string]: SimpleTree }): void {
+  public build(peg: { [name: string]: SimpleTree }): Map<string, Rule> {
     this.rules = new Map<string, Rule>();
     for (const key in peg) {
       this.rules.set(key, new Rule(key, new NullParsingExpression()));
@@ -29,42 +28,57 @@ export class InitialPegBuilder {
       const rule = this.rules.get(key) as Rule;
       rule.rhs = this.compileExpression(peg[key]);
     }
+    return this.rules;
   }
 
-  compileExpression(expression: SimpleTree): IParsingExpression {
+  private compileExpression(expression: SimpleTree): IParsingExpression {
     if (typeof expression == 'string') {
-      const nonterminal = expression;
-      assert(this.rules.has(nonterminal));
-      return new Nonterminal(this.rules.get(nonterminal) as Rule);
+      return this.compileNonterminal(expression);
     } else {
       if (expression[0] == 'terminal') {
-        const pattern = expression[1] as RegExp | string;
-        return new Terminal(
-          pattern,
-          pattern instanceof RegExp ? `r"${pattern.source}"` : `"${pattern}"`
-        );
+        return this.compileTerminal(expression);
       } else {
-        const operator = expression[0];
-        const operands = expression
-          .slice(1)
-          .map((subexp) => this.compileExpression(subexp as SimpleTree));
-        switch (operator) {
-          case '*':
-            return new ZeroOrMore(operands[0]);
-          case '+':
-            return new OneOrMore(operands[0]);
-          case '?':
-            return new Optional(operands[0]);
-          case '&':
-            return new And(operands[0]);
-          case '!':
-            return new Not(operands[0]);
-          case '':
-            return new Sequence(operands);
-          case '/':
-            return new OrderedChoice(operands);
-        }
+        return this.compileOperator(expression);
       }
     }
+  }
+
+  private compileOperator(
+    expression:
+      | ['' | '/', ...SimpleTree[]]
+      | ['*' | '+' | '?' | '!' | '&', SimpleTree]
+  ) {
+    const [operator, ...subexpList] = expression;
+    const operands = subexpList.map((subexp) => this.compileExpression(subexp));
+    switch (operator) {
+      case '*':
+        return new ZeroOrMore(operands[0]);
+      case '+':
+        return new OneOrMore(operands[0]);
+      case '?':
+        return new Optional(operands[0]);
+      case '&':
+        return new And(operands[0]);
+      case '!':
+        return new Not(operands[0]);
+      case '':
+        return new Sequence(operands);
+      case '/':
+        return new OrderedChoice(operands);
+    }
+  }
+
+  private compileTerminal(expression: ['terminal', string | RegExp]) {
+    const pattern = expression[1] as RegExp | string;
+    return new Terminal(
+      pattern,
+      pattern instanceof RegExp ? `r"${pattern.source}"` : `"${pattern}"`
+    );
+  }
+
+  private compileNonterminal(expression: string) {
+    const nonterminal = expression;
+    assert(this.rules.has(nonterminal));
+    return new Nonterminal(this.rules.get(nonterminal) as Rule);
   }
 }

@@ -2,23 +2,24 @@
 import { ExpressionCollector } from './ExpressionCollector';
 import {
   And,
+  Colon,
+  ColonNot,
   Grouping,
+  IParsingExpression,
+  Lake,
   Nonterminal,
   Not,
   OneOrMore,
   Optional,
   OrderedChoice,
-  IParsingExpression,
-  IParsingExpressionVisitor,
   Rewriting,
-  Rule,
   Sequence,
   Terminal,
   ZeroOrMore,
-  Colon,
-  ColonNot,
-  Lake,
 } from './ParsingExpression';
+import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
+import { Rule } from './Rule';
+import { getValue } from './utils';
 
 export const EPSILON = new Sequence([]);
 
@@ -33,23 +34,17 @@ export abstract class SetCalculator implements IParsingExpressionVisitor {
       this.expressions.reverse();
     }
     this.peSet = new Map();
-    for (const pe of this.expressions) {
-      this.set(pe, new Set());
-    }
+    this.expressions.forEach((pe) => this.peSet.set(pe, new Set()));
   }
 
   public calculate(): Map<IParsingExpression, Set<IParsingExpression>> {
     const sizeMap = new Map<IParsingExpression, number>();
     for (;;) {
-      for (const pe of this.expressions) {
-        sizeMap.set(pe, this.get(pe).size);
-      }
-      for (const expression of this.expressions) {
-        expression.accept(this);
-      }
-      const wasChanged = this.expressions.some((pe) => {
-        return sizeMap.get(pe) != this.get(pe).size;
-      });
+      this.expressions.forEach((pe) => sizeMap.set(pe, this.get(pe).size));
+      this.expressions.forEach((pe) => pe.accept(this));
+      const wasChanged = this.expressions.some(
+        (pe) => sizeMap.get(pe) != this.get(pe).size
+      );
       if (!wasChanged) {
         break;
       }
@@ -57,12 +52,16 @@ export abstract class SetCalculator implements IParsingExpressionVisitor {
     return this.peSet;
   }
 
-  get(pe: IParsingExpression): Set<IParsingExpression> {
-    return this.peSet.get(pe) as Set<IParsingExpression>;
+  protected get(pe: IParsingExpression): Set<IParsingExpression> {
+    return getValue(this.peSet, pe);
   }
 
-  set(pe: IParsingExpression, set: Set<IParsingExpression>): void {
+  protected set(pe: IParsingExpression, set: Set<IParsingExpression>): void {
     this.peSet.set(pe, set);
+  }
+
+  protected propagate(src: IParsingExpression, dst: IParsingExpression): void {
+    this.set(dst, new Set(this.get(src)));
   }
 
   abstract visitNonterminal(pe: Nonterminal): void;

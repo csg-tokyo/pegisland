@@ -1,24 +1,24 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import {
   And,
+  Colon,
+  ColonNot,
   Grouping,
+  IParsingExpression,
+  Lake,
   Nonterminal,
   Not,
   OneOrMore,
   Optional,
   OrderedChoice,
-  IParsingExpression,
-  IParsingExpressionVisitor,
-  PostorderExpressionTraverser,
   Rewriting,
-  Rule,
   Sequence,
   Terminal,
   ZeroOrMore,
-  Colon,
-  ColonNot,
-  Lake,
 } from './ParsingExpression';
+import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
+import { PostorderExpressionTraverser } from './PostorderExpressionTraverser';
+import { Rule } from './Rule';
 
 export class ExpressionCollector implements IParsingExpressionVisitor {
   expressions: IParsingExpression[] = [];

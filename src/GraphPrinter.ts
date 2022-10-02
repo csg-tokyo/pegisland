@@ -1,5 +1,6 @@
+// Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
 import { digraph, INode, toDot } from 'ts-graphviz';
-import { Rule } from './ParsingExpression';
+import { Rule } from './Rule';
 import { Peg } from './Peg';
 
 export function genDot(peg: Peg, parentsMap: Map<Rule, Set<Rule>>): string {

@@ -3,6 +3,7 @@ import { expect } from '@jest/globals';
 import fs from 'fs';
 import { parseGrammar, Peg } from '../src';
 import { PikaParser } from '../src/PikaParser';
+import { processLakes } from '../src/lake';
 
 describe('PikaParser', () => {
   describe('#parse()', () => {
@@ -82,6 +83,17 @@ describe('PikaParser', () => {
         const result = parser.parse(s, 'program');
         expect(result).toBeInstanceOf(Error);
       }
+    });
+    it('should work with a lake operator', () => {
+      const grammar = `
+        program <- <<>>
+        `;
+      const peg = parseGrammar(grammar) as Peg;
+      processLakes(peg);
+      const parser = new PikaParser(peg);
+      const result = parser.parse('abc', 'program');
+      assert(!(result instanceof Error));
+      expect(result.range.end.offset).toEqual(3);
     });
   });
 });

@@ -155,3 +155,7 @@ dist
 
 # test results
 reports/
+
+junit.xml
+
+*.gz

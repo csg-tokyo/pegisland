@@ -1,12 +1,13 @@
+// Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
 import { BeginningCalculator } from './BeginningCalculator';
 import {
-  Rule,
   IParsingExpression,
   Nonterminal,
   NullParsingExpression,
-  PostorderExpressionTraverser,
-  DefaultParsingExpressionVisitor,
 } from './ParsingExpression';
+import { DefaultParsingExpressionVisitor } from './IParsingExpressionVisitor';
+import { PostorderExpressionTraverser } from './PostorderExpressionTraverser';
+import { Rule } from './Rule';
 import { Peg } from './Peg';
 
 export class GraphBuilder extends DefaultParsingExpressionVisitor {
