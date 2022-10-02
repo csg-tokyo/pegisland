@@ -60,6 +60,10 @@ export abstract class SetCalculator implements IParsingExpressionVisitor {
     this.peSet.set(pe, set);
   }
 
+  protected propagate(src: IParsingExpression, dst: IParsingExpression): void {
+    this.set(dst, new Set(this.get(src)));
+  }
+
   abstract visitNonterminal(pe: Nonterminal): void;
   abstract visitTerminal(pe: Terminal): void;
   abstract visitZeroOrMore(pe: ZeroOrMore): void;

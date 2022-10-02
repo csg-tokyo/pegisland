@@ -7,14 +7,12 @@ import {
   Grouping,
   IParsingExpression,
   Lake,
-  Nonterminal,
   Not,
   OneOrMore,
   Optional,
   OrderedChoice,
   Rewriting,
   Sequence,
-  Terminal,
   ZeroOrMore,
 } from './ParsingExpression';
 import { Rule } from './Rule';

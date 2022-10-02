@@ -45,12 +45,8 @@ export class FirstCalculator extends SetCalculator {
     this.propagateOperand(pe);
   }
 
-  private propagate(pe: IParsingExpression, operand: IParsingExpression): void {
-    this.set(pe, new Set(this.get(operand)));
-  }
-
   private propagateOperand(pe: OneOrMore | And | Grouping | Rewriting): void {
-    this.propagate(pe, pe.operand);
+    this.propagate(pe.operand, pe);
   }
 
   visitOptional(pe: Optional): void {
@@ -91,11 +87,11 @@ export class FirstCalculator extends SetCalculator {
   }
 
   visitColon(pe: Colon): void {
-    this.propagate(pe, pe.rhs);
+    this.propagate(pe.rhs, pe);
   }
 
   visitColonNot(pe: ColonNot): void {
-    this.propagate(pe, pe.lhs);
+    this.propagate(pe.lhs, pe);
   }
 
   visitLake(pe: Lake): void {

@@ -32,13 +32,6 @@ export abstract class TopDownSetCalculator extends SetCalculator {
     return getValue(this.beginning, pe);
   }
 
-  protected propagate(
-    pe: IParsingExpression,
-    operand: IParsingExpression
-  ): void {
-    this.set(operand, new Set(this.get(pe)));
-  }
-
   protected propagateToOperand(
     pe: Grouping | Rewriting | Lake | Optional
   ): void {
