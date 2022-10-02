@@ -13,6 +13,7 @@ import {
   Rewriting,
   Colon,
   Lake,
+  ColonNot,
 } from './ParsingExpression';
 import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
 
@@ -27,60 +28,76 @@ export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
     pe.accept(this);
   }
 
-  visitNonterminal(pe: Nonterminal): void {
+  private visitSymbol(pe: Nonterminal | Terminal) {
     pe.accept(this.visitor);
+  }
+
+  private visitOperatorWithOneOperand(
+    pe:
+      | ZeroOrMore
+      | OneOrMore
+      | Optional
+      | Not
+      | And
+      | Grouping
+      | Rewriting
+      | Lake
+  ) {
+    pe.operand.accept(this);
+    pe.accept(this.visitor);
+  }
+
+  private visitOperatorWithTwoOperands(pe: Colon | ColonNot) {
+    pe.lhs.accept(this);
+    pe.rhs.accept(this);
+    pe.accept(this.visitor);
+  }
+
+  private visitOperatorWithMultipleOperands(pe: Sequence | OrderedChoice) {
+    pe.operands.forEach((operand) => operand.accept(this));
+    pe.accept(this.visitor);
+  }
+
+  visitNonterminal(pe: Nonterminal): void {
+    this.visitSymbol(pe);
   }
   visitTerminal(pe: Terminal): void {
-    pe.accept(this.visitor);
+    this.visitSymbol(pe);
   }
   visitZeroOrMore(pe: ZeroOrMore): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
+    this.visitOperatorWithOneOperand(pe);
   }
   visitOneOrMore(pe: OneOrMore): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
+    this.visitOperatorWithOneOperand(pe);
   }
   visitOptional(pe: Optional): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
+    this.visitOperatorWithOneOperand(pe);
   }
   visitAnd(pe: And): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
+    this.visitOperatorWithOneOperand(pe);
   }
   visitNot(pe: Not): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
+    this.visitOperatorWithOneOperand(pe);
   }
   visitSequence(pe: Sequence): void {
-    pe.operands.forEach((operand) => operand.accept(this));
-    pe.accept(this.visitor);
+    this.visitOperatorWithMultipleOperands(pe);
   }
   visitOrderedChoice(pe: OrderedChoice): void {
-    pe.operands.forEach((operand) => operand.accept(this));
-    pe.accept(this.visitor);
+    this.visitOperatorWithMultipleOperands(pe);
   }
   visitGrouping(pe: Grouping): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
+    this.visitOperatorWithOneOperand(pe);
   }
   visitRewriting(pe: Rewriting): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
+    this.visitOperatorWithOneOperand(pe);
   }
   visitColon(pe: Colon): void {
-    pe.lhs.accept(this);
-    pe.rhs.accept(this);
-    pe.accept(this.visitor);
+    this.visitOperatorWithTwoOperands(pe);
   }
-  visitColonNot(pe: Colon): void {
-    pe.lhs.accept(this);
-    pe.rhs.accept(this);
-    pe.accept(this.visitor);
+  visitColonNot(pe: ColonNot): void {
+    this.visitOperatorWithTwoOperands(pe);
   }
   visitLake(pe: Lake): void {
-    pe.operand.accept(this);
-    pe.accept(this.visitor);
+    this.visitOperatorWithOneOperand(pe);
   }
 }
