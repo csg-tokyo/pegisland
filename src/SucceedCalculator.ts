@@ -41,22 +41,31 @@ export class SucceedCalculator extends SetCalculator {
     assert(true);
   }
 
-  visitZeroOrMore(pe: ZeroOrMore): void {
+  private propagateWithBeginning(pe: ZeroOrMore | OneOrMore): void {
     this.set(
       pe.operand,
       union(this.get(pe), difference(this.getBeginning(pe), new Set([EPSILON])))
     );
+  }
+
+  private propagate(pe: IParsingExpression, operand: IParsingExpression): void {
+    this.set(operand, new Set(this.get(pe)));
+  }
+
+  private propagateToOperand(pe: Grouping | Rewriting | Lake | Optional): void {
+    this.propagate(pe, pe.operand);
+  }
+
+  visitZeroOrMore(pe: ZeroOrMore): void {
+    this.propagateWithBeginning(pe);
   }
 
   visitOneOrMore(pe: OneOrMore): void {
-    this.set(
-      pe.operand,
-      union(this.get(pe), difference(this.getBeginning(pe), new Set([EPSILON])))
-    );
+    this.propagateWithBeginning(pe);
   }
 
   visitOptional(pe: Optional): void {
-    this.set(pe.operand, new Set(this.get(pe)));
+    this.propagateToOperand(pe);
   }
 
   visitAnd(_pe: And): void {
@@ -89,22 +98,22 @@ export class SucceedCalculator extends SetCalculator {
   }
 
   visitGrouping(pe: Grouping): void {
-    this.set(pe.operand, new Set(this.get(pe)));
+    this.propagateToOperand(pe);
   }
 
   visitRewriting(pe: Rewriting): void {
-    this.set(pe.operand, new Set(this.get(pe)));
+    this.propagateToOperand(pe);
   }
 
   visitColon(pe: Colon): void {
-    this.set(pe.rhs, new Set(this.get(pe)));
+    this.propagate(pe, pe.rhs);
   }
 
   visitColonNot(pe: ColonNot): void {
-    this.set(pe.lhs, new Set(this.get(pe)));
+    this.propagate(pe, pe.lhs);
   }
 
   visitLake(pe: Lake): void {
-    this.set(pe.operand, new Set(this.get(pe)));
+    this.propagateToOperand(pe);
   }
 }
