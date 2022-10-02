@@ -19,26 +19,20 @@ import {
 } from './ParsingExpression';
 import { Rule } from './Rule';
 import { difference, union } from './set-operations';
-import { EPSILON, SetCalculator } from './SetCalculator';
+import { EPSILON } from './SetCalculator';
+import { TopDownSetCalculator } from './TopDownSetCalculator';
+import { getValue } from './utils';
 
-export class SucceedCalculator extends SetCalculator {
+export class SucceedCalculator extends TopDownSetCalculator {
   constructor(
     rules: Map<string, Rule>,
-    public beginning: Map<IParsingExpression, Set<IParsingExpression>>
+    beginning: Map<IParsingExpression, Set<IParsingExpression>>
   ) {
-    super(rules, false);
+    super(rules, beginning);
   }
 
   getBeginning(pe: IParsingExpression): Set<IParsingExpression> {
-    return this.beginning.get(pe) as Set<IParsingExpression>;
-  }
-
-  visitNonterminal(pe: Nonterminal): void {
-    this.set(pe.rule.rhs, union(this.get(pe.rule.rhs), this.get(pe)));
-  }
-
-  visitTerminal(_pe: Terminal): void {
-    assert(true);
+    return getValue(this.beginning, pe);
   }
 
   private propagateWithBeginning(pe: ZeroOrMore | OneOrMore): void {
@@ -46,14 +40,6 @@ export class SucceedCalculator extends SetCalculator {
       pe.operand,
       union(this.get(pe), difference(this.getBeginning(pe), new Set([EPSILON])))
     );
-  }
-
-  private propagate(pe: IParsingExpression, operand: IParsingExpression): void {
-    this.set(operand, new Set(this.get(pe)));
-  }
-
-  private propagateToOperand(pe: Grouping | Rewriting | Lake | Optional): void {
-    this.propagate(pe, pe.operand);
   }
 
   visitZeroOrMore(pe: ZeroOrMore): void {

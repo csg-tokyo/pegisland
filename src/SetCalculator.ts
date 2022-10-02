@@ -19,6 +19,7 @@ import {
 } from './ParsingExpression';
 import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
 import { Rule } from './Rule';
+import { getValue } from './utils';
 
 export const EPSILON = new Sequence([]);
 
@@ -52,7 +53,7 @@ export abstract class SetCalculator implements IParsingExpressionVisitor {
   }
 
   protected get(pe: IParsingExpression): Set<IParsingExpression> {
-    return this.peSet.get(pe) as Set<IParsingExpression>;
+    return getValue(this.peSet, pe);
   }
 
   protected set(pe: IParsingExpression, set: Set<IParsingExpression>): void {
