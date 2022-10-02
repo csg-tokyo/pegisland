@@ -46,21 +46,17 @@ export class Recognizer
   ): [IParseTree, Position] | null {
     //const result = this.rule.parse(env, pos);
     const result = this.env.parseRule(pe.rule, pos);
-    if (pe.name == '') {
-      return result;
-    }
-    if (result == null) {
+    if (result == null || pe.name == '') {
       return result;
     }
     const [, end] = result;
     const value = this.env.s.substring(pos.offset, end.offset).trim();
     if (!this.env.has(pe.name)) {
       this.env.register(pe.name, value);
-    } else {
-      if (value != this.env.lookup(pe.name)) {
-        return null;
-      }
+    } else if (value != this.env.lookup(pe.name)) {
+      return null;
     }
+
     return result;
   }
 
