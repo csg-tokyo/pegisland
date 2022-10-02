@@ -16,13 +16,21 @@ jobs:
       - image: cimg/node:16.10
     steps:
       - checkout
+      - run:
+          name: Setup Code Climate test-reporter
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
       - run: npm install
       - run:
           name: 'JavaScript Linter'
           command: npx eslint --format junit -o reports/junit/eslint.xml src/*.ts test/*
       - run:
           name: 'Run Jest and Collect Coverage Reports'
-          command: npx jest
+          command: |
+            ./cc-test-reporter before-build
+            npx jest
+            ./cc-test-reporter after-build --coverage-input-type lcov --exit-code $?
           environment:
             JEST_JUNIT_OUTPUT_DIR: 'reports/junit'
       - store_test_results:
