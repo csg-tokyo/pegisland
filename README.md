@@ -2,6 +2,9 @@
 
 [![csg-tokyo](https://circleci.com/gh/csg-tokyo/pegisland.svg?style=svg)](https://circleci.com/gh/csg-tokyo/pegisland)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcsg-tokyo%2Fpegisland.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcsg-tokyo%2Fpegisland?ref=badge_shield)
+[![Maintainability](https://api.codeclimate.com/v1/badges/c692eebf6897eeee8ea7/maintainability)](https://codeclimate.com/github/csg-tokyo/pegisland/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/c692eebf6897eeee8ea7/test_coverage)](https://codeclimate.com/github/csg-tokyo/pegisland/test_coverage)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
 PEGIsland is a general parser supporting island grammars with `lake symbols`.
 PEGIsland parses any text based on a given parsing expression grammar (PEG).
@@ -27,7 +30,7 @@ import { exit } from 'process';
 const grammar = `
 program <- <lake>*
 <lake> <- block
-block <- r'{\s*' <lake>* r'}\s*'
+block <- r'{\\s*' <lake>* r'}\\s*'
 `;
 
 const program = `int main(void) {
@@ -35,7 +38,7 @@ const program = `int main(void) {
         if (i % 2 == 0) {
             printf("Hello ");
         } else {
-            printf("world!\n")
+            printf("world!\\n")
         }
     }
 }
@@ -70,17 +73,17 @@ traverseNonterminals(parseTree, (node) => {
 When this code is run, positions of all blocks, including nested ones in the program stored in the variable `program` are shown in the standard output as follows:
 
 ```
-start: (1, 16), end: (10, 2)
-start: (2, 35), end: (9, 6)
-start: (3, 25), end: (5, 10)
-start: (5, 16), end: (8, 10)
+start: (1, 16), end: (10, 1)
+start: (2, 35), end: (9, 1)
+start: (3, 25), end: (5, 11)
+start: (5, 16), end: (8, 5)
 ```
 
 Each line represents the text area of a block in the program.
-For example, the last line `start: (5, 16), end: (8, 10)` represents the block starting on line 5 at column 16 and ending on line 8 at column 10 corresponding to the following code snippet:
+For example, the last line `start: (5, 16), end: (8, 5)` represents the block starting on line 5 at column 16 and ending on line 8 at column 5 corresponding to the following code snippet:
 
 ```c
-        {
+               {
             printf("world!\n")
         }
 
@@ -196,6 +199,3 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/csg-to
 ## License
 
 PEGIsland is available as open-source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
-
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcsg-tokyo%2Fpegisland.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcsg-tokyo%2Fpegisland?ref=badge_large)
