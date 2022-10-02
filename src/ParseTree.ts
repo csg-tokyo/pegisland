@@ -15,8 +15,6 @@ export interface IParseTree {
 class ParseTree implements IParseTree {
   parentNode: IParseTree = this;
   constructor(public childNodes: IParseTree[], public range: Range) {
-    this.childNodes = childNodes;
-    this.range = range;
     childNodes.forEach((n) => (n.parentNode = this));
   }
 }
