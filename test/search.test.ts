@@ -1,5 +1,4 @@
 import { strict as assert } from 'assert';
-import lineColumn from 'line-column';
 import { NodeSequence, NodeTerminal, Range } from '../src/ParseTree';
 import { Position } from '../src/Position';
 import { min, max, searchExpressions, search, inRange } from '../src/search';

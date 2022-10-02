@@ -1,5 +1,5 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { IParseTree, Range } from './ParseTree';
+import { IParseTree } from './ParseTree';
 
 function flatten<T>(array: T[][]): T[] {
   return ([] as T[]).concat(...array);
