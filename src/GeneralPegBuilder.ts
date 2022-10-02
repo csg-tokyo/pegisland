@@ -159,16 +159,20 @@ export class GeneralPegBuilder {
     ][choice.index].call(this, choice.childNodes[0]);
   }
 
-  private processGrouping(node: IParseTree) {
+  private processOperatorWithOneOperand(
+    node: IParseTree,
+    ctor: { new (x: IParsingExpression): IParsingExpression }
+  ) {
     assert(node instanceof NodeSequence);
     const operand = this.processExpression(node.childNodes[1]);
-    return new pe.Grouping(operand);
+    return new ctor(operand);
+  }
+  private processGrouping(node: IParseTree) {
+    return this.processOperatorWithOneOperand(node, pe.Grouping);
   }
 
   private processLake(node: IParseTree) {
-    assert(node instanceof NodeSequence);
-    const operand = this.processExpression(node.childNodes[1]);
-    return new pe.Lake(operand);
+    return this.processOperatorWithOneOperand(node, pe.Lake);
   }
 
   private processRegexp(node: IParseTree): IParsingExpression {
@@ -229,16 +233,21 @@ export class GeneralPegBuilder {
   }
 }
 
-function createPlusPlus(lhs: IParsingExpression, rhs: IParsingExpression) {
+function createXPlus(
+  lhs: IParsingExpression,
+  rhs: IParsingExpression,
+  ctor: { new (x: IParsingExpression): IParsingExpression }
+) {
   return new pe.Sequence([
-    new pe.OneOrMore(new pe.Grouping(new pe.Sequence([new pe.Not(rhs), lhs]))),
+    new ctor(new pe.Grouping(new pe.Sequence([new pe.Not(rhs), lhs]))),
     rhs,
   ]);
 }
 
+function createPlusPlus(lhs: IParsingExpression, rhs: IParsingExpression) {
+  return createXPlus(lhs, rhs, pe.OneOrMore);
+}
+
 function createStarPlus(lhs: IParsingExpression, rhs: IParsingExpression) {
-  return new pe.Sequence([
-    new pe.ZeroOrMore(new pe.Grouping(new pe.Sequence([new pe.Not(rhs), lhs]))),
-    rhs,
-  ]);
+  return createXPlus(lhs, rhs, pe.ZeroOrMore);
 }
