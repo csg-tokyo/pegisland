@@ -13,14 +13,21 @@ export interface IParseTree {
 }
 
 class ParseTree implements IParseTree {
+  static #seq = 0;
+  readonly id = ParseTree.#getId();
   parentNode: IParseTree = this;
+
   constructor(public childNodes: IParseTree[], public range: Range) {
     childNodes.forEach((n) => (n.parentNode = this));
+  }
+
+  static #getId() {
+    return ParseTree.#seq++;
   }
 }
 
 export class NodeTerminal extends ParseTree {
-  constructor(range: Range, pattern: RegExp, public text: string) {
+  constructor(range: Range, public pattern: RegExp, public text: string) {
     super([], range);
   }
 }
