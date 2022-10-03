@@ -226,10 +226,10 @@ function processLakeOperators(
 
   const waterRules = [...peg.rules.values()].filter((rule) => rule.isWater);
   peg.rules.forEach((rule, _symbol) => {
-    const travarser = new PostorderExpressionTraverser(
+    const traverser = new PostorderExpressionTraverser(
       new AltSetter(alts, waterRules)
     );
-    travarser.traverse(rule.rhs);
+    traverser.traverse(rule.rhs);
   });
 }
 
