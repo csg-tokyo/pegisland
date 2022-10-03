@@ -92,12 +92,17 @@ export function createParser(
   }
   stats.grammarConstructionTime = grammarConstructionTime;
 
-  // Summerize the grammar
+  // Summarize the grammar
   analyzeGrammar(peg, stats.grammarInfo);
 
-  // Process lakes
-  const [, time] = measure(() => processLakes(peg, waterSymbols));
-  stats.lakeProcessingTime = time;
+  if (
+    stats.grammarInfo.lakeCount > 0 ||
+    stats.grammarInfo.lakeSymbolCount > 0
+  ) {
+    // Process lakes
+    const [, time] = measure(() => processLakes(peg, waterSymbols));
+    stats.lakeProcessingTime = time;
+  }
 
   // Create a parser
   const parser = new Parser(peg, stats);
