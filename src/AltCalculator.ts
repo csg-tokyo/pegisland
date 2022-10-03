@@ -30,16 +30,8 @@ export class AltCalculator extends TopDownSetCalculator {
     super(rules, beginning);
   }
 
-  getSucceed(pe: IParsingExpression): Set<IParsingExpression> {
-    return getValue(this.succeed, pe);
-  }
-
   visitZeroOrMore(pe: ZeroOrMore): void {
     this.propagateWithSucceed(pe);
-  }
-
-  private propagateWithSucceed(pe: ZeroOrMore) {
-    this.set(pe.operand, union(this.get(pe), this.getSucceed(pe)));
   }
 
   visitOneOrMore(pe: OneOrMore): void {
@@ -60,7 +52,7 @@ export class AltCalculator extends TopDownSetCalculator {
 
   visitSequence(pe: Sequence): void {
     for (const ei of pe.operands) {
-      this.set(ei, new Set(this.get(pe)));
+      this.propagate(pe, ei);
       if (!this.getBeginning(ei).has(EPSILON)) {
         break;
       }
@@ -104,6 +96,14 @@ export class AltCalculator extends TopDownSetCalculator {
   }
 
   visitLake(pe: Lake): void {
+    this.propagateWithSucceed(pe);
+  }
+
+  private propagateWithSucceed(pe: ZeroOrMore | OneOrMore | Optional | Lake) {
     this.set(pe.operand, union(this.get(pe), this.getSucceed(pe)));
+  }
+
+  private getSucceed(pe: IParsingExpression): Set<IParsingExpression> {
+    return getValue(this.succeed, pe);
   }
 }

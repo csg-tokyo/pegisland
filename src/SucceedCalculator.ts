@@ -19,7 +19,6 @@ import { Rule } from './Rule';
 import { difference, union } from './set-operations';
 import { EPSILON } from './SetCalculator';
 import { TopDownSetCalculator } from './TopDownSetCalculator';
-import { getValue } from './utils';
 
 export class SucceedCalculator extends TopDownSetCalculator {
   constructor(
@@ -27,17 +26,6 @@ export class SucceedCalculator extends TopDownSetCalculator {
     beginning: Map<IParsingExpression, Set<IParsingExpression>>
   ) {
     super(rules, beginning);
-  }
-
-  getBeginning(pe: IParsingExpression): Set<IParsingExpression> {
-    return getValue(this.beginning, pe);
-  }
-
-  private propagateWithBeginning(pe: ZeroOrMore | OneOrMore): void {
-    this.set(
-      pe.operand,
-      union(this.get(pe), difference(this.getBeginning(pe), new Set([EPSILON])))
-    );
   }
 
   visitZeroOrMore(pe: ZeroOrMore): void {
@@ -76,9 +64,7 @@ export class SucceedCalculator extends TopDownSetCalculator {
   }
 
   visitOrderedChoice(pe: OrderedChoice): void {
-    for (const operand of pe.operands) {
-      this.set(operand, new Set(this.get(pe)));
-    }
+    pe.operands.forEach((operand) => this.propagate(pe, operand));
   }
 
   visitGrouping(pe: Grouping): void {
@@ -99,5 +85,12 @@ export class SucceedCalculator extends TopDownSetCalculator {
 
   visitLake(pe: Lake): void {
     this.propagateToOperand(pe);
+  }
+
+  private propagateWithBeginning(pe: ZeroOrMore | OneOrMore): void {
+    this.set(
+      pe.operand,
+      union(this.get(pe), difference(this.getBeginning(pe), new Set([EPSILON])))
+    );
   }
 }
