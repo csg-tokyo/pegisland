@@ -12,16 +12,12 @@ import { Position } from './Position';
 import { Peg } from './Peg';
 import { PriorityQueue } from './PriorityQueue';
 
-export class BottomUpParsingEnv extends BaseParsingEnv {
-  private memo: Map<Rule, [IParseTree, Position] | null>[] = [];
+export class BottomUpParsingEnv extends BaseParsingEnv<Rule> {
   private createHeap;
   private parentsMap: Map<Rule, Set<Rule>>;
 
-  constructor(public s: string, private peg: Peg) {
-    super();
-    for (let i = 0; i <= s.length; i++) {
-      this.memo.push(new Map<Rule, [IParseTree, Position] | null>());
-    }
+  constructor(s: string, private peg: Peg) {
+    super(s);
 
     const [parentsMap, childrenMap] = createParentsMap(this.peg);
     //console.log(genDot(peg, parentsMap));

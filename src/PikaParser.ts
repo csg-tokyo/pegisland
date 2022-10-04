@@ -30,18 +30,12 @@ import { Peg } from './Peg';
 import { EPSILON } from './SetCalculator';
 import { isGrowing } from './BottomUpParser';
 
-export class PikaParsingEnv extends BaseParsingEnv {
-  private memo: Map<IParsingExpression, [IParseTree, Position] | null>[] = [];
+export class PikaParsingEnv extends BaseParsingEnv<IParsingExpression> {
   private createHeap;
   private parentsMap;
 
-  constructor(public s: string, private peg: Peg) {
-    super();
-    for (let i = 0; i <= s.length; i++) {
-      this.memo.push(
-        new Map<IParsingExpression, [IParseTree, Position] | null>()
-      );
-    }
+  constructor(s: string, private peg: Peg) {
+    super(s);
 
     this.parentsMap = createParentsMap(this.peg);
     this.createHeap = getHeapCreator(this.peg);

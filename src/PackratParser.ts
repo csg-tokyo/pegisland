@@ -66,18 +66,13 @@ export class PackratParser {
   }
 }
 
-export class PackratParsingEnv extends BaseParsingEnv {
+export class PackratParsingEnv extends BaseParsingEnv<Rule> {
   private currentStack: IParsingExpression[] = [];
   deepestStack: IParsingExpression[] = [];
   public maxIndex = 0;
 
-  private memo: Map<Rule, [IParseTree, Position] | null>[] = [];
-
-  constructor(public s: string, private stats: Stats = new Stats()) {
-    super();
-    for (let i = 0; i <= s.length; i++) {
-      this.memo.push(new Map<Rule, [IParseTree, Position] | null>());
-    }
+  constructor(s: string, private stats: Stats = new Stats()) {
+    super(s);
   }
 
   override parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
