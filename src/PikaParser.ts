@@ -28,7 +28,7 @@ import { Rule } from './Rule';
 import { Position } from './Position';
 import { Peg } from './Peg';
 import { EPSILON } from './SetCalculator';
-import { isGrowing } from './BottomUpParser';
+import { getTopLevelExpressions, isGrowing } from './BottomUpParser';
 
 export class PikaParsingEnv extends BaseParsingEnv<IParsingExpression> {
   private createHeap;
@@ -196,16 +196,6 @@ class ParentsBuilder implements IParsingExpressionVisitor {
   visitLake(pe: Lake): void {
     this.addParent(pe.operand, pe);
   }
-}
-
-function getTopLevelExpressions(peg: Peg): IParsingExpression[] {
-  return getTopLevelRules(peg).map((rule) => rule.rhs);
-}
-
-function getTopLevelRules(peg: Peg) {
-  return peg.toplevelRules.length > 0
-    ? peg.toplevelRules
-    : [peg.rules.values().next().value as Rule];
 }
 
 function getHeapCreator(peg: Peg) {
