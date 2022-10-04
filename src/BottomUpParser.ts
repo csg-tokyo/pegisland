@@ -111,7 +111,7 @@ export class BottomUpParsingEnv extends BaseParsingEnv {
   }
 }
 
-function isGrowing(
+export function isGrowing(
   result: [IParseTree, Position] | null,
   oldResult: [IParseTree, Position] | null
 ): boolean {

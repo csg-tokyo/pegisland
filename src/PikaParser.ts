@@ -28,6 +28,7 @@ import { Rule } from './Rule';
 import { Position } from './Position';
 import { Peg } from './Peg';
 import { EPSILON } from './SetCalculator';
+import { isGrowing } from './BottomUpParser';
 
 export class PikaParsingEnv extends BaseParsingEnv {
   private memo: Map<IParsingExpression, [IParseTree, Position] | null>[] = [];
@@ -99,22 +100,6 @@ export class PikaParsingEnv extends BaseParsingEnv {
     return this.memo[pos.offset].get(pe) as [IParseTree, Position] | null;
   }
 
-  isGrowing(
-    result: [IParseTree, Position] | null,
-    oldResult: [IParseTree, Position] | null
-  ): boolean {
-    if (oldResult == null) {
-      // console.log('oldResult is null');
-      return result != null;
-    } else {
-      assert(result != null, "result can't be null once it was not null");
-      const [, pos] = result;
-      const [, oldPos] = oldResult;
-      //console.log(pos.offset, oldPos.offset);
-      return pos.offset > oldPos.offset;
-    }
-  }
-
   grow(pe: IParsingExpression, pos: Position): boolean {
     const isFirstEval = !this.memo[pos.offset].has(pe);
     //console.log('grow ' + show(pe));
@@ -125,7 +110,7 @@ export class PikaParsingEnv extends BaseParsingEnv {
     const oldResult = this.memo[pos.offset].get(pe) as
       | null
       | [IParseTree, Position];
-    if (isFirstEval || this.isGrowing(result, oldResult)) {
+    if (isFirstEval || isGrowing(result, oldResult)) {
       this.memo[pos.offset].set(pe, result);
       //console.log(result);
       return true;
