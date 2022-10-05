@@ -1,5 +1,4 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
-import assert from 'assert';
 import Heap from 'heap';
 import { BeginningCalculator } from './BeginningCalculator';
 import { DepthFirstTraverser } from './DepthFirstTraverser';
@@ -24,7 +23,6 @@ import {
 } from './ParsingExpression';
 import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
 import { BaseParsingEnv } from './IParsingEnv';
-import { Rule } from './Rule';
 import { Position } from './Position';
 import { Peg } from './Peg';
 import { EPSILON } from './SetCalculator';
