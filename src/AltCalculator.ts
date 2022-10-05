@@ -1,5 +1,4 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { strict as assert } from 'assert';
 import {
   And,
   Colon,
@@ -43,11 +42,11 @@ export class AltCalculator extends TopDownSetCalculator {
   }
 
   visitAnd(_pe: And): void {
-    assert(true);
+    // Do nothing
   }
 
   visitNot(_pe: Not): void {
-    assert(true);
+    // Do nothing
   }
 
   visitSequence(pe: Sequence): void {
