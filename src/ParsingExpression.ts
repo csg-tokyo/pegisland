@@ -15,17 +15,11 @@ export class NullParsingExpression implements IParsingExpression {
   }
   accept<T, U>(_visitor: IParsingExpressionVisitor<T, U>, _arg?: U): T {
     throw Error('Should not be called');
-    //    return null as T;
   }
 }
 
 export class Nonterminal implements IParsingExpression {
-  rule: Rule;
-  name: string;
-  constructor(rule: Rule, name = '') {
-    this.rule = rule;
-    this.name = name;
-  }
+  constructor(public rule: Rule, public name = '') {}
 
   accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
     return visitor.visitNonterminal(this, arg);
@@ -34,14 +28,11 @@ export class Nonterminal implements IParsingExpression {
 
 export class Terminal implements IParsingExpression {
   regex: RegExp;
-  source: string;
-  constructor(pattern: string | RegExp, source: string) {
-    if (pattern instanceof RegExp) {
-      this.regex = new RegExp(pattern.source, 'smy');
-    } else {
-      this.regex = new RegExp(pattern, 'smy');
-    }
-    this.source = source;
+  constructor(public pattern: string | RegExp, public source: string) {
+    this.regex =
+      pattern instanceof RegExp
+        ? new RegExp(pattern.source, 'smy')
+        : new RegExp(pattern, 'smy');
   }
 
   accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
@@ -82,10 +73,7 @@ export class And implements IParsingExpression {
 }
 
 export class Not implements IParsingExpression {
-  operand: IParsingExpression;
-  constructor(operand: IParsingExpression) {
-    this.operand = operand;
-  }
+  constructor(public operand: IParsingExpression) {}
 
   accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
     return visitor.visitNot(this, arg);
@@ -154,14 +142,14 @@ export class Lake implements IParsingExpression {
         new Terminal(/./, '.'),
       ]),
     ]);
-    const allwaysFailExpression = new Sequence([
+    const alwaysFailExpression = new Sequence([
       new Not(new Terminal(/./, '.')),
       new And(new Terminal(/./, '.')),
     ]);
     this.semantics = new ZeroOrMore(
       new Grouping(
         new OrderedChoice([
-          operandIsEpsilon ? allwaysFailExpression : this.operand,
+          operandIsEpsilon ? alwaysFailExpression : this.operand,
           wildcard,
         ])
       )
