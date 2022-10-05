@@ -15,13 +15,13 @@ export interface IParsingEnv {
   register(name: string, value: string): void;
 }
 
-export abstract class BaseParsingEnv<K> implements IParsingEnv {
+export abstract class BaseParsingEnv<K extends object> implements IParsingEnv {
   protected memo;
   recognizer = new Recognizer(this);
   private symbolStack: { [name: string]: string }[] = [];
 
   constructor(public s: string) {
-    this.memo = BaseParsingEnv.#createMemoTable(s.length + 1);
+    this.memo = BaseParsingEnv.#createMemoTable<K>(s.length + 1);
   }
 
   push(): void {
@@ -49,7 +49,7 @@ export abstract class BaseParsingEnv<K> implements IParsingEnv {
     return rule.parse(this, pos);
   }
 
-  static #createMemoTable<K extends Object>(entryCount: number) {
+  static #createMemoTable<K extends object>(entryCount: number) {
     return [...Array(entryCount)].map(
       () => new WeakMap<K, [IParseTree, Position] | null>()
     );
