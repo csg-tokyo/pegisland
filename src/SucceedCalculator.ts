@@ -21,13 +21,6 @@ import { EPSILON } from './SetCalculator';
 import { TopDownSetCalculator } from './TopDownSetCalculator';
 
 export class SucceedCalculator extends TopDownSetCalculator {
-  constructor(
-    rules: Map<string, Rule>,
-    beginning: Map<IParsingExpression, Set<IParsingExpression>>
-  ) {
-    super(rules, beginning);
-  }
-
   visitZeroOrMore(pe: ZeroOrMore): void {
     this.propagateWithBeginning(pe);
   }
