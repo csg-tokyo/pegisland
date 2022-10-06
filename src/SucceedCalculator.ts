@@ -5,7 +5,6 @@ import {
   Colon,
   ColonNot,
   Grouping,
-  IParsingExpression,
   Lake,
   Not,
   OneOrMore,
@@ -15,7 +14,6 @@ import {
   Sequence,
   ZeroOrMore,
 } from './ParsingExpression';
-import { Rule } from './Rule';
 import { difference, union } from './set-operations';
 import { EPSILON } from './SetCalculator';
 import { TopDownSetCalculator } from './TopDownSetCalculator';
