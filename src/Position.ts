@@ -4,11 +4,12 @@ export class Position {
     public line: number,
     public column: number
   ) {}
+
   equal(other: Position): boolean {
     return (
-      this.offset == other.offset &&
-      this.line == other.line &&
-      this.column == other.column
+      this.offset === other.offset &&
+      this.line === other.line &&
+      this.column === other.column
     );
   }
 }

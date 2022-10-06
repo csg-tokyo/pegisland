@@ -4,7 +4,7 @@ export * from './lake';
 export { ParsingError } from './PackratParser';
 export * from './Parser';
 export * from './ParseTree';
-//export * from './experiment/NodeTypeGenerator';
+// export * from './experiment/NodeTypeGenerator';
 export * from './ParsingExpression';
 export { Peg } from './Peg';
 export * from './Printer';

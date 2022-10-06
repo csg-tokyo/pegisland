@@ -3,6 +3,7 @@ import Heap from 'heap';
 
 export class PriorityQueue<T> {
   heap;
+
   set = new Set<T>();
 
   constructor(cmp: (a: T, b: T) => number) {
@@ -22,7 +23,7 @@ export class PriorityQueue<T> {
 
   pop() {
     const value = this.heap.pop();
-    if (value != undefined) {
+    if (value) {
       this.set.delete(value);
     }
     return value;

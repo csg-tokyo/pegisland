@@ -38,42 +38,55 @@ export class DefaultParsingExpressionVisitor
   visitNonterminal(_pe: Nonterminal): void {
     // Do nothing
   }
+
   visitTerminal(_pe: Terminal): void {
     // Do nothing
   }
+
   visitOrderedChoice(_pe: OrderedChoice): void {
     // Do nothing
   }
+
   visitSequence(_pe: Sequence): void {
     // Do nothing
   }
+
   visitAnd(_pe: And): void {
     // Do nothing
   }
+
   visitColon(_pe: Colon): void {
     // Do nothing
   }
+
   visitColonNot(_pe: ColonNot): void {
     // Do nothing
   }
+
   visitGrouping(_pe: Grouping): void {
     // Do nothing
   }
+
   visitLake(_pe: Lake): void {
     // Do nothing
   }
+
   visitNot(_pe: Not): void {
     // Do nothing
   }
+
   visitOneOrMore(_pe: OneOrMore): void {
     // Do nothing
   }
+
   visitOptional(_pe: Optional): void {
     // Do nothing
   }
+
   visitRewriting(_pe: Rewriting): void {
     // Do nothing
   }
+
   visitZeroOrMore(_pe: ZeroOrMore): void {
     // Do nothing
   }

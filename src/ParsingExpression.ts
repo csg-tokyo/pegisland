@@ -13,6 +13,7 @@ export class NullParsingExpression implements IParsingExpression {
   parse(_env: IParsingEnv, _pos: Position): [IParseTree, Position] | null {
     return null;
   }
+
   accept<T, U>(_visitor: IParsingExpressionVisitor<T, U>, _arg?: U): T {
     throw Error('Should not be called');
   }
@@ -22,12 +23,15 @@ export class Nonterminal implements IParsingExpression {
   constructor(public rule: Rule, public name = '') {}
 
   accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
-    return visitor.visitNonterminal(this, arg);
+    return visitor[
+      `visit${(this as object).constructor.name}` as keyof typeof visitor
+    ](this as any, arg);
   }
 }
 
 export class Terminal implements IParsingExpression {
   regex: RegExp;
+
   constructor(public pattern: string | RegExp, public source: string) {
     this.regex =
       pattern instanceof RegExp
@@ -130,11 +134,12 @@ export class Rewriting implements IParsingExpression {
 
 export class Lake implements IParsingExpression {
   semantics: IParsingExpression = new NullParsingExpression();
+
   constructor(public operand: IParsingExpression) {}
 
   makeSemantics(symbols: Set<IParsingExpression>, waterRules: Rule[]) {
     const operandIsEpsilon =
-      this.operand instanceof Sequence && this.operand.operands.length == 0;
+      this.operand instanceof Sequence && this.operand.operands.length === 0;
     const wildcard = new OrderedChoice([
       ...waterRules.map((rule) => new Nonterminal(rule)),
       new Sequence([

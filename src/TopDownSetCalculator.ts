@@ -32,12 +32,6 @@ export abstract class TopDownSetCalculator extends SetCalculator {
     return getValue(this.beginning, pe);
   }
 
-  protected propagateToOperand(
-    pe: Grouping | Rewriting | Lake | Optional
-  ): void {
-    this.propagate(pe, pe.operand);
-  }
-
   visitNonterminal(pe: Nonterminal): void {
     this.set(pe.rule.rhs, union(this.get(pe.rule.rhs), this.get(pe)));
   }
@@ -46,16 +40,33 @@ export abstract class TopDownSetCalculator extends SetCalculator {
     // do nothing
   }
 
+  protected propagateToOperand(
+    pe: Grouping | Rewriting | Lake | Optional
+  ): void {
+    this.propagate(pe, pe.operand);
+  }
+
   abstract visitZeroOrMore(pe: ZeroOrMore): void;
+
   abstract visitOneOrMore(pe: OneOrMore): void;
+
   abstract visitOptional(pe: Optional): void;
+
   abstract visitAnd(pe: And): void;
+
   abstract visitNot(pe: Not): void;
+
   abstract visitSequence(pe: Sequence): void;
+
   abstract visitOrderedChoice(pe: OrderedChoice): void;
+
   abstract visitGrouping(pe: Grouping): void;
+
   abstract visitRewriting(pe: Rewriting): void;
+
   abstract visitColon(pe: Colon): void;
+
   abstract visitColonNot(pe: ColonNot): void;
+
   abstract visitLake(pe: Lake): void;
 }

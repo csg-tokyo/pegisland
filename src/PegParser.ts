@@ -124,7 +124,7 @@ const grammar: { [name in Nonterminals]: SimpleTree } = {
     ['terminal', /\\[0-7][0-7]?/],
     ['terminal', /[^\\]/],
   ],
-  LEFT_ARROW: ['', ['terminal', /=|<-/], 'Spacing'],
+  LEFT_ARROW: ['', ['terminal', /[=]|<-/], 'Spacing'],
   RIGHT_ARROW: ['', ['terminal', /->/], 'Spacing'],
   SEMICOLON: ['', ['terminal', /;/], 'Spacing'],
   SLASH: ['', ['terminal', /\//], 'Spacing'],
@@ -149,6 +149,7 @@ const grammar: { [name in Nonterminals]: SimpleTree } = {
 
 export class PegParser {
   pegInterpreter: PackratParser;
+
   constructor() {
     const builder = new InitialPegBuilder();
     const rules = builder.build(grammar);

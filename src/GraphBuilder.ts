@@ -12,8 +12,11 @@ import { Peg } from './Peg';
 
 export class GraphBuilder extends DefaultParsingExpressionVisitor {
   private parents: Map<Rule, Set<Rule>> = new Map();
+
   private children: Map<Rule, Set<Rule>> = new Map();
+
   private rule: Rule = new Rule('dummy', new NullParsingExpression());
+
   private beginningSet = new Set<IParsingExpression>();
 
   build(peg: Peg): [Map<Rule, Set<Rule>>, Map<Rule, Set<Rule>>] {

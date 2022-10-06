@@ -14,13 +14,14 @@ import { PriorityQueue } from './PriorityQueue';
 
 export class BottomUpParsingEnv extends BaseParsingEnv<Rule> {
   private createHeap;
+
   private parentsMap: Map<Rule, Set<Rule>>;
 
   constructor(s: string, private peg: Peg) {
     super(s);
 
     const [parentsMap, childrenMap] = createParentsMap(this.peg);
-    //console.log(genDot(peg, parentsMap));
+    // console.log(genDot(peg, parentsMap));
     this.parentsMap = parentsMap;
     this.createHeap = getHeapCreator(this.peg, childrenMap);
   }
@@ -33,10 +34,22 @@ export class BottomUpParsingEnv extends BaseParsingEnv<Rule> {
       return Error(`${start} is not a valid nonterminal symbol.`);
     }
     const result = this.parseRule(startRule, new Position(0, 1, 1));
-    if (result == null) {
+    if (result === null) {
       return Error(`Failed to recognize ${start}`);
     }
     return result;
+  }
+
+  parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
+    if (!this.memo[pos.offset].has(rule)) {
+      // console.log('XXX: ', pos.offset, rule.symbol);
+      this.memo[pos.offset].set(rule, null);
+    }
+    return this.memo[pos.offset].get(rule) as [IParseTree, Position] | null;
+  }
+
+  parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null {
+    return pe.accept(this.recognizer, pos);
   }
 
   private fillMemoTable(s: string) {
@@ -44,7 +57,7 @@ export class BottomUpParsingEnv extends BaseParsingEnv<Rule> {
     const finder = lineColumn(s + dummy);
     const makePos = (index: number) => {
       const info = finder.fromIndex(index);
-      assert(info != null);
+      assert(info !== null);
       return new Position(index, info.line, info.col);
     };
 
@@ -65,31 +78,19 @@ export class BottomUpParsingEnv extends BaseParsingEnv<Rule> {
         console.log(
           pos,
           heap.size(),
-          peToString(pe) + ' was popped!' + (this.memo[pos].get(pe) != null)
+          peToString(pe) + ' was popped!' + (this.memo[pos].get(pe) !== null)
         );
       */
       if (!isGrowing) continue;
       const parents = this.parentsMap.get(rule);
-      if (parents == undefined) continue;
+      if (!parents) continue;
       parents.forEach((parent) => heap.push(parent));
     }
   }
 
-  parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
-    if (!this.memo[pos.offset].has(rule)) {
-      //console.log('XXX: ', pos.offset, rule.symbol);
-      this.memo[pos.offset].set(rule, null);
-    }
-    return this.memo[pos.offset].get(rule) as [IParseTree, Position] | null;
-  }
-
-  parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null {
-    return pe.accept(this.recognizer, pos);
-  }
-
-  grow(rule: Rule, pos: Position): boolean {
+  private grow(rule: Rule, pos: Position): boolean {
     const isFirstEval = !this.memo[pos.offset].has(rule);
-    //console.log('Grow ' + show(pe));
+    // console.log('Grow ' + show(pe));
     if (isFirstEval) {
       this.memo[pos.offset].set(rule, null);
     }
@@ -99,11 +100,10 @@ export class BottomUpParsingEnv extends BaseParsingEnv<Rule> {
       | [IParseTree, Position];
     if (isFirstEval || isGrowing(result, oldResult)) {
       this.memo[pos.offset].set(rule, result);
-      //console.log(result);
+      // console.log(result);
       return true;
-    } else {
-      return false;
     }
+    return false;
   }
 }
 
@@ -111,16 +111,15 @@ export function isGrowing(
   result: [IParseTree, Position] | null,
   oldResult: [IParseTree, Position] | null
 ): boolean {
-  if (oldResult == null) {
+  if (oldResult === null) {
     // console.log('oldResult is null');
-    return result != null;
-  } else {
-    assert(result != null, "The result can't be null once it was not null");
-    const [, pos] = result;
-    const [, oldPos] = oldResult;
-    //console.log(pos.offset, oldPos.offset);
-    return pos.offset > oldPos.offset;
+    return result !== null;
   }
+  assert(result !== null, "The result can't be null once it was not null");
+  const [, pos] = result;
+  const [, oldPos] = oldResult;
+  // console.log(pos.offset, oldPos.offset);
+  return pos.offset > oldPos.offset;
 }
 
 export function getTopLevelExpressions(peg: Peg): IParsingExpression[] {
@@ -135,7 +134,9 @@ function getTopLevelRules(peg: Peg) {
 
 class DFSTraverser {
   visited = new Set<Rule>();
+
   bottoms = new Set<Rule>();
+
   constructor(
     private childrenMap: Map<Rule, Set<Rule>>,
     private topLevelRules: Rule[]
@@ -148,7 +149,7 @@ class DFSTraverser {
     const unvisitedChildren = children.filter(
       (child) => !this.visited.has(child)
     );
-    if (unvisitedChildren.length == 0) {
+    if (unvisitedChildren.length === 0) {
       this.bottoms.add(pe);
     } else {
       unvisitedChildren.forEach((child) => {
@@ -177,9 +178,9 @@ function getHeapCreator(peg: Peg, childrenMap: Map<Rule, Set<Rule>>) {
   const traverser = new DFSTraverser(childrenMap, peg.toplevelRules);
   traverser.traverse();
 
-  const b = new BeginningCalculator(peg.rules, true).calculate();
+  const calculator = new BeginningCalculator(peg.rules, true).calculate();
   const beginWithTerminal = (rule: Rule) =>
-    [...(b.get(rule.rhs) as Set<IParsingExpression>).values()].filter(
+    [...(calculator.get(rule.rhs) as Set<IParsingExpression>).values()].filter(
       (pe) => pe instanceof Terminal
     ).length > 0;
   const bottomRules = [...peg.rules.values()].filter(beginWithTerminal);
@@ -204,13 +205,12 @@ function getHeapCreator(peg: Peg, childrenMap: Map<Rule, Set<Rule>>) {
     [...bottomRules].map((rule) => peToString(rule.rhs)).join('\n')
   );
   */
-  const cmp = (a: Rule, b: Rule) => {
-    return (indexMap.get(a.rhs) as number) - (indexMap.get(b.rhs) as number);
-  };
+  const cmp = (a: Rule, b: Rule) =>
+    (indexMap.get(a.rhs) as number) - (indexMap.get(b.rhs) as number);
   return (): [PriorityQueue<Rule>, Map<IParsingExpression, number>] => {
     const heap = new PriorityQueue(cmp);
     bottomRules.forEach((rule) => heap.push(rule));
-    //bottoms.forEach((pe) => heap.push(pe));
+    // bottoms.forEach((pe) => heap.push(pe));
 
     return [heap, indexMap];
   };

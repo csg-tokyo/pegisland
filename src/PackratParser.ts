@@ -30,6 +30,27 @@ export class ParsingError extends Error {
 export class PackratParser {
   constructor(public rules: Map<string, Rule>) {}
 
+  public parse(
+    s: string,
+    startSymbol?: string,
+    stats?: Stats
+  ): IParseTree | ParsingError | Error {
+    const rule = this.getStartRule(startSymbol);
+    if (rule instanceof Error) {
+      return rule;
+    }
+    const env = new PackratParsingEnv(s, stats);
+    const result = rule.parse(env, new Position(0, 1, 1));
+    if (result === null) {
+      return new ParsingError(env);
+    }
+    const [tree, nextPos] = result;
+    if (nextPos.offset < s.length) {
+      return new ParsingError(env);
+    }
+    return tree;
+  }
+
   private getStartRule(startSymbol?: string): Rule | Error {
     let rule = this.rules.values().next().value;
     if (startSymbol) {
@@ -43,33 +64,14 @@ export class PackratParser {
     }
     return rule;
   }
-
-  public parse(
-    s: string,
-    startSymbol?: string,
-    stats?: Stats
-  ): IParseTree | ParsingError | Error {
-    const rule = this.getStartRule(startSymbol);
-    if (rule instanceof Error) {
-      return rule;
-    }
-    const env = new PackratParsingEnv(s, stats);
-    const result = rule.parse(env, new Position(0, 1, 1));
-    if (result == null) {
-      return new ParsingError(env);
-    }
-    const [tree, nextPos] = result;
-    if (nextPos.offset < s.length) {
-      return new ParsingError(env);
-    }
-    return tree;
-  }
 }
 
 export class PackratParsingEnv extends BaseParsingEnv<Rule> {
-  private currentStack: IParsingExpression[] = [];
   deepestStack: IParsingExpression[] = [];
-  public maxIndex = 0;
+
+  maxIndex = 0;
+
+  private currentStack: IParsingExpression[] = [];
 
   constructor(s: string, private stats: Stats = new Stats()) {
     super(s);
@@ -79,7 +81,7 @@ export class PackratParsingEnv extends BaseParsingEnv<Rule> {
     if (!this.memo[pos.offset].has(rule)) {
       const result = rule.parse(this, pos);
       this.memo[pos.offset].set(rule, result);
-      if (result == null) {
+      if (result === null) {
         this.stats.failureCount++;
       }
       this.stats.memoMissCount++;

@@ -44,16 +44,16 @@ export class Recognizer
     pe: Nonterminal,
     pos: Position
   ): [IParseTree, Position] | null {
-    //const result = this.rule.parse(env, pos);
+    // const result = this.rule.parse(env, pos);
     const result = this.env.parseRule(pe.rule, pos);
-    if (result == null || pe.name == '') {
+    if (result === null || pe.name === '') {
       return result;
     }
     const [, end] = result;
     const value = this.env.s.substring(pos.offset, end.offset).trim();
     if (!this.env.has(pe.name)) {
       this.env.register(pe.name, value);
-    } else if (value != this.env.lookup(pe.name)) {
+    } else if (value !== this.env.lookup(pe.name)) {
       return null;
     }
 
@@ -63,14 +63,14 @@ export class Recognizer
   visitTerminal(pe: Terminal, pos: Position): [IParseTree, Position] | null {
     pe.regex.lastIndex = pos.offset;
     const m = this.env.s.match(pe.regex);
-    if (m == null) {
+    if (m === null) {
       return null;
     }
-    const text = m[0];
-    const length = text.length;
+    const [text] = m;
+    const { length } = text;
     const nextIndex = pos.offset + length;
     const lines = text.split('\n');
-    const baseCol = lines.length == 1 ? pos.column : 1;
+    const baseCol = lines.length === 1 ? pos.column : 1;
     const nextPos = new Position(
       nextIndex,
       pos.line + lines.length - 1,
@@ -86,14 +86,14 @@ export class Recognizer
     const values: IParseTree[] = [];
     let prevIndex = null;
     let nextIndex = pos;
-    while (nextIndex != prevIndex) {
+    while (nextIndex !== prevIndex) {
       prevIndex = nextIndex;
       const result = this.env.parse(pe.operand, nextIndex);
       if (!result) {
         break;
       }
-      let value;
-      [value, nextIndex] = result;
+      const [value] = result;
+      [, nextIndex] = result;
       values.push(value);
     }
     return [new NodeZeroOrMore(new Range(pos, nextIndex), values), nextIndex];
@@ -107,7 +107,7 @@ export class Recognizer
     }
     let [value, nextIndex] = result;
     const values: IParseTree[] = [value];
-    while (nextIndex != prevIndex) {
+    while (nextIndex !== prevIndex) {
       prevIndex = nextIndex;
       const result = this.env.parse(pe.operand, nextIndex);
       if (!result) {
@@ -124,8 +124,8 @@ export class Recognizer
     let nextIndex = pos;
     const result = this.env.parse(pe.operand, nextIndex);
     if (result) {
-      let value;
-      [value, nextIndex] = result;
+      const [value] = result;
+      [, nextIndex] = result;
       values.push(value);
     }
     return [new NodeOptional(new Range(pos, nextIndex), values), nextIndex];
@@ -133,7 +133,7 @@ export class Recognizer
 
   visitAnd(pe: And, pos: Position): [IParseTree, Position] | null {
     const result = this.env.parse(pe.operand, pos);
-    if (result == null) {
+    if (result === null) {
       return null;
     }
     const [value, nextIndex] = result;
@@ -142,7 +142,7 @@ export class Recognizer
 
   visitNot(pe: Not, pos: Position): [IParseTree, Position] | null {
     const result = this.env.parse(pe.operand, pos);
-    if (result != null) {
+    if (result !== null) {
       return null;
     }
     return [new NodeNot(new Range(pos, pos)), pos];
@@ -153,11 +153,11 @@ export class Recognizer
     let nextIndex = pos;
     for (const operand of pe.operands) {
       const result = this.env.parse(operand, nextIndex);
-      if (result == null) {
+      if (result === null) {
         return null;
       }
-      let value;
-      [value, nextIndex] = result;
+      const [value] = result;
+      [, nextIndex] = result;
       values.push(value);
     }
     return [new NodeSequence(new Range(pos, nextIndex), values), nextIndex];
@@ -170,7 +170,7 @@ export class Recognizer
     let i = 0;
     for (const operand of pe.operands) {
       const result = this.env.parse(operand, pos);
-      if (result != null) {
+      if (result !== null) {
         const [value, nextIndex] = result;
         return [
           new NodeOrderedChoice(new Range(pos, nextIndex), value, i),
@@ -184,7 +184,7 @@ export class Recognizer
 
   visitGrouping(pe: Grouping, pos: Position): [IParseTree, Position] | null {
     const result = this.env.parse(pe.operand, pos);
-    if (result == null) {
+    if (result === null) {
       return null;
     }
     const [childNode, nextIndex] = result;
@@ -193,7 +193,7 @@ export class Recognizer
 
   visitRewriting(pe: Rewriting, pos: Position): [IParseTree, Position] | null {
     const result = this.env.parse(pe.operand, pos);
-    if (result == null) {
+    if (result === null) {
       return null;
     }
     const [childNode, nextIndex] = result;
@@ -205,16 +205,16 @@ export class Recognizer
 
   visitColon(pe: Colon, pos: Position): [IParseTree, Position] | null {
     const lhsResult = this.env.parse(pe.lhs, pos);
-    if (lhsResult == null) {
+    if (lhsResult === null) {
       return null;
     }
     const [, lhsNextIndex] = lhsResult;
     const rhsResult = this.env.parse(pe.rhs, pos);
-    if (rhsResult == null) {
+    if (rhsResult === null) {
       return null;
     }
     const [, rhsNextIndex] = rhsResult;
-    if (lhsNextIndex.offset != rhsNextIndex.offset) {
+    if (lhsNextIndex.offset !== rhsNextIndex.offset) {
       return null;
     }
     return rhsResult;
@@ -222,14 +222,14 @@ export class Recognizer
 
   visitColonNot(pe: ColonNot, pos: Position): [IParseTree, Position] | null {
     const lhsResult = this.env.parse(pe.lhs, pos);
-    if (lhsResult == null) {
+    if (lhsResult === null) {
       return null;
     }
     const rhsResult = this.env.parse(pe.rhs, pos);
-    if (rhsResult != null) {
+    if (rhsResult !== null) {
       const [, lhsNextIndex] = lhsResult;
       const [, rhsNextIndex] = rhsResult;
-      if (lhsNextIndex.offset == rhsNextIndex.offset) {
+      if (lhsNextIndex.offset === rhsNextIndex.offset) {
         return null;
       }
     }
@@ -239,14 +239,14 @@ export class Recognizer
   visitLake(pe: Lake, pos: Position): [IParseTree, Position] | null {
     const result = this.env.parse(pe.semantics, pos);
     assert(
-      result != null,
+      result !== null,
       'Lake should not fail since it accepts an empty string'
     );
     const [childNode, nextIndex] = result;
     const zeroOrMore = childNode as NodeZeroOrMore;
     const islands = zeroOrMore.childNodes
       .map((group) => group.childNodes[0])
-      .filter((childNode) => (childNode as NodeOrderedChoice).index == 0)
+      .filter((childNode) => (childNode as NodeOrderedChoice).index === 0)
       .map((childNode) => (childNode as NodeOrderedChoice).childNodes[0]);
     return [new NodeLake(new Range(pos, nextIndex), islands, pe), nextIndex];
   }

@@ -14,33 +14,31 @@ import {
   ZeroOrMore,
 } from './ParsingExpression';
 import { Rule } from './Rule';
-import { SimpleTree } from './PegParser';
+import { Nonterminals, SimpleTree } from './PegParser';
 
 export class InitialPegBuilder {
   rules = new Map<string, Rule>();
 
   public build(peg: { [name: string]: SimpleTree }): Map<string, Rule> {
     this.rules = new Map<string, Rule>();
-    for (const key in peg) {
-      this.rules.set(key, new Rule(key, new NullParsingExpression()));
-    }
-    for (const key in peg) {
+    Object.keys(peg).forEach((key) =>
+      this.rules.set(key, new Rule(key, new NullParsingExpression()))
+    );
+    Object.keys(peg).forEach((key) => {
       const rule = this.rules.get(key) as Rule;
-      rule.rhs = this.compileExpression(peg[key]);
-    }
+      rule.rhs = this.compileExpression(peg[key as Nonterminals]);
+    });
     return this.rules;
   }
 
   private compileExpression(expression: SimpleTree): IParsingExpression {
-    if (typeof expression == 'string') {
+    if (typeof expression === 'string') {
       return this.compileNonterminal(expression);
-    } else {
-      if (expression[0] == 'terminal') {
-        return this.compileTerminal(expression);
-      } else {
-        return this.compileOperator(expression);
-      }
     }
+    if (expression[0] === 'terminal') {
+      return this.compileTerminal(expression);
+    }
+    return this.compileOperator(expression);
   }
 
   private compileOperator(

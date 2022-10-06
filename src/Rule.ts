@@ -9,6 +9,7 @@ export class Rule {
     public rhs: IParsingExpression,
     public isWater = false
   ) {}
+
   parse(env: IParsingEnv, pos: Position): [IParseTree, Position] | null {
     return this.parseWithoutMemo(env, pos);
   }
@@ -20,7 +21,7 @@ export class Rule {
     env.push();
     const result = env.parse(this.rhs, pos);
     env.pop();
-    if (result == null) {
+    if (result === null) {
       return null;
     }
     const [childNode, nextIndex] = result;

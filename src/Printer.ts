@@ -22,69 +22,91 @@ class Printer implements IParsingExpressionVisitor<string> {
   buildString(pe: IParsingExpression) {
     return pe.accept(this);
   }
+
   visitNonterminal(pe: Nonterminal): string {
     return pe.rule.symbol;
   }
+
   visitTerminal(pe: Terminal): string {
     return pe.source;
   }
+
+  visitZeroOrMore(pe: ZeroOrMore): string {
+    return this.suffixOperator(pe, '*');
+  }
+
+  visitOneOrMore(pe: OneOrMore): string {
+    return this.suffixOperator(pe, '+');
+  }
+
+  visitOptional(pe: Optional): string {
+    return this.suffixOperator(pe, '?');
+  }
+
+  visitAnd(pe: And): string {
+    return this.prefixOperator(pe, '&');
+  }
+
+  visitNot(pe: Not): string {
+    return this.prefixOperator(pe, '!');
+  }
+
+  visitSequence(pe: Sequence): string {
+    return this.separatingOperator(pe, ' ');
+  }
+
+  visitOrderedChoice(pe: OrderedChoice): string {
+    return this.separatingOperator(pe, ' / ');
+  }
+
+  visitGrouping(pe: Grouping): string {
+    return this.surroundingOperator(pe, '( ', ' )');
+  }
+
+  visitRewriting(pe: Rewriting): string {
+    return pe.operand.accept(this);
+  }
+
+  visitColon(pe: Colon): string {
+    return this.infixOperator(pe, ':');
+  }
+
+  visitColonNot(pe: ColonNot): string {
+    return this.infixOperator(pe, ':!');
+  }
+
+  visitLake(pe: Lake): string {
+    return this.surroundingOperator(pe, '<< ', ' >>');
+  }
+
+  private separatingOperator(
+    pe: Sequence | OrderedChoice,
+    operator: string
+  ): string {
+    return pe.operands.map((operand) => operand.accept(this)).join(operator);
+  }
+
   private suffixOperator(
     pe: ZeroOrMore | OneOrMore | Optional,
     operator: string
   ): string {
     return pe.operand.accept(this) + operator;
   }
-  visitZeroOrMore(pe: ZeroOrMore): string {
-    return this.suffixOperator(pe, '*');
-  }
-  visitOneOrMore(pe: OneOrMore): string {
-    return this.suffixOperator(pe, '+');
-  }
-  visitOptional(pe: Optional): string {
-    return this.suffixOperator(pe, '?');
-  }
+
   private prefixOperator(pe: And | Not, operator: string): string {
     return operator + pe.operand.accept(this);
   }
-  visitAnd(pe: And): string {
-    return this.prefixOperator(pe, '&');
-  }
-  visitNot(pe: Not): string {
-    return this.prefixOperator(pe, '!');
-  }
-  separatingOperator(pe: Sequence | OrderedChoice, operator: string): string {
-    return pe.operands.map((operand) => operand.accept(this)).join(operator);
-  }
-  visitSequence(pe: Sequence): string {
-    return this.separatingOperator(pe, ' ');
-  }
-  visitOrderedChoice(pe: OrderedChoice): string {
-    return this.separatingOperator(pe, ' / ');
-  }
-  visitGrouping(pe: Grouping): string {
-    return this.surroundingOperator(pe, '( ', ' )');
-  }
-  visitRewriting(pe: Rewriting): string {
-    return pe.operand.accept(this);
-  }
+
   private infixOperator(pe: Colon | ColonNot, operator: string): string {
     return pe.lhs.accept(this) + operator + pe.rhs.accept(this);
   }
-  visitColon(pe: Colon): string {
-    return this.infixOperator(pe, ':');
-  }
-  visitColonNot(pe: ColonNot): string {
-    return this.infixOperator(pe, ':!');
-  }
+
   private surroundingOperator(
     pe: Grouping | Lake,
     left: string,
     right: string
   ): string {
     return left + pe.operand.accept(this) + right;
-  }
-  visitLake(pe: Lake): string {
-    return this.surroundingOperator(pe, '<< ', ' >>');
   }
 }
 

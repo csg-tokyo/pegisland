@@ -18,14 +18,8 @@ import { difference } from './set-operations';
 
 export class GeneralPegBuilder {
   public rules = new Map<string, Rule>();
-  private visitedRules = new Set<Rule>();
 
-  private getRule(symbol: string): Rule {
-    if (!this.rules.has(symbol)) {
-      this.rules.set(symbol, new Rule(symbol, new pe.NullParsingExpression()));
-    }
-    return this.rules.get(symbol) as Rule;
-  }
+  private visitedRules = new Set<Rule>();
 
   public build(grammar: string): Peg | ParsingError | Error {
     const pegParser = new PegParser();
@@ -34,17 +28,18 @@ export class GeneralPegBuilder {
       return result;
     }
 
-    const seq = result.childNodes[0];
-    const plus = seq.childNodes[1];
+    const [seq] = result.childNodes;
+    const [, plus] = seq.childNodes;
     plus.childNodes.forEach((node) => {
-      const seq = node.childNodes[0];
-      const id = seq.childNodes[1].childNodes[0].childNodes[0] as NodeTerminal;
+      const [seq] = node.childNodes;
+      const [id] = seq.childNodes[1].childNodes[0].childNodes;
+      assert(id instanceof NodeTerminal);
       const rule = this.getRule(id.text);
       rule.rhs = this.processExpression(seq.childNodes[3]);
 
       // check if it has a water annotation
       const optAnnotations = seq.childNodes[0] as NodeNonterminal;
-      const annotations = optAnnotations.childNodes[0];
+      const [annotations] = optAnnotations.childNodes;
       const hasAnnotation = annotations.childNodes.length > 0;
       rule.isWater = hasAnnotation;
     });
@@ -55,32 +50,40 @@ export class GeneralPegBuilder {
     return new Peg(this.rules, [...toplevelRules]);
   }
 
+  private getRule(symbol: string): Rule {
+    if (!this.rules.has(symbol)) {
+      this.rules.set(symbol, new Rule(symbol, new pe.NullParsingExpression()));
+    }
+    return this.rules.get(symbol) as Rule;
+  }
+
   private processExpression(node: IParseTree): IParsingExpression {
     assert(node instanceof NodeNonterminal);
-    const seq = node.childNodes[0];
+    const [seq] = node.childNodes;
     assert(seq instanceof NodeSequence);
     const [rewriting, star] = seq.childNodes;
     const rewritings = [rewriting];
     star.childNodes.forEach((seq) => {
-      const rewriting = seq.childNodes[1];
+      const [, rewriting] = seq.childNodes;
       rewritings.push(rewriting);
     });
     const operands = rewritings.map((rewriting) =>
       this.processRewriting(rewriting)
     );
-    return operands.length == 1 ? operands[0] : new pe.OrderedChoice(operands);
+    return operands.length === 1 ? operands[0] : new pe.OrderedChoice(operands);
   }
 
   private processRewriting(node: IParseTree): IParsingExpression {
     assert(node instanceof NodeNonterminal);
-    const seq = node.childNodes[0];
+    const [seq] = node.childNodes;
     const [sequence, opt] = seq.childNodes;
     let operand = this.processSequence(sequence);
-    if (opt.childNodes.length == 1) {
+    if (opt.childNodes.length === 1) {
       const [seq] = opt.childNodes;
-      const str = seq.childNodes[1];
-      const choice = str.childNodes[0].childNodes[0];
-      const term = choice.childNodes[0] as NodeTerminal;
+      const [, str] = seq.childNodes;
+      const [choice] = str.childNodes[0].childNodes;
+      const [term] = choice.childNodes;
+      assert(term instanceof NodeTerminal);
       const result = eval(term.text) as string;
       operand = new pe.Rewriting(operand, result);
     }
@@ -89,19 +92,19 @@ export class GeneralPegBuilder {
 
   private processSequence(node: IParseTree): IParsingExpression {
     assert(node instanceof NodeNonterminal);
-    const star = node.childNodes[0];
-    const operands = star.childNodes.map((node) => {
-      return this.processPrefix(node.childNodes[0]);
-    });
-    return operands.length == 1 ? operands[0] : new pe.Sequence(operands);
+    const [star] = node.childNodes;
+    const operands = star.childNodes.map((node) =>
+      this.processPrefix(node.childNodes[0])
+    );
+    return operands.length === 1 ? operands[0] : new pe.Sequence(operands);
   }
 
   private processPrefix(node: IParseTree): IParsingExpression {
     assert(node instanceof NodeNonterminal);
-    const seq = node.childNodes[0];
+    const [seq] = node.childNodes;
     const [opt, suffix] = seq.childNodes;
     let operand = this.processSuffix(suffix);
-    if (opt.childNodes.length != 0) {
+    if (opt.childNodes.length !== 0) {
       const choice = opt.childNodes[0] as NodeOrderedChoice;
       operand = new [pe.And, pe.Not][choice.index](operand);
     }
@@ -110,10 +113,10 @@ export class GeneralPegBuilder {
 
   private processSuffix(node: IParseTree): IParsingExpression {
     assert(node instanceof NodeNonterminal);
-    const seq = node.childNodes[0];
+    const [seq] = node.childNodes;
     const [primary, opt] = seq.childNodes;
     let operand = this.processPrimary(primary);
-    if (opt.childNodes.length != 0) {
+    if (opt.childNodes.length !== 0) {
       const choice = opt.childNodes[0] as NodeOrderedChoice;
       operand = [
         () => this.makeSuffixWithOperand(choice, operand),
@@ -132,9 +135,9 @@ export class GeneralPegBuilder {
     choice: NodeOrderedChoice,
     operand: IParsingExpression
   ) {
-    const choiceOperand = choice.childNodes[0];
+    const [choiceOperand] = choice.childNodes;
     const colonSeq = choiceOperand as NodeSequence;
-    const rhs = colonSeq.childNodes[1];
+    const [, rhs] = colonSeq.childNodes;
     const rhsOperand = this.processPrimary(rhs);
     return [
       () => createStarPlus(operand, rhsOperand),
@@ -161,12 +164,13 @@ export class GeneralPegBuilder {
 
   private processOperatorWithOneOperand(
     node: IParseTree,
-    ctor: { new (x: IParsingExpression): IParsingExpression }
+    PeCtor: { new (x: IParsingExpression): IParsingExpression }
   ) {
     assert(node instanceof NodeSequence);
     const operand = this.processExpression(node.childNodes[1]);
-    return new ctor(operand);
+    return new PeCtor(operand);
   }
+
   private processGrouping(node: IParseTree) {
     return this.processOperatorWithOneOperand(node, pe.Grouping);
   }
@@ -177,17 +181,19 @@ export class GeneralPegBuilder {
 
   private processRegexp(node: IParseTree): IParsingExpression {
     assert(node instanceof NodeNonterminal);
-    const seq = node.childNodes[0];
-    const choice = seq.childNodes[0];
-    const term = choice.childNodes[0] as NodeTerminal;
-    const text = term.text;
+    const [seq] = node.childNodes;
+    const [choice] = seq.childNodes;
+    const [term] = choice.childNodes;
+    assert(term instanceof NodeTerminal);
+    const { text } = term;
     return new pe.Terminal(text.slice(2, text.length - 1), text);
   }
 
   private processNamedIdentifier(node: IParseTree): IParsingExpression {
     assert(node instanceof NodeNonterminal);
-    const seq = node.childNodes[0];
-    const opt = seq.childNodes[0] as NodeOptional;
+    const [seq] = node.childNodes;
+    const [opt] = seq.childNodes;
+    assert(opt instanceof NodeOptional);
     let subname = '';
     if (opt.childNodes.length > 0) {
       const optSeq = opt.childNodes[0] as NodeSequence;
@@ -196,8 +202,9 @@ export class GeneralPegBuilder {
     }
     const id = seq.childNodes[1] as NodeNonterminal;
     {
-      const seq = id.childNodes[0];
-      const term = seq.childNodes[0] as NodeTerminal;
+      const [seq] = id.childNodes;
+      const [term] = seq.childNodes;
+      assert(term instanceof NodeTerminal);
       const rule = this.getRule(term.text) as Rule;
       this.visitedRules.add(rule);
       return new pe.Nonterminal(rule, subname);
@@ -206,9 +213,10 @@ export class GeneralPegBuilder {
 
   private processString(node: IParseTree): IParsingExpression {
     assert(node instanceof NodeNonterminal);
-    const seq = node.childNodes[0];
-    const choice = seq.childNodes[0];
-    const term = choice.childNodes[0] as NodeTerminal;
+    const [seq] = node.childNodes;
+    const [choice] = seq.childNodes;
+    const [term] = choice.childNodes;
+    assert(term instanceof NodeTerminal);
     const result = eval(term.text) as string;
     return new pe.Terminal(
       result.replace(/([^0-9a-zA-Z])/g, '\\$1'),
@@ -218,11 +226,12 @@ export class GeneralPegBuilder {
 
   private processClass(node: IParseTree): IParsingExpression {
     assert(node instanceof NodeNonterminal);
-    const seq = node.childNodes[0];
-    const terminal = seq.childNodes[0] as NodeTerminal;
+    const [seq] = node.childNodes;
+    const [terminal] = seq.childNodes;
+    assert(terminal instanceof NodeTerminal);
     const text =
-      terminal.text[0] == '^'
-        ? '[^' + terminal.text.substring(2)
+      terminal.text[0] === '^'
+        ? `[^${terminal.text.substring(2)}`
         : terminal.text;
     return new pe.Terminal(text, terminal.text);
   }
@@ -236,10 +245,10 @@ export class GeneralPegBuilder {
 function createXPlus(
   lhs: IParsingExpression,
   rhs: IParsingExpression,
-  ctor: { new (x: IParsingExpression): IParsingExpression }
+  PeCtor: { new (x: IParsingExpression): IParsingExpression }
 ) {
   return new pe.Sequence([
-    new ctor(new pe.Grouping(new pe.Sequence([new pe.Not(rhs), lhs]))),
+    new PeCtor(new pe.Grouping(new pe.Sequence([new pe.Not(rhs), lhs]))),
     rhs,
   ]);
 }

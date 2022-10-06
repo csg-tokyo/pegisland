@@ -4,7 +4,7 @@
     "es2021": true
   },
   "extends": [
-    "eslint:recommended",
+    "eslint:all",
     "plugin:@typescript-eslint/recommended",
     "prettier"
   ],
@@ -21,6 +21,35 @@
         "argsIgnorePattern": "^_"
       }
     ],
-    "linebreak-style": ["error"]
+    "@typescript-eslint/member-ordering": ["error"],
+    "linebreak-style": ["error"],
+    "no-useless-constructor": "off",
+    "@typescript-eslint/no-useless-constructor": "error",
+    "sort-imports": "off",
+    "func-style": "off",
+    "no-magic-numbers": "off",
+    "id-length": "off",
+    "one-var": "off",
+    "no-ternary": "off",
+    "no-use-before-define": "off",
+    "max-params": "off",
+    "no-plusplus": "off",
+    "class-methods-use-this": "off",
+    "max-classes-per-file": "off",
+    "multiline-comment-style": "off",
+    "capitalized-comments": "off",
+    "no-continue": "off",
+    "no-loop-func": "off",
+    "max-statements": ["error", 25],
+    "require-unicode-regexp": "off",
+    "sort-keys": "off",
+    "prefer-named-capture-group": "off",
+    "no-shadow": "off",
+    "no-warning-comments": "off",
+    "line-comment-position": "off",
+    "no-inline-comments": "off",
+    "no-eval": "off",
+    "consistent-return": "off",
+    "default-case": "off"
   }
 }

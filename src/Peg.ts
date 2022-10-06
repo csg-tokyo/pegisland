@@ -6,12 +6,9 @@ import { peToString } from './Printer';
 
 function ruleToString(rule: Rule): string {
   if (rule.rhs instanceof OrderedChoice) {
-    return (
-      '\n' +
-      Array.from(rule.rhs.operands.map(peToString))
-        .map((s) => `    ${s}`)
-        .join(' /\n')
-    );
+    return `\n${Array.from(rule.rhs.operands.map(peToString))
+      .map((s) => `    ${s}`)
+      .join(' /\n')}`;
   }
   return peToString(rule.rhs);
 }
@@ -26,9 +23,10 @@ export class Peg {
   toString(): string {
     return Array.from(this.rules)
       .filter(([symbol]) => !isLake(symbol))
-      .map(([symbol, rule]) => {
-        return `${makeAnnotation(rule)}${symbol} <- ${ruleToString(rule)}`;
-      })
+      .map(
+        ([symbol, rule]) =>
+          `${makeAnnotation(rule)}${symbol} <- ${ruleToString(rule)}`
+      )
       .join('\n');
   }
 }

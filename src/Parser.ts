@@ -49,7 +49,7 @@ function isLeftRecursive(peg: Peg): boolean {
   const firstSets = new FirstCalculator(peg.rules).calculate();
   return [...peg.rules.entries()].some(([symbol, rule]) =>
     [...(firstSets.get(rule.rhs) as Set<IParsingExpression>)].some(
-      (pe) => pe instanceof Nonterminal && pe.rule.symbol == symbol
+      (pe) => pe instanceof Nonterminal && pe.rule.symbol === symbol
     )
   );
 }
@@ -109,70 +109,71 @@ export function createParser(
   return parser;
 }
 
+class Counter implements IParsingExpressionVisitor {
+  constructor(private info: GrammarInfo) {}
+
+  visitNonterminal(pe: Nonterminal): void {
+    this.info.nonterminalCount++;
+    if (isLake(pe.rule.symbol)) {
+      this.info.lakeSymbolCount++;
+    }
+  }
+
+  visitTerminal(_pe: Terminal): void {
+    this.info.terminalCount++;
+  }
+
+  visitAnd(_pe: And): void {
+    this.info.andCount++;
+  }
+
+  visitNot(_pe: Not): void {
+    this.info.notCount++;
+  }
+
+  visitColon(_pe: Colon): void {
+    this.info.colonCount++;
+  }
+
+  visitColonNot(_pe: ColonNot): void {
+    this.info.colonNotCount++;
+  }
+
+  visitGrouping(_pe: Grouping): void {
+    this.info.groupingCount++;
+  }
+
+  visitLake(_pe: Lake): void {
+    this.info.lakeCount++;
+  }
+
+  visitZeroOrMore(_pe: ZeroOrMore): void {
+    this.info.zeroOrMoreCount++;
+  }
+
+  visitOneOrMore(_pe: OneOrMore): void {
+    this.info.oneOrMoreCount++;
+  }
+
+  visitOptional(_pe: Optional): void {
+    this.info.optionalCount++;
+  }
+
+  visitOrderedChoice(_pe: OrderedChoice): void {
+    this.info.orderedChoiceCount++;
+  }
+
+  visitRewriting(_pe: Rewriting): void {
+    this.info.rewritingCount++;
+  }
+
+  visitSequence(_pe: Sequence): void {
+    this.info.sequenceCount++;
+  }
+}
+
 function analyzeGrammar(peg: Peg, info: GrammarInfo) {
-  const traverser = new PostorderExpressionTraverser(
-    new (class implements IParsingExpressionVisitor {
-      visitNonterminal(pe: Nonterminal): void {
-        info.expressionCount++;
-        info.nonterminalCount++;
-        if (isLake(pe.rule.symbol)) {
-          info.lakeSymbolCount++;
-        }
-      }
-      visitTerminal(_pe: Terminal): void {
-        info.expressionCount++;
-        info.terminalCount++;
-      }
-      visitAnd(_pe: And): void {
-        info.expressionCount++;
-        info.andCount++;
-      }
-      visitNot(_pe: Not): void {
-        info.expressionCount++;
-        info.notCount++;
-      }
-      visitColon(_pe: Colon): void {
-        info.expressionCount++;
-        info.colonCount++;
-      }
-      visitColonNot(_pe: ColonNot): void {
-        info.expressionCount++;
-        info.colonNotCount++;
-      }
-      visitGrouping(_pe: Grouping): void {
-        info.expressionCount++;
-        info.groupingCount++;
-      }
-      visitLake(_pe: Lake): void {
-        info.expressionCount++;
-        info.lakeCount++;
-      }
-      visitZeroOrMore(_pe: ZeroOrMore): void {
-        info.expressionCount++;
-        info.zeroOrMoreCount++;
-      }
-      visitOneOrMore(_pe: OneOrMore): void {
-        info.expressionCount++;
-        info.oneOrMoreCount++;
-      }
-      visitOptional(_pe: Optional): void {
-        info.expressionCount++;
-        info.optionalCount++;
-      }
-      visitOrderedChoice(_pe: OrderedChoice): void {
-        info.expressionCount++;
-        info.orderedChoiceCount++;
-      }
-      visitRewriting(_pe: Rewriting): void {
-        info.expressionCount++;
-        info.rewritingCount++;
-      }
-      visitSequence(_pe: Sequence): void {
-        info.expressionCount++;
-        info.sequenceCount++;
-      }
-    })()
-  );
+  const traverser = new PostorderExpressionTraverser(new Counter(info));
   peg.rules.forEach((rule) => {
     if (!(rule.rhs instanceof NullParsingExpression)) {
       info.ruleCount++;

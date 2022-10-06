@@ -43,7 +43,7 @@ export function searchExpressions(
   node: IParseTree,
   range: LineColumnRange
 ): IParseTree[] {
-  const nodeIsLeaf = node.childNodes.length == 0;
+  const nodeIsLeaf = node.childNodes.length === 0;
   if (nodeIsLeaf) {
     return inRange(node.range, range) ? [node] : [];
   }

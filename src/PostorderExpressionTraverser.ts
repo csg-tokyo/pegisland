@@ -28,6 +28,62 @@ export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
     pe.accept(this);
   }
 
+  visitNonterminal(pe: Nonterminal): void {
+    this.visitSymbol(pe);
+  }
+
+  visitTerminal(pe: Terminal): void {
+    this.visitSymbol(pe);
+  }
+
+  visitZeroOrMore(pe: ZeroOrMore): void {
+    this.visitOperatorWithOneOperand(pe);
+  }
+
+  visitOneOrMore(pe: OneOrMore): void {
+    this.visitOperatorWithOneOperand(pe);
+  }
+
+  visitOptional(pe: Optional): void {
+    this.visitOperatorWithOneOperand(pe);
+  }
+
+  visitAnd(pe: And): void {
+    this.visitOperatorWithOneOperand(pe);
+  }
+
+  visitNot(pe: Not): void {
+    this.visitOperatorWithOneOperand(pe);
+  }
+
+  visitSequence(pe: Sequence): void {
+    this.visitOperatorWithMultipleOperands(pe);
+  }
+
+  visitOrderedChoice(pe: OrderedChoice): void {
+    this.visitOperatorWithMultipleOperands(pe);
+  }
+
+  visitGrouping(pe: Grouping): void {
+    this.visitOperatorWithOneOperand(pe);
+  }
+
+  visitRewriting(pe: Rewriting): void {
+    this.visitOperatorWithOneOperand(pe);
+  }
+
+  visitColon(pe: Colon): void {
+    this.visitOperatorWithTwoOperands(pe);
+  }
+
+  visitColonNot(pe: ColonNot): void {
+    this.visitOperatorWithTwoOperands(pe);
+  }
+
+  visitLake(pe: Lake): void {
+    this.visitOperatorWithOneOperand(pe);
+  }
+
   private visitSymbol(pe: Nonterminal | Terminal) {
     pe.accept(this.visitor);
   }
@@ -56,48 +112,5 @@ export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
   private visitOperatorWithMultipleOperands(pe: Sequence | OrderedChoice) {
     pe.operands.forEach((operand) => operand.accept(this));
     pe.accept(this.visitor);
-  }
-
-  visitNonterminal(pe: Nonterminal): void {
-    this.visitSymbol(pe);
-  }
-  visitTerminal(pe: Terminal): void {
-    this.visitSymbol(pe);
-  }
-  visitZeroOrMore(pe: ZeroOrMore): void {
-    this.visitOperatorWithOneOperand(pe);
-  }
-  visitOneOrMore(pe: OneOrMore): void {
-    this.visitOperatorWithOneOperand(pe);
-  }
-  visitOptional(pe: Optional): void {
-    this.visitOperatorWithOneOperand(pe);
-  }
-  visitAnd(pe: And): void {
-    this.visitOperatorWithOneOperand(pe);
-  }
-  visitNot(pe: Not): void {
-    this.visitOperatorWithOneOperand(pe);
-  }
-  visitSequence(pe: Sequence): void {
-    this.visitOperatorWithMultipleOperands(pe);
-  }
-  visitOrderedChoice(pe: OrderedChoice): void {
-    this.visitOperatorWithMultipleOperands(pe);
-  }
-  visitGrouping(pe: Grouping): void {
-    this.visitOperatorWithOneOperand(pe);
-  }
-  visitRewriting(pe: Rewriting): void {
-    this.visitOperatorWithOneOperand(pe);
-  }
-  visitColon(pe: Colon): void {
-    this.visitOperatorWithTwoOperands(pe);
-  }
-  visitColonNot(pe: ColonNot): void {
-    this.visitOperatorWithTwoOperands(pe);
-  }
-  visitLake(pe: Lake): void {
-    this.visitOperatorWithOneOperand(pe);
   }
 }

@@ -24,8 +24,9 @@ import { getValue } from './utils';
 export const EPSILON = new Sequence([]);
 
 export abstract class SetCalculator implements IParsingExpressionVisitor {
+  peSet: Map<IParsingExpression, Set<IParsingExpression>>;
+
   private expressions;
-  public peSet: Map<IParsingExpression, Set<IParsingExpression>>;
 
   constructor(rules: Map<string, Rule>, isPostorder: boolean) {
     const collector = new ExpressionCollector();
@@ -43,7 +44,7 @@ export abstract class SetCalculator implements IParsingExpressionVisitor {
       this.expressions.forEach((pe) => sizeMap.set(pe, this.get(pe).size));
       this.expressions.forEach((pe) => pe.accept(this));
       const wasChanged = this.expressions.some(
-        (pe) => sizeMap.get(pe) != this.get(pe).size
+        (pe) => sizeMap.get(pe) !== this.get(pe).size
       );
       if (!wasChanged) {
         break;
@@ -65,17 +66,30 @@ export abstract class SetCalculator implements IParsingExpressionVisitor {
   }
 
   abstract visitNonterminal(pe: Nonterminal): void;
+
   abstract visitTerminal(pe: Terminal): void;
+
   abstract visitZeroOrMore(pe: ZeroOrMore): void;
+
   abstract visitOneOrMore(pe: OneOrMore): void;
+
   abstract visitOptional(pe: Optional): void;
+
   abstract visitAnd(pe: And): void;
+
   abstract visitNot(pe: Not): void;
+
   abstract visitSequence(pe: Sequence): void;
+
   abstract visitOrderedChoice(pe: OrderedChoice): void;
+
   abstract visitGrouping(pe: Grouping): void;
+
   abstract visitRewriting(pe: Rewriting): void;
+
   abstract visitColon(pe: Colon): void;
+
   abstract visitColonNot(pe: ColonNot): void;
+
   abstract visitLake(pe: Lake): void;
 }

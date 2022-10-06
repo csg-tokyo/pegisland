@@ -30,6 +30,7 @@ import { getTopLevelExpressions, isGrowing } from './BottomUpParser';
 
 export class PikaParsingEnv extends BaseParsingEnv<IParsingExpression> {
   private createHeap;
+
   private parentsMap;
 
   constructor(s: string, private peg: Peg) {
@@ -58,9 +59,9 @@ export class PikaParsingEnv extends BaseParsingEnv<IParsingExpression> {
         */
         if (isGrowing) {
           const parents = this.parentsMap.get(pe);
-          if (parents != undefined) {
+          if (parents) {
             parents.forEach((parent) => {
-              //console.log(show(parent) + ' was pushed!');
+              // console.log(show(parent) + ' was pushed!');
               if (!set.has(parent)) {
                 heap.push(parent);
                 set.add(parent);
@@ -71,30 +72,30 @@ export class PikaParsingEnv extends BaseParsingEnv<IParsingExpression> {
       }
     }
     const startRule = this.peg.rules.get(start);
-    if (startRule == undefined) {
+    if (!startRule) {
       return Error(`${start} is not a valid nonterminal symbol.`);
     }
     const result = startRule.parse(this, new Position(0, 1, 1));
-    if (result == null) {
+    if (result === null) {
       return Error(`Failed to recognize ${start}`);
     }
     return result;
   }
 
   parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null {
-    //console.log('offset: ' + pos.offset);
+    // console.log('offset: ' + pos.offset);
     if (!this.memo[pos.offset].has(pe)) {
       this.memo[pos.offset].set(pe, null);
-      //const result = pe.parse(this, pos);
-      //assert(result == null, `${show(pe)} should be null`);
-      //this.memo[pos.offset].set(pe, result);
+      // const result = pe.parse(this, pos);
+      // assert(result == null, `${show(pe)} should be null`);
+      // this.memo[pos.offset].set(pe, result);
     }
     return this.memo[pos.offset].get(pe) as [IParseTree, Position] | null;
   }
 
   grow(pe: IParsingExpression, pos: Position): boolean {
     const isFirstEval = !this.memo[pos.offset].has(pe);
-    //console.log('grow ' + show(pe));
+    // console.log('grow ' + show(pe));
     if (isFirstEval) {
       this.memo[pos.offset].set(pe, null);
     }
@@ -104,11 +105,10 @@ export class PikaParsingEnv extends BaseParsingEnv<IParsingExpression> {
       | [IParseTree, Position];
     if (isFirstEval || isGrowing(result, oldResult)) {
       this.memo[pos.offset].set(pe, result);
-      //console.log(result);
+      // console.log(result);
       return true;
-    } else {
-      return false;
     }
+    return false;
   }
 }
 
@@ -143,24 +143,29 @@ class ParentsBuilder implements IParsingExpressionVisitor {
   visitTerminal(_pe: Terminal): void {
     // Nothing to be done
   }
+
   visitZeroOrMore(pe: ZeroOrMore): void {
     this.addParent(pe.operand, pe);
   }
+
   visitOneOrMore(pe: OneOrMore): void {
     this.addParent(pe.operand, pe);
   }
+
   visitOptional(pe: Optional): void {
     this.addParent(pe.operand, pe);
   }
+
   visitAnd(pe: And): void {
     this.addParent(pe.operand, pe);
   }
+
   visitNot(pe: Not): void {
     this.addParent(pe.operand, pe);
   }
+
   visitSequence(pe: Sequence): void {
-    for (const i in pe.operands) {
-      const operand = pe.operands[i];
+    for (const operand of pe.operands) {
       this.addParent(operand, pe);
       const beginningSet = this.beginning.get(
         operand
@@ -170,27 +175,33 @@ class ParentsBuilder implements IParsingExpressionVisitor {
       }
     }
   }
+
   visitOrderedChoice(pe: OrderedChoice): void {
     pe.operands.forEach((operand) => {
       this.addParent(operand, pe);
     });
   }
+
   visitGrouping(pe: Grouping): void {
     this.addParent(pe.operand, pe);
   }
+
   visitRewriting(pe: Rewriting): void {
     this.addParent(pe.operand, pe);
   }
+
   visitColon(pe: Colon): void {
     // XXX
     this.addParent(pe.lhs, pe);
     this.addParent(pe.rhs, pe);
   }
+
   visitColonNot(pe: ColonNot): void {
     // XXX
     this.addParent(pe.lhs, pe);
     this.addParent(pe.rhs, pe);
   }
+
   visitLake(pe: Lake): void {
     this.addParent(pe.operand, pe);
   }
@@ -204,9 +215,8 @@ function getHeapCreator(peg: Peg) {
     'terminals: ' + terminals.map((terminal) => (terminal as Terminal).source)
   );
   */
-  const cmp = (a: IParsingExpression, b: IParsingExpression) => {
-    return (indexMap.get(a) as number) - (indexMap.get(b) as number);
-  };
+  const cmp = (a: IParsingExpression, b: IParsingExpression) =>
+    (indexMap.get(a) as number) - (indexMap.get(b) as number);
   return (): [Heap<IParsingExpression>, Map<IParsingExpression, number>] => {
     const heap = new Heap<IParsingExpression>(cmp);
     terminals.forEach((terminal) => {

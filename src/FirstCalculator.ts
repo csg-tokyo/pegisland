@@ -37,16 +37,8 @@ export class FirstCalculator extends SetCalculator {
     this.propagateOperandWithEpsilon(pe);
   }
 
-  private propagateOperandWithEpsilon(pe: ZeroOrMore | Optional | Lake): void {
-    this.set(pe, union(this.get(pe.operand), new Set([EPSILON])));
-  }
-
   visitOneOrMore(pe: OneOrMore): void {
     this.propagateOperand(pe);
-  }
-
-  private propagateOperand(pe: OneOrMore | And | Grouping | Rewriting): void {
-    this.propagate(pe.operand, pe);
   }
 
   visitOptional(pe: Optional): void {
@@ -96,5 +88,13 @@ export class FirstCalculator extends SetCalculator {
 
   visitLake(pe: Lake): void {
     this.propagateOperandWithEpsilon(pe);
+  }
+
+  private propagateOperandWithEpsilon(pe: ZeroOrMore | Optional | Lake): void {
+    this.set(pe, union(this.get(pe.operand), new Set([EPSILON])));
+  }
+
+  private propagateOperand(pe: OneOrMore | And | Grouping | Rewriting): void {
+    this.propagate(pe.operand, pe);
   }
 }

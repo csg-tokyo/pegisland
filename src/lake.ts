@@ -25,14 +25,14 @@ export function isLake(symbol: string) {
 
 function isDummy(rhs: IParsingExpression): boolean {
   if (rhs instanceof Sequence) {
-    if (rhs.operands.length == 2) {
+    if (rhs.operands.length === 2) {
       const [first, second] = rhs.operands;
       return (
         first instanceof Not &&
         first.operand instanceof Terminal &&
-        first.operand.regex.source == '.' &&
+        first.operand.regex.source === '.' &&
         second instanceof Terminal &&
-        second.regex.source == '.'
+        second.regex.source === '.'
       );
     }
   }
@@ -124,7 +124,7 @@ function removeLakes(
 
 export function processLakes(peg: Peg, waterSymbols: string[] = []): void {
   createRulesForLakeSymbols(peg);
-  //console.log(peg.toString());
+  // console.log(peg.toString());
 
   const alts = calculateAlts(peg);
   const altSymbols = convert(peg.rules, alts);
@@ -216,6 +216,7 @@ function processLakeOperators(
     ) {
       super();
     }
+
     override visitLake(pe: Lake): void {
       pe.makeSemantics(
         this.altSets.get(pe.operand) as Set<IParsingExpression>,
@@ -235,9 +236,8 @@ function processLakeOperators(
 
 function createRhs(expressions: IParsingExpression[]) {
   assert(expressions.length > 0);
-  if (expressions.length == 1) {
+  if (expressions.length === 1) {
     return expressions[0];
-  } else {
-    return new OrderedChoice(expressions);
   }
+  return new OrderedChoice(expressions);
 }

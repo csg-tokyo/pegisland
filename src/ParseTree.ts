@@ -14,7 +14,9 @@ export interface IParseTree {
 
 class ParseTree implements IParseTree {
   static #seq = 0;
+
   readonly id = ParseTree.#getId();
+
   parentNode: IParseTree = this;
 
   constructor(public childNodes: IParseTree[], public range: Range) {
