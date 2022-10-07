@@ -69,7 +69,7 @@ describe('Parser', () => {
       `;
       const parser = createParser(grammar) as Parser;
       const tree = parser.parse('b', 'program') as IParseTree;
-      const choice = tree.childNodes[0];
+      const [choice] = tree.childNodes;
       assert(choice instanceof NodeOrderedChoice);
       assert.equal(choice.index, 1);
     });
@@ -81,13 +81,13 @@ describe('Parser', () => {
       const parser = createParser(grammar) as Parser;
       {
         const tree = parser.parse('aa', 'program') as IParseTree;
-        const choice = tree.childNodes[0];
+        const [choice] = tree.childNodes;
         assert(choice instanceof NodeZeroOrMore);
         assert.equal(choice.range.end.offset, 2);
       }
       {
         const tree = parser.parse('', 'program') as IParseTree;
-        const choice = tree.childNodes[0];
+        const [choice] = tree.childNodes;
         assert(choice instanceof NodeZeroOrMore);
         assert.equal(choice.range.end.offset, 0);
       }
@@ -100,13 +100,13 @@ describe('Parser', () => {
       const parser = createParser(grammar) as Parser;
       {
         const tree = parser.parse('a', 'program') as IParseTree;
-        const choice = tree.childNodes[0];
+        const [choice] = tree.childNodes;
         assert(choice instanceof NodeOptional);
         assert.equal(choice.range.end.offset, 1);
       }
       {
         const tree = parser.parse('', 'program') as IParseTree;
-        const choice = tree.childNodes[0];
+        const [choice] = tree.childNodes;
         assert(choice instanceof NodeOptional);
         assert.equal(choice.range.end.offset, 0);
       }
@@ -119,7 +119,7 @@ describe('Parser', () => {
       const parser = createParser(grammar) as Parser;
       {
         const tree = parser.parse('aa', 'program') as IParseTree;
-        const choice = tree.childNodes[0];
+        const [choice] = tree.childNodes;
         assert(choice instanceof NodeOneOrMore);
         assert.equal(choice.range.end.offset, 2);
       }
@@ -135,7 +135,7 @@ describe('Parser', () => {
       `;
       const parser = createParser(grammar) as Parser;
       const tree = parser.parse('baba', 'program') as IParseTree;
-      const choice = tree.childNodes[0];
+      const [choice] = tree.childNodes;
       assert(choice instanceof NodeSequence);
       assert.equal(choice.range.end.offset, 4);
     });
@@ -146,7 +146,7 @@ describe('Parser', () => {
       `;
       const parser = createParser(grammar) as Parser;
       const tree = parser.parse('aaba', 'program') as IParseTree;
-      const choice = tree.childNodes[0];
+      const [choice] = tree.childNodes;
       assert(choice instanceof NodeSequence);
       assert.equal(choice.range.end.offset, 4);
     });
@@ -179,7 +179,7 @@ describe('Parser', () => {
       `;
       const parser = createParser(grammar) as Parser;
       const tree = parser.parse('abab', 'program') as IParseTree;
-      const choice = tree.childNodes[0];
+      const [choice] = tree.childNodes;
       assert(choice instanceof NodeOneOrMore);
       assert.equal(choice.range.end.offset, 4);
     });
@@ -191,7 +191,7 @@ describe('Parser', () => {
       const parser = createParser(grammar) as Parser;
       {
         const tree = parser.parse('a', 'program') as IParseTree;
-        const choice = tree.childNodes[0];
+        const [choice] = tree.childNodes;
         assert(choice instanceof NodeRewriting);
         assert.equal(choice.range.end.offset, 1);
       }
@@ -210,13 +210,10 @@ describe('Parser', () => {
       {
         const s = '{aaa{} }  ';
         const tree = parser.parse(s, 'program') as IParseTree;
-        assert(tree != null);
-        const choice = tree.childNodes[0];
+        assert(tree !== null);
+        const [choice] = tree.childNodes;
         assert(choice instanceof NodeLake);
         assert.equal(choice.range.end.offset, s.length);
-      }
-      {
-        //assert(tree instanceof Error);
       }
     });
 
@@ -228,7 +225,7 @@ describe('Parser', () => {
       const parser = createParser(grammar) as Parser;
       const s = 'aa::*first*second*third;';
       const tree = parser.parse(s, 'program') as IParseTree;
-      assert(tree != null);
+      assert(tree !== null);
       let count = 0;
       traverseNonterminals(tree, () => count++);
       assert.equal(count, 3);
@@ -242,7 +239,7 @@ describe('Parser', () => {
       const parser = createParser(grammar) as Parser;
       const s = '*first*second*third;';
       const tree = parser.parse(s, 'program') as IParseTree;
-      assert(tree != null);
+      assert(tree !== null);
       let count = 0;
       traverseNonterminals(tree, () => count++);
       assert.equal(count, 3);
@@ -255,7 +252,7 @@ describe('Parser', () => {
       `;
       const parser = createParser(grammar) as Parser;
       const tree = parser.parse('abcabc', 'program') as IParseTree;
-      const choice = tree.childNodes[0];
+      const [choice] = tree.childNodes;
       assert(choice instanceof NodeSequence);
       assert.equal(choice.range.end.offset, 6);
     });
@@ -268,7 +265,7 @@ describe('Parser', () => {
       `;
       const parser = createParser(grammar) as Parser;
       const tree = parser.parse('abcabc', 'program') as IParseTree;
-      const choice = tree.childNodes[0];
+      const [choice] = tree.childNodes;
       assert(choice instanceof NodeOrderedChoice);
       assert.equal(choice.range.end.offset, 6);
     });
@@ -297,23 +294,6 @@ describe('Parser', () => {
       const result = parser.parse(s, 'program') as IParseTree;
       assert.equal(result.range.end.offset, s.length);
     });
-    // it('should handle C grammar', () => {
-    //   const grammar = fs.readFileSync('./grammar/C/full/C.peg').toString();
-    //   const peg = parseGrammar(grammar);
-    //   if (peg instanceof Error) {
-    //     console.log(peg.message);
-    //     assert(false);
-    //   }
-    //   const parser = new Parser(peg);
-    //   const program = `
-    //   int main(void) {
-    //     printf("Hello World!\\n");
-    //   }
-    //   `;
-    //   const tree = parser.parse(program, 'TranslationUnit') as IParseTree;
-    //   assert(tree);
-    //   assert.equal(tree.range.end.offset, program.length);
-    // });
 
     it('should operate on left recursion', () => {
       const grammar = `
@@ -324,9 +304,7 @@ describe('Parser', () => {
       const parser = createParser(grammar) as Parser;
       const s = '1';
       const result = parser.parse(s, 'start') as IParseTree;
-      if (result instanceof Error) {
-        console.log(result.message);
-      }
+      assert(!(result instanceof Error));
       assert.equal(result.range.end.offset, s.length);
     });
 
@@ -366,8 +344,8 @@ describe('Parser', () => {
       const s = '   abc xyz abc xyz';
       const result = parser.parse(s, 'program') as IParseTree;
       assert.equal(result.range.end.offset, s.length);
-      //console.log(result);
-      //printTree(result);
+      // console.log(result);
+      // printTree(result);
     });
 
     it('should work with a lake symbol', () => {
@@ -385,8 +363,8 @@ describe('Parser', () => {
       const result = parser.parse(s, 'program') as IParseTree;
       assert.equal(result.range.end.offset, s.length);
 
-      //console.log(result);
-      //printTree(result);
+      // console.log(result);
+      // printTree(result);
     });
 
     it('should work with lake operators', () => {
@@ -402,8 +380,8 @@ describe('Parser', () => {
       const result = parser.parse(s, 'program') as IParseTree;
       assert.equal(result.range.end.offset, s.length);
 
-      //console.log(result);
-      //printTree(result);
+      // console.log(result);
+      // printTree(result);
     });
 
     it('should work with a water annotation', () => {
@@ -418,7 +396,7 @@ describe('Parser', () => {
       }
       const s = 'abc"dbe"fg;';
       const result = parser.parse(s, 'program') as NodeNonterminal;
-      const lake = result.childNodes[0];
+      const [lake] = result.childNodes;
       assert.equal(result.range.end.offset, s.length);
       assert.equal(lake.childNodes.length, 1);
     });
@@ -435,7 +413,7 @@ describe('Parser', () => {
       }
       const s = 'abc"dbe"fg;';
       const result = parser.parse(s, 'program') as NodeNonterminal;
-      const lake = result.childNodes[0];
+      const [lake] = result.childNodes;
       assert.equal(result.range.end.offset, s.length);
       assert.equal(lake.childNodes.length, 0);
     });
@@ -470,11 +448,11 @@ describe('Parser', () => {
     program     <- <<>> foo -> "a"
     foo         <- foo 'a' / 'a'
     `;
-    //const parser = new Parser(parseGrammar(grammar) as Peg);
+    // const parser = new Parser(parseGrammar(grammar) as Peg);
     const parser = createParser(grammar) as Parser;
     const s = 'aaaaa';
     const tree = parser.parse(s, 'program') as IParseTree;
-    assert(tree != null);
+    assert(tree !== null);
     expect(tree.range.end.offset).toEqual(s.length);
   });
 
