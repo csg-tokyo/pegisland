@@ -40,7 +40,9 @@
     "capitalized-comments": "off",
     "no-continue": "off",
     "no-loop-func": "off",
-    "max-statements": ["error", 25],
+    //"max-statements": ["error", 25],
+    "max-statements": "off",
+    "max-lines-per-function": "off",
     "require-unicode-regexp": "off",
     "sort-keys": "off",
     "prefer-named-capture-group": "off",
@@ -50,6 +52,8 @@
     "no-inline-comments": "off",
     "no-eval": "off",
     "consistent-return": "off",
-    "default-case": "off"
+    "default-case": "off",
+    "prefer-regex-literals": "off",
+    "max-lines": "off"
   }
 }
