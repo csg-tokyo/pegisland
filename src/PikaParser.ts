@@ -41,36 +41,7 @@ export class PikaParsingEnv extends BaseParsingEnv<IParsingExpression> {
   }
 
   parseString(s: string, start: string): [IParseTree, Position] | Error {
-    for (let pos = s.length; pos >= 0; pos--) {
-      const [heap] = this.createHeap();
-      const set = new Set<IParsingExpression>(heap.toArray());
-      // console.log('heap was created for ' + pos, heap.size());
-
-      while (!heap.empty()) {
-        const pe = heap.pop() as IParsingExpression;
-        set.delete(pe);
-        const isGrowing = this.grow(pe, new Position(pos, -1, -1)); // XXX
-        /*
-        console.log(
-          pos,
-          heap.size(),
-          show(pe) + indexMap.get(pe) + ' was poped!' + isGrowing
-        );
-        */
-        if (isGrowing) {
-          const parents = this.parentsMap.get(pe);
-          if (parents) {
-            parents.forEach((parent) => {
-              // console.log(show(parent) + ' was pushed!');
-              if (!set.has(parent)) {
-                heap.push(parent);
-                set.add(parent);
-              }
-            });
-          }
-        }
-      }
-    }
+    this.fillMemoTable(s);
     const startRule = this.peg.rules.get(start);
     if (!startRule) {
       return Error(`${start} is not a valid nonterminal symbol.`);
@@ -80,6 +51,41 @@ export class PikaParsingEnv extends BaseParsingEnv<IParsingExpression> {
       return Error(`Failed to recognize ${start}`);
     }
     return result;
+  }
+
+  private fillMemoTable(s: string) {
+    for (let pos = s.length; pos >= 0; pos--) {
+      this.fillMemoEntry(pos);
+    }
+  }
+
+  private fillMemoEntry(pos: number) {
+    const [heap] = this.createHeap();
+    const set = new Set<IParsingExpression>(heap.toArray());
+    // console.log('heap was created for ' + pos, heap.size());
+    while (!heap.empty()) {
+      const pe = heap.pop() as IParsingExpression;
+      set.delete(pe);
+      const isGrowing = this.grow(pe, new Position(pos, -1, -1)); // XXX
+
+      /*
+      console.log(
+        pos,
+        heap.size(),
+        show(pe) + indexMap.get(pe) + ' was poped!' + isGrowing
+      );
+      */
+      if (!isGrowing) continue;
+      const parents = this.parentsMap.get(pe);
+      if (!parents) continue;
+      parents
+        .filter((parent) => !set.has(parent))
+        .forEach((parent) => {
+          // console.log(show(parent) + ' was pushed!');
+          heap.push(parent);
+          set.add(parent);
+        });
+    }
   }
 
   parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null {
