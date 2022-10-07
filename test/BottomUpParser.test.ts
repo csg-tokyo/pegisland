@@ -40,7 +40,7 @@ describe('BottomUpParser', () => {
       const parser = new BottomUpParser(parseGrammar(grammar) as Peg);
       const s = `class A{}`;
       const result = parser.parse(s, 'Compilation');
-      //console.log(result);
+      // console.log(result);
       assert(!(result instanceof Error));
       expect(result.range.end.offset).toEqual(s.length);
     });
@@ -55,7 +55,7 @@ describe('BottomUpParser', () => {
       const parser = new BottomUpParser(parseGrammar(grammar) as Peg);
       const s = `cdb`;
       const result = parser.parse(s, 'A');
-      //console.log(result);
+      // console.log(result);
       assert(!(result instanceof Error));
       expect(result.range.end.offset).toEqual(s.length);
     });
@@ -79,7 +79,7 @@ describe('BottomUpParser', () => {
       const parser = new BottomUpParser(parseGrammar(grammar) as Peg);
       const s = `1 + 2`;
       const result = parser.parse(s, 'start');
-      //console.log(result);
+      // console.log(result);
       assert(!(result instanceof Error));
       expect(result.range.end.offset).toEqual(s.length);
     });
@@ -95,7 +95,7 @@ describe('BottomUpParser', () => {
     const parser = new BottomUpParser(parseGrammar(grammar) as Peg);
     const s = `cdb`;
     const result = parser.parse(s);
-    //console.log(result);
+    // console.log(result);
     assert(!(result instanceof Error));
     expect(result.range.end.offset).toEqual(s.length);
   });
