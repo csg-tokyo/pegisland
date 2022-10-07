@@ -24,24 +24,23 @@ import { getValue } from './utils';
 export const EPSILON = new Sequence([]);
 
 export abstract class SetCalculator implements IParsingExpressionVisitor {
-  peSet: Map<IParsingExpression, Set<IParsingExpression>>;
+  readonly peSet: Map<IParsingExpression, Set<IParsingExpression>>;
 
-  private expressions;
+  private readonly expressions;
 
   constructor(rules: Map<string, Rule>, isPostorder: boolean) {
-    const collector = new ExpressionCollector();
-    this.expressions = collector.collect(rules);
+    this.expressions = new ExpressionCollector().collect(rules);
     if (!isPostorder) {
       this.expressions.reverse();
     }
-    this.peSet = new Map();
-    this.expressions.forEach((pe) => this.peSet.set(pe, new Set()));
+    this.peSet = new Map(this.expressions.map((pe) => [pe, new Set()]));
   }
 
   public calculate(): Map<IParsingExpression, Set<IParsingExpression>> {
-    const sizeMap = new Map<IParsingExpression, number>();
     for (;;) {
-      this.expressions.forEach((pe) => sizeMap.set(pe, this.get(pe).size));
+      const sizeMap = new Map(
+        this.expressions.map((pe) => [pe, this.get(pe).size])
+      );
       this.expressions.forEach((pe) => pe.accept(this));
       const wasChanged = this.expressions.some(
         (pe) => sizeMap.get(pe) !== this.get(pe).size
