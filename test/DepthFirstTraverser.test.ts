@@ -24,6 +24,7 @@ describe('DepthFirstTraverser', () => {
         visitLake(_pe: Lake): void {
           count++;
         }
+
         visitRewriting(_pe: Rewriting): void {
           count++;
         }
