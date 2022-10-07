@@ -11,6 +11,7 @@ import { Rule } from './Rule';
 import { Position } from './Position';
 import { Peg } from './Peg';
 import { PriorityQueue } from './PriorityQueue';
+import { PikaParsingEnv } from './PikaParser';
 
 export class BottomUpParsingEnv extends BaseParsingEnv<Rule> {
   private createHeap;
@@ -222,11 +223,16 @@ function createParentsMap(peg: Peg) {
   return parentsMap;
 }
 
-export class BottomUpParser {
-  constructor(private peg: Peg) {}
+export class BottomUpParserBase {
+  constructor(
+    private peg: Peg,
+    private ParsingEnvCtor: {
+      new (s: string, peg: Peg): BottomUpParsingEnv | PikaParsingEnv;
+    }
+  ) {}
 
   parse(s: string, start?: string): IParseTree | Error {
-    const env = new BottomUpParsingEnv(s, this.peg);
+    const env = new this.ParsingEnvCtor(s, this.peg);
     const result = env.parseString(
       s,
       start ? start : this.peg.rules.keys().next().value
@@ -236,5 +242,11 @@ export class BottomUpParser {
     }
     const [tree] = result;
     return tree;
+  }
+}
+
+export class BottomUpParser extends BottomUpParserBase {
+  constructor(peg: Peg) {
+    super(peg, BottomUpParsingEnv);
   }
 }

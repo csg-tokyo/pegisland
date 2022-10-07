@@ -26,7 +26,11 @@ import { BaseParsingEnv } from './IParsingEnv';
 import { Position } from './Position';
 import { Peg } from './Peg';
 import { EPSILON } from './SetCalculator';
-import { getTopLevelExpressions, isGrowing } from './BottomUpParser';
+import {
+  BottomUpParserBase,
+  getTopLevelExpressions,
+  isGrowing,
+} from './BottomUpParser';
 
 export class PikaParsingEnv extends BaseParsingEnv<IParsingExpression> {
   private createHeap;
@@ -51,6 +55,35 @@ export class PikaParsingEnv extends BaseParsingEnv<IParsingExpression> {
       return Error(`Failed to recognize ${start}`);
     }
     return result;
+  }
+
+  parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null {
+    // console.log('offset: ' + pos.offset);
+    if (!this.memo[pos.offset].has(pe)) {
+      this.memo[pos.offset].set(pe, null);
+      // const result = pe.parse(this, pos);
+      // assert(result == null, `${show(pe)} should be null`);
+      // this.memo[pos.offset].set(pe, result);
+    }
+    return this.memo[pos.offset].get(pe) as [IParseTree, Position] | null;
+  }
+
+  private grow(pe: IParsingExpression, pos: Position): boolean {
+    const isFirstEval = !this.memo[pos.offset].has(pe);
+    // console.log('grow ' + show(pe));
+    if (isFirstEval) {
+      this.memo[pos.offset].set(pe, null);
+    }
+    const result = pe.accept(this.recognizer, pos);
+    const oldResult = this.memo[pos.offset].get(pe) as
+      | null
+      | [IParseTree, Position];
+    if (isFirstEval || isGrowing(result, oldResult)) {
+      this.memo[pos.offset].set(pe, result);
+      // console.log(result);
+      return true;
+    }
+    return false;
   }
 
   private fillMemoTable(s: string) {
@@ -86,35 +119,6 @@ export class PikaParsingEnv extends BaseParsingEnv<IParsingExpression> {
           set.add(parent);
         });
     }
-  }
-
-  parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null {
-    // console.log('offset: ' + pos.offset);
-    if (!this.memo[pos.offset].has(pe)) {
-      this.memo[pos.offset].set(pe, null);
-      // const result = pe.parse(this, pos);
-      // assert(result == null, `${show(pe)} should be null`);
-      // this.memo[pos.offset].set(pe, result);
-    }
-    return this.memo[pos.offset].get(pe) as [IParseTree, Position] | null;
-  }
-
-  grow(pe: IParsingExpression, pos: Position): boolean {
-    const isFirstEval = !this.memo[pos.offset].has(pe);
-    // console.log('grow ' + show(pe));
-    if (isFirstEval) {
-      this.memo[pos.offset].set(pe, null);
-    }
-    const result = pe.accept(this.recognizer, pos);
-    const oldResult = this.memo[pos.offset].get(pe) as
-      | null
-      | [IParseTree, Position];
-    if (isFirstEval || isGrowing(result, oldResult)) {
-      this.memo[pos.offset].set(pe, result);
-      // console.log(result);
-      return true;
-    }
-    return false;
   }
 }
 
@@ -197,19 +201,20 @@ class ParentsBuilder implements IParsingExpressionVisitor {
   }
 
   visitColon(pe: Colon): void {
-    // XXX
-    this.addParent(pe.lhs, pe);
-    this.addParent(pe.rhs, pe);
+    this.visitBinaryOperator(pe);
   }
 
   visitColonNot(pe: ColonNot): void {
-    // XXX
-    this.addParent(pe.lhs, pe);
-    this.addParent(pe.rhs, pe);
+    this.visitBinaryOperator(pe);
   }
 
   visitLake(pe: Lake): void {
     this.addParent(pe.operand, pe);
+  }
+
+  private visitBinaryOperator(pe: Colon | ColonNot) {
+    this.addParent(pe.lhs, pe);
+    this.addParent(pe.rhs, pe);
   }
 }
 
@@ -232,20 +237,9 @@ function getHeapCreator(peg: Peg) {
   };
 }
 
-export class PikaParser {
-  constructor(private peg: Peg) {}
-
-  parse(s: string, start?: string): IParseTree | Error {
-    const env = new PikaParsingEnv(s, this.peg);
-    const result = env.parseString(
-      s,
-      start ? start : this.peg.rules.keys().next().value
-    );
-    if (result instanceof Error) {
-      return result;
-    }
-    const [tree] = result;
-    return tree;
+export class PikaParser extends BottomUpParserBase {
+  constructor(peg: Peg) {
+    super(peg, PikaParsingEnv);
   }
 }
 
