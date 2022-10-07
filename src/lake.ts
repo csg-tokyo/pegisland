@@ -196,13 +196,9 @@ function createRulesForLakeSymbols(peg: Peg) {
 }
 
 function calculateAlts(peg: Peg) {
-  const beginningCalculator = new BeginningCalculator(peg.rules);
-  const beginnings = beginningCalculator.calculate();
-  const succeedCalculator = new SucceedCalculator(peg.rules, beginnings);
-  const succeeds = succeedCalculator.calculate();
-  const altCalculator = new AltCalculator(peg.rules, beginnings, succeeds);
-  const alts = altCalculator.calculate();
-  return alts;
+  const beginnings = new BeginningCalculator(peg.rules).calculate();
+  const succeeds = new SucceedCalculator(peg.rules, beginnings).calculate();
+  return new AltCalculator(peg.rules, beginnings, succeeds).calculate();
 }
 
 function processLakeOperators(
