@@ -167,9 +167,8 @@ export class Recognizer
     pe: OrderedChoice,
     pos: Position
   ): [IParseTree, Position] | null {
-    let i = 0;
-    for (const operand of pe.operands) {
-      const result = this.env.parse(operand, pos);
+    for (let i = 0; i < pe.operands.length; i++) {
+      const result = this.env.parse(pe.operands[i], pos);
       if (result !== null) {
         const [value, nextIndex] = result;
         return [
@@ -177,7 +176,6 @@ export class Recognizer
           nextIndex,
         ];
       }
-      i++;
     }
     return null;
   }
