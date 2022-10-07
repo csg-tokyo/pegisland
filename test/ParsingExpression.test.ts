@@ -30,10 +30,10 @@ describe('NullParsingExpression', () => {
   describe('#parse()', () => {
     it('should always return null', () => {
       const nil = new NullParsingExpression();
-      assert.equal(
-        nil.parse(new PackratParsingEnv('abd'), new Position(1, -1, -1)),
-        null
-      );
+      const env = new PackratParsingEnv('abd');
+      expect(() =>
+        nil.accept(env.recognizer, new Position(0, -1, -1))
+      ).toThrow();
     });
   });
 });
@@ -46,14 +46,14 @@ describe('Terminal', () => {
       const env = new PackratParsingEnv(s);
       const result = term.accept(env.recognizer, new Position(0, -1, -1));
       assert(result);
-      if (result != null) {
+      if (result !== null) {
         const [leaf, pos] = result;
-        assert(pos.offset == 4);
-        assert(leaf.range.start.offset == 0);
-        assert(leaf.range.end.offset == 4);
+        assert(pos.offset === 4);
+        assert(leaf.range.start.offset === 0);
+        assert(leaf.range.end.offset === 4);
         assert(leaf instanceof NodeTerminal);
         if (leaf instanceof NodeTerminal) {
-          assert(leaf.text == '1980');
+          assert(leaf.text === '1980');
         }
       }
     });
@@ -68,9 +68,9 @@ describe('Terminal', () => {
       assert(result);
       if (result) {
         const [leaf, pos] = result;
-        assert(pos.offset == 7);
-        assert(leaf.range.start.offset == 5);
-        assert(leaf.range.end.offset == 7);
+        assert(pos.offset === 7);
+        assert(leaf.range.start.offset === 5);
+        assert(leaf.range.end.offset === 7);
       }
     });
   });
@@ -87,14 +87,14 @@ describe('Nonterminal', () => {
         new Position(0, -1, -1)
       );
       assert(result);
-      if (result != null) {
+      if (result !== null) {
         const [node, pos] = result;
-        assert(pos.offset == 4);
-        assert(node.range.start.offset == 0);
-        assert(node.range.end.offset == 4);
+        assert(pos.offset === 4);
+        assert(node.range.start.offset === 0);
+        assert(node.range.end.offset === 4);
         assert(node instanceof NodeNonterminal);
         if (node instanceof NodeNonterminal) {
-          assert(node.symbol == 'foo');
+          assert(node.symbol === 'foo');
         }
       }
     });
@@ -138,9 +138,9 @@ describe('ZeroOrMore', () => {
         assert(result);
         const [node, pos] = result;
         assert(node instanceof NodeZeroOrMore);
-        assert(node.range.start.offset == 5);
-        assert(node.range.end.offset == 7);
-        assert(pos.offset == 7);
+        assert(node.range.start.offset === 5);
+        assert(node.range.end.offset === 7);
+        assert(pos.offset === 7);
         if (node instanceof NodeZeroOrMore) {
           assert.equal(node.childNodes.length, 2);
         }
@@ -166,9 +166,9 @@ describe('OneOrMore', () => {
         assert(result);
         const [node, pos] = result;
         assert(node instanceof NodeOneOrMore);
-        assert(node.range.start.offset == 5);
-        assert(node.range.end.offset == 7);
-        assert(pos.offset == 7);
+        assert(node.range.start.offset === 5);
+        assert(node.range.end.offset === 7);
+        assert(pos.offset === 7);
         if (node instanceof NodeOneOrMore) {
           assert.equal(node.childNodes.length, 2);
         }
@@ -204,9 +204,9 @@ describe('Optional', () => {
         assert(result);
         const [node, pos] = result;
         assert(node instanceof NodeOptional);
-        assert(node.range.start.offset == 5);
-        assert(node.range.end.offset == 6);
-        assert(pos.offset == 6);
+        assert(node.range.start.offset === 5);
+        assert(node.range.end.offset === 6);
+        assert(pos.offset === 6);
         if (node instanceof NodeOptional) {
           assert.equal(node.childNodes.length, 1);
         }
@@ -227,15 +227,14 @@ describe('And', () => {
     });
     it('should not consume any input even if the pattern matches', () => {
       const env = new PackratParsingEnv(s);
-      new PackratParsingEnv(s);
       const result = and.accept(env.recognizer, new Position(5, -1, -1));
       if (result) {
         assert(result);
         const [node, pos] = result;
         assert(node instanceof NodeAnd);
-        assert(node.range.start.offset == 5);
-        assert(node.range.end.offset == 6);
-        assert(pos.offset == 5);
+        assert(node.range.start.offset === 5);
+        assert(node.range.end.offset === 6);
+        assert(pos.offset === 5);
         if (node instanceof NodeAnd) {
           assert.equal(node.childNodes.length, 1);
           assert.equal(node.range.start.offset, 5);
@@ -263,9 +262,9 @@ describe('Not', () => {
         assert(result);
         const [node, pos] = result;
         assert(node instanceof NodeNot);
-        assert(node.range.start.offset == 2);
-        assert(node.range.end.offset == 2);
-        assert(pos.offset == 2);
+        assert(node.range.start.offset === 2);
+        assert(node.range.end.offset === 2);
+        assert(pos.offset === 2);
         if (node instanceof NodeNot) {
           assert.equal(node.childNodes.length, 0);
         }
