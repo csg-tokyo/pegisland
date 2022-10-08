@@ -1,6 +1,6 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
 import Heap from 'heap';
-import { BeginningCalculator } from './BeginningCalculator';
+import { BeginningCalculator } from './set/BeginningCalculator';
 import { DepthFirstTraverser } from './DepthFirstTraverser';
 import { Indexer } from './Indexer';
 import { IParseTree } from './ParseTree';
@@ -25,7 +25,7 @@ import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
 import { BaseParsingEnv } from './IParsingEnv';
 import { Position } from './Position';
 import { Peg } from './Peg';
-import { EPSILON } from './SetCalculator';
+import { EPSILON } from './set/SetCalculator';
 import {
   BottomUpParserBase,
   getTopLevelExpressions,

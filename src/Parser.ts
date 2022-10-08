@@ -1,6 +1,6 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { BottomUpParser } from './BottomUpParser';
-import { FirstCalculator } from './FirstCalculator';
+import { FirstCalculator } from './set/FirstCalculator';
 import { GeneralPegBuilder } from './GeneralPegBuilder';
 import { isLake, processLakes } from './lake';
 import { PackratParser, ParsingError } from './PackratParser';

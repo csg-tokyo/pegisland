@@ -1,9 +1,9 @@
 import { strict as assert } from 'assert';
-import { BeginningCalculator } from '../src/BeginningCalculator';
-import { SucceedCalculator } from '../src/SucceedCalculator';
+import { BeginningCalculator } from '../src/set/BeginningCalculator';
+import { SucceedCalculator } from '../src/set/SucceedCalculator';
 import { GeneralPegBuilder } from '../src/GeneralPegBuilder';
 import { Rule } from '../src/Rule';
-import { AltCalculator } from '../src/AltCalculator';
+import { AltCalculator } from '../src/set/AltCalculator';
 
 describe('BeginningCalculator', () => {
   describe('#constructor()', () => {
@@ -18,7 +18,7 @@ expr_stmt  <- <elake>* ';'
 `;
       const builder = new GeneralPegBuilder();
       builder.build(s);
-      const {rules} = builder;
+      const { rules } = builder;
 
       const beginningCalculator = new BeginningCalculator(builder.rules);
       beginningCalculator.calculate();

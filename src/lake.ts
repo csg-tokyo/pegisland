@@ -1,7 +1,7 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { strict as assert } from 'assert';
-import { AltCalculator } from './AltCalculator';
-import { BeginningCalculator } from './BeginningCalculator';
+import { AltCalculator } from './set/AltCalculator';
+import { BeginningCalculator } from './set/BeginningCalculator';
 import {
   IParsingExpression,
   Lake,
@@ -17,7 +17,7 @@ import { PostorderExpressionTraverser } from './PostorderExpressionTraverser';
 import { Rule } from './Rule';
 import { Peg } from './Peg';
 import { areEqualSets } from './set-operations';
-import { SucceedCalculator } from './SucceedCalculator';
+import { SucceedCalculator } from './set/SucceedCalculator';
 
 export function isLake(symbol: string) {
   return /^<.*?>$/.test(symbol);

@@ -1,8 +1,8 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
 import { FirstCalculator } from './FirstCalculator';
-import { Colon, ColonNot, Nonterminal, Not } from './ParsingExpression';
-import { Rule } from './Rule';
-import { union } from './set-operations';
+import { Colon, ColonNot, Nonterminal, Not } from '../ParsingExpression';
+import { Rule } from '../Rule';
+import { union } from '../set-operations';
 import { EPSILON } from './SetCalculator';
 
 export class BeginningCalculator extends FirstCalculator {

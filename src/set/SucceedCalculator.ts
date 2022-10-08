@@ -13,8 +13,8 @@ import {
   Rewriting,
   Sequence,
   ZeroOrMore,
-} from './ParsingExpression';
-import { difference, union } from './set-operations';
+} from '../ParsingExpression';
+import { difference, union } from '../set-operations';
 import { EPSILON } from './SetCalculator';
 import { TopDownSetCalculator } from './TopDownSetCalculator';
 

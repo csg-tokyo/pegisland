@@ -1,5 +1,5 @@
 // Copyright (C) 2021- Katsumi Okuda.  All rights reserved.
-import { ExpressionCollector } from './ExpressionCollector';
+import { ExpressionCollector } from '../ExpressionCollector';
 import {
   And,
   Colon,
@@ -16,10 +16,10 @@ import {
   Sequence,
   Terminal,
   ZeroOrMore,
-} from './ParsingExpression';
-import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
-import { Rule } from './Rule';
-import { getValue } from './utils';
+} from '../ParsingExpression';
+import { IParsingExpressionVisitor } from '../IParsingExpressionVisitor';
+import { Rule } from '../Rule';
+import { getValue } from '../utils';
 
 export const EPSILON = new Sequence([]);
 

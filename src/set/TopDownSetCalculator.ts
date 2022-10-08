@@ -14,11 +14,11 @@ import {
   Sequence,
   Terminal,
   ZeroOrMore,
-} from './ParsingExpression';
-import { Rule } from './Rule';
-import { getValue } from './utils';
+} from '../ParsingExpression';
+import { Rule } from '../Rule';
+import { getValue } from '../utils';
 import { SetCalculator } from './SetCalculator';
-import { union } from './set-operations';
+import { union } from '../set-operations';
 
 export abstract class TopDownSetCalculator extends SetCalculator {
   constructor(
