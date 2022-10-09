@@ -21,11 +21,11 @@ describe('DepthFirstTraverser', () => {
       const startPe = startRule.rhs;
 
       class Visitor extends DefaultParsingExpressionVisitor {
-        visitLake(_pe: Lake): void {
+        override visitLake(_pe: Lake): void {
           count++;
         }
 
-        visitRewriting(_pe: Rewriting): void {
+        override visitRewriting(_pe: Rewriting): void {
           count++;
         }
       }

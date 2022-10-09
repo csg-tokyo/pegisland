@@ -41,7 +41,7 @@ export class BottomUpParsingEnv extends BaseParsingEnv<Rule> {
     return result;
   }
 
-  parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
+  override parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
     if (!this.memo[pos.offset].has(rule)) {
       // console.log('XXX: ', pos.offset, rule.symbol);
       this.memo[pos.offset].set(rule, null);

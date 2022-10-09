@@ -46,27 +46,27 @@ export abstract class TopDownSetCalculator extends SetCalculator {
     this.propagate(pe, pe.operand);
   }
 
-  abstract visitZeroOrMore(pe: ZeroOrMore): void;
+  abstract override visitZeroOrMore(pe: ZeroOrMore): void;
 
-  abstract visitOneOrMore(pe: OneOrMore): void;
+  abstract override visitOneOrMore(pe: OneOrMore): void;
 
-  abstract visitOptional(pe: Optional): void;
+  abstract override visitOptional(pe: Optional): void;
 
-  abstract visitAnd(pe: And): void;
+  abstract override visitAnd(pe: And): void;
 
-  abstract visitNot(pe: Not): void;
+  abstract override visitNot(pe: Not): void;
 
-  abstract visitSequence(pe: Sequence): void;
+  abstract override visitSequence(pe: Sequence): void;
 
-  abstract visitOrderedChoice(pe: OrderedChoice): void;
+  abstract override visitOrderedChoice(pe: OrderedChoice): void;
 
-  abstract visitGrouping(pe: Grouping): void;
+  abstract override visitGrouping(pe: Grouping): void;
 
-  abstract visitRewriting(pe: Rewriting): void;
+  abstract override visitRewriting(pe: Rewriting): void;
 
-  abstract visitColon(pe: Colon): void;
+  abstract override visitColon(pe: Colon): void;
 
-  abstract visitColonNot(pe: ColonNot): void;
+  abstract override visitColonNot(pe: ColonNot): void;
 
-  abstract visitLake(pe: Lake): void;
+  abstract override visitLake(pe: Lake): void;
 }
