@@ -90,7 +90,7 @@ function expandLake(
           : alt
       )
       .flat()
-  ) as Set<Terminal | Nonterminal>;
+  );
 }
 
 function expandLakes(
