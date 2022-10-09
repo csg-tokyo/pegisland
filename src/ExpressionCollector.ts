@@ -23,11 +23,10 @@ import { Rule } from './Rule';
 export class ExpressionCollector implements IParsingExpressionVisitor {
   expressions: IParsingExpression[] = [];
 
-  traverser = new PostorderExpressionTraverser(this);
-
   collect(rules: Map<string, Rule>): IParsingExpression[] {
     this.expressions = [];
-    rules.forEach((rule) => this.traverser.traverse(rule.rhs));
+    const traverser = new PostorderExpressionTraverser(this);
+    rules.forEach((rule) => traverser.traverse(rule.rhs));
     return this.expressions;
   }
 
