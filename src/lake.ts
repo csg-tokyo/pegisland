@@ -173,7 +173,7 @@ function updateLakeRule(
   waters = [...waterExps, ...waters];
   assert(!(rule.rhs instanceof NullParsingExpression));
   if (rule.rhs instanceof OrderedChoice) {
-    rule.rhs.operands = [...rule.rhs.operands, ...waters];
+    rule.rhs = new OrderedChoice([...rule.rhs.operands, ...waters]);
   } else if (isDummy(rule.rhs)) {
     rule.rhs = createRhs([...waters]);
   } else {
