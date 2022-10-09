@@ -17,9 +17,9 @@ import { PegParser } from './PegParser';
 import { difference } from './set-operations';
 
 export class GeneralPegBuilder {
-  public rules = new Map<string, Rule>();
+  public readonly rules = new Map<string, Rule>();
 
-  private visitedRules = new Set<Rule>();
+  private readonly visitedRules = new Set<Rule>();
 
   public build(grammar: string): Peg | ParsingError | Error {
     const pegParser = new PegParser();
