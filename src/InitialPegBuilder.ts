@@ -20,7 +20,7 @@ export class InitialPegBuilder {
   rules = new Map<string, Rule>();
 
   public build(peg: { [name: string]: SimpleTree }): Map<string, Rule> {
-    this.rules = new Map<string, Rule>();
+    this.rules = new Map();
     Object.keys(peg).forEach((key) =>
       this.rules.set(key, new Rule(key, new NullParsingExpression()))
     );
