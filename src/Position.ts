@@ -1,8 +1,8 @@
 export class Position {
   constructor(
-    public offset: number,
-    public line: number,
-    public column: number
+    public readonly offset: number,
+    public readonly line: number,
+    public readonly column: number
   ) {}
 
   equal(other: Position): boolean {

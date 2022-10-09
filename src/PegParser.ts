@@ -148,7 +148,7 @@ const grammar: { [name in Nonterminals]: SimpleTree } = {
 };
 
 export class PegParser {
-  pegInterpreter: PackratParser;
+  private readonly pegInterpreter: PackratParser;
 
   constructor() {
     const builder = new InitialPegBuilder();

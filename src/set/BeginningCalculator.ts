@@ -6,7 +6,7 @@ import { union } from '../set-operations';
 import { EPSILON } from './SetCalculator';
 
 export class BeginningCalculator extends FirstCalculator {
-  constructor(rules: Map<string, Rule>, private isSpecial = false) {
+  constructor(rules: Map<string, Rule>, private readonly isSpecial = false) {
     super(rules);
   }
 

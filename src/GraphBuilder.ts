@@ -11,9 +11,9 @@ import { Rule } from './Rule';
 import { Peg } from './Peg';
 
 export class GraphBuilder extends DefaultParsingExpressionVisitor {
-  private parents: Map<Rule, Set<Rule>> = new Map();
+  private readonly parents: Map<Rule, Set<Rule>> = new Map();
 
-  private children: Map<Rule, Set<Rule>> = new Map();
+  private readonly children: Map<Rule, Set<Rule>> = new Map();
 
   private rule: Rule = new Rule('dummy', new NullParsingExpression());
 

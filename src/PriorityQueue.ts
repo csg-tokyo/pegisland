@@ -2,29 +2,29 @@
 import Heap from 'heap';
 
 export class PriorityQueue<T> {
-  heap;
+  readonly #heap;
 
-  set = new Set<T>();
+  readonly #set = new Set<T>();
 
   constructor(cmp: (a: T, b: T) => number) {
-    this.heap = new Heap<T>(cmp);
+    this.#heap = new Heap<T>(cmp);
   }
 
   empty() {
-    return this.heap.empty();
+    return this.#heap.empty();
   }
 
   push(value: T) {
-    if (!this.set.has(value)) {
-      this.set.add(value);
-      this.heap.push(value);
+    if (!this.#set.has(value)) {
+      this.#set.add(value);
+      this.#heap.push(value);
     }
   }
 
   pop() {
-    const value = this.heap.pop();
+    const value = this.#heap.pop();
     if (value) {
-      this.set.delete(value);
+      this.#set.delete(value);
     }
     return value;
   }

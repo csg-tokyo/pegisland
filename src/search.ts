@@ -6,13 +6,13 @@ function flatten<T>(array: T[][]): T[] {
 }
 
 interface LineColumn {
-  line: number;
-  column: number;
+  readonly line: number;
+  readonly column: number;
 }
 
 interface LineColumnRange {
-  start: LineColumn;
-  end: LineColumn;
+  readonly start: LineColumn;
+  readonly end: LineColumn;
 }
 
 function isGEQ(a: LineColumn, b: LineColumn): boolean {

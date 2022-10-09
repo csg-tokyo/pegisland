@@ -22,11 +22,11 @@ import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
 import { Peg } from './Peg';
 
 export class Indexer implements IParsingExpressionVisitor {
-  private indexMap: Map<IParsingExpression, number> = new Map();
+  private readonly indexMap: Map<IParsingExpression, number> = new Map();
 
   private index = 0;
 
-  private terminals: IParsingExpression[] = [];
+  private readonly terminals: IParsingExpression[] = [];
 
   build(peg: Peg): [Map<IParsingExpression, number>, IParsingExpression[]] {
     const traverser = new DepthFirstTraverser(

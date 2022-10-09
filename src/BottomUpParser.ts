@@ -14,9 +14,9 @@ import { PriorityQueue } from './PriorityQueue';
 import { PikaParsingEnv } from './PikaParser';
 
 export class BottomUpParsingEnv extends BaseParsingEnv<Rule> {
-  private createHeap;
+  private readonly createHeap;
 
-  private parentsMap: Map<Rule, Set<Rule>>;
+  private readonly parentsMap: Map<Rule, Set<Rule>>;
 
   constructor(s: string, private peg: Peg) {
     super(s);
@@ -134,9 +134,9 @@ function getTopLevelRules(peg: Peg) {
 }
 
 class DFSTraverser {
-  visited = new Set<Rule>();
+  readonly visited = new Set<Rule>();
 
-  bottoms = new Set<Rule>();
+  readonly bottoms = new Set<Rule>();
 
   constructor(
     private childrenMap: Map<Rule, Set<Rule>>,

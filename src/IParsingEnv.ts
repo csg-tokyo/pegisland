@@ -16,9 +16,9 @@ export interface IParsingEnv {
 }
 
 export abstract class BaseParsingEnv<K extends object> implements IParsingEnv {
-  recognizer = new Recognizer(this);
+  readonly recognizer = new Recognizer(this);
 
-  protected memo;
+  protected readonly memo;
 
   private symbolStack: { [name: string]: string }[] = [];
 

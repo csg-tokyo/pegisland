@@ -33,11 +33,11 @@ import {
 } from './BottomUpParser';
 
 export class PikaParsingEnv extends BaseParsingEnv<IParsingExpression> {
-  private createHeap;
+  private readonly createHeap;
 
-  private parentsMap;
+  private readonly parentsMap;
 
-  constructor(s: string, private peg: Peg) {
+  constructor(s: string, private readonly peg: Peg) {
     super(s);
 
     this.parentsMap = createParentsMap(this.peg);

@@ -3,12 +3,12 @@ import { Lake } from './ParsingExpression';
 import { Position } from './Position';
 
 export class Range {
-  constructor(public start: Position, public end: Position) {}
+  constructor(public readonly start: Position, public readonly end: Position) {}
 }
 
 export interface IParseTree {
-  range: Range;
-  childNodes: IParseTree[];
+  readonly range: Range;
+  readonly childNodes: IParseTree[];
   parentNode: IParseTree;
 }
 

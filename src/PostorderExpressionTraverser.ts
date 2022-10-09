@@ -18,7 +18,7 @@ import {
 import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
 
 export class PostorderExpressionTraverser implements IParsingExpressionVisitor {
-  visitor: IParsingExpressionVisitor;
+  readonly visitor: IParsingExpressionVisitor;
 
   constructor(visitor: IParsingExpressionVisitor) {
     this.visitor = visitor;

@@ -110,7 +110,7 @@ export function createParser(
 }
 
 class Counter implements IParsingExpressionVisitor {
-  constructor(private info: GrammarInfo) {}
+  constructor(private readonly info: GrammarInfo) {}
 
   visitNonterminal(pe: Nonterminal): void {
     this.info.nonterminalCount++;

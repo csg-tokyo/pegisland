@@ -23,7 +23,7 @@ import { union } from '../set-operations';
 export abstract class TopDownSetCalculator extends SetCalculator {
   constructor(
     rules: Map<string, Rule>,
-    public beginning: Map<IParsingExpression, Set<IParsingExpression>>
+    public readonly beginning: Map<IParsingExpression, Set<IParsingExpression>>
   ) {
     super(rules, false);
   }

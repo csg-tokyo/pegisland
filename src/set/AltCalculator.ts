@@ -24,7 +24,7 @@ export class AltCalculator extends TopDownSetCalculator {
   constructor(
     rules: Map<string, Rule>,
     beginning: Map<IParsingExpression, Set<IParsingExpression>>,
-    private succeed: Map<IParsingExpression, Set<IParsingExpression>>
+    private readonly succeed: Map<IParsingExpression, Set<IParsingExpression>>
   ) {
     super(rules, beginning);
   }

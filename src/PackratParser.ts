@@ -28,7 +28,7 @@ export class ParsingError extends Error {
 }
 
 export class PackratParser {
-  constructor(public rules: Map<string, Rule>) {}
+  constructor(public readonly rules: Map<string, Rule>) {}
 
   public parse(
     s: string,

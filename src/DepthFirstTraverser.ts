@@ -8,7 +8,7 @@ export class DepthFirstTraverser extends PostorderExpressionTraverser {
 
   constructor(
     visitor: IParsingExpressionVisitor,
-    private startExpressions: IParsingExpression[]
+    private readonly startExpressions: IParsingExpression[]
   ) {
     super(visitor);
   }
