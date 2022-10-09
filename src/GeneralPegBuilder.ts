@@ -205,7 +205,7 @@ export class GeneralPegBuilder {
       const [seq] = id.childNodes;
       const [term] = seq.childNodes;
       assert(term instanceof NodeTerminal);
-      const rule = this.getRule(term.text) as Rule;
+      const rule = this.getRule(term.text);
       this.visitedRules.add(rule);
       return new pe.Nonterminal(rule, subname);
     }

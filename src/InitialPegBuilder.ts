@@ -67,7 +67,7 @@ export class InitialPegBuilder {
   }
 
   private compileTerminal(expression: ['terminal', string | RegExp]) {
-    const pattern = expression[1] as RegExp | string;
+    const [, pattern] = expression;
     return new Terminal(
       pattern,
       pattern instanceof RegExp ? `r"${pattern.source}"` : `"${pattern}"`
