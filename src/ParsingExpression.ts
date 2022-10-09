@@ -3,14 +3,20 @@ import { IParsingExpressionVisitor } from './IParsingExpressionVisitor';
 import { Rule } from './Rule';
 
 export interface IParsingExpression {
-  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T;
+  accept<ArgsType extends Array<unknown> = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType;
 }
 
 class ParsingExpression implements IParsingExpression {
   readonly #name = `visit${(this as object).constructor.name}`;
 
-  accept<T, U>(visitor: IParsingExpressionVisitor<T, U>, arg?: U): T {
-    return visitor[this.#name as keyof typeof visitor](this as never, arg);
+  accept<ArgsType extends Array<unknown>, ReturnType>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType {
+    return visitor[this.#name as keyof typeof visitor](this as never, ...arg);
   }
 }
 
@@ -33,10 +39,10 @@ class GeneralOperator extends ParsingExpression {
 }
 
 export class NullParsingExpression extends ParsingExpression {
-  override accept<T, U>(
-    _visitor: IParsingExpressionVisitor<T, U>,
-    _arg?: U
-  ): T {
+  override accept<ArgsType extends Array<unknown>, ReturnType>(
+    _visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ..._arg: ArgsType
+  ): ReturnType {
     throw Error('Should not be called');
   }
 }

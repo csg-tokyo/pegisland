@@ -36,7 +36,8 @@ import { IParsingEnv } from './IParsingEnv';
 import { Position } from './Position';
 
 export class Recognizer
-  implements IParsingExpressionVisitor<[IParseTree, Position] | null, Position>
+  implements
+    IParsingExpressionVisitor<[Position], [IParseTree, Position] | null>
 {
   constructor(private env: IParsingEnv) {}
 

@@ -18,7 +18,7 @@ import {
   ZeroOrMore,
 } from './ParsingExpression';
 
-class Printer implements IParsingExpressionVisitor<string> {
+class Printer implements IParsingExpressionVisitor<[], string> {
   buildString(pe: IParsingExpression) {
     return pe.accept(this);
   }

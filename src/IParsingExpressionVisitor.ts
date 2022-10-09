@@ -15,21 +15,24 @@ import {
   And,
 } from './ParsingExpression';
 
-export interface IParsingExpressionVisitor<T = void, U = void> {
-  visitNonterminal(pe: Nonterminal, arg?: U): T;
-  visitTerminal(pe: Terminal, arg?: U): T;
-  visitZeroOrMore(pe: ZeroOrMore, arg?: U): T;
-  visitOneOrMore(pe: OneOrMore, arg?: U): T;
-  visitOptional(pe: Optional, arg?: U): T;
-  visitAnd(pe: Not, arg?: U): T;
-  visitNot(pe: Not, arg?: U): T;
-  visitSequence(pe: Sequence, arg?: U): T;
-  visitOrderedChoice(pe: OrderedChoice, arg?: U): T;
-  visitGrouping(pe: Grouping, arg?: U): T;
-  visitRewriting(pe: Rewriting, arg?: U): T;
-  visitColon(pe: Colon, arg?: U): T;
-  visitColonNot(pe: ColonNot, arg?: U): T;
-  visitLake(pe: Lake, arg?: U): T;
+export interface IParsingExpressionVisitor<
+  ArgsType extends Array<unknown> = [],
+  ReturnType = void
+> {
+  visitNonterminal(pe: Nonterminal, ...arg: ArgsType): ReturnType;
+  visitTerminal(pe: Terminal, ...arg: ArgsType): ReturnType;
+  visitZeroOrMore(pe: ZeroOrMore, ...arg: ArgsType): ReturnType;
+  visitOneOrMore(pe: OneOrMore, ...arg: ArgsType): ReturnType;
+  visitOptional(pe: Optional, ...arg: ArgsType): ReturnType;
+  visitAnd(pe: Not, ...arg: ArgsType): ReturnType;
+  visitNot(pe: Not, ...arg: ArgsType): ReturnType;
+  visitSequence(pe: Sequence, ...arg: ArgsType): ReturnType;
+  visitOrderedChoice(pe: OrderedChoice, ...arg: ArgsType): ReturnType;
+  visitGrouping(pe: Grouping, ...arg: ArgsType): ReturnType;
+  visitRewriting(pe: Rewriting, ...arg: ArgsType): ReturnType;
+  visitColon(pe: Colon, ...arg: ArgsType): ReturnType;
+  visitColonNot(pe: ColonNot, ...arg: ArgsType): ReturnType;
+  visitLake(pe: Lake, ...arg: ArgsType): ReturnType;
 }
 
 export class DefaultParsingExpressionVisitor
