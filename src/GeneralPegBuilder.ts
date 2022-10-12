@@ -30,7 +30,19 @@ export class GeneralPegBuilder {
       return result;
     }
 
-    const [seq] = result.childNodes;
+    this.makeRules(result);
+    const toplevelRules = difference(
+      new Set(this.rules.values()),
+      this.visitedRules
+    );
+    if (this.errors.length !== 0) {
+      return Error(this.errors.join('\n'));
+    }
+    return new Peg(this.rules, [...toplevelRules]);
+  }
+
+  private makeRules(tree: IParseTree) {
+    const [seq] = tree.childNodes;
     const [, plus] = seq.childNodes;
     plus.childNodes.forEach((node) => {
       const [seq] = node.childNodes;
@@ -45,14 +57,6 @@ export class GeneralPegBuilder {
       const hasAnnotation = annotations.childNodes.length > 0;
       rule.isWater = hasAnnotation;
     });
-    const toplevelRules = difference(
-      new Set(this.rules.values()),
-      this.visitedRules
-    );
-    if (this.errors.length !== 0) {
-      return Error(this.errors.join('\n'));
-    }
-    return new Peg(this.rules, [...toplevelRules]);
   }
 
   private getRule(symbol: string): Rule {
