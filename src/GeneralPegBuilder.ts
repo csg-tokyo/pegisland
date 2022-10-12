@@ -200,12 +200,12 @@ export class GeneralPegBuilder {
     try {
       return new RegExp(pattern);
     } catch (e) {
-      const column = node.range.start.column;
-      const line = node.range.start.line;
+      const { column } = node.range.start;
+      const { line } = node.range.start;
       this.errors.push(
         `Invalid regular expression: ${pattern} at ${line}:${column}`
       );
-      return /[]/;
+      return /./;
     }
   }
 
