@@ -17,7 +17,7 @@ describe('IntialPegBuilder', () => {
   const builder = new InitialPegBuilder();
   describe('#doit()', () => {
     it('should process a nonterminal and a terminal', () => {
-      builder.build({ Expression: ['terminal', '123'] });
+      builder.build({ Expression: ['terminal', /123/] });
       const rule = builder.rules.get('Expression') as Rule;
       assert.equal(rule.symbol, 'Expression');
       const terminal = rule.rhs as Terminal;
@@ -54,14 +54,14 @@ describe('IntialPegBuilder', () => {
       assert(not.operand instanceof Nonterminal);
     });
     it('should process a sequence operator', () => {
-      builder.build({ Expression: ['', 'Expression', ['terminal', 'x']] });
+      builder.build({ Expression: ['', 'Expression', ['terminal', /x/]] });
       const rule = builder.rules.get('Expression') as Rule;
       const seq = rule.rhs as Sequence;
       assert(seq.operands[0] instanceof Nonterminal);
       assert(seq.operands[1] instanceof Terminal);
     });
     it('should process / operator', () => {
-      builder.build({ Expression: ['/', 'Expression', ['terminal', 'x']] });
+      builder.build({ Expression: ['/', 'Expression', ['terminal', /x/]] });
       const rule = builder.rules.get('Expression') as Rule;
       const choice = rule.rhs as OrderedChoice;
       assert(choice.operands[0] instanceof Nonterminal);

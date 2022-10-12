@@ -56,12 +56,9 @@ export class Nonterminal extends ParsingExpression {
 export class Terminal extends ParsingExpression {
   regex: RegExp;
 
-  constructor(public pattern: string | RegExp, public source: string) {
+  constructor(public pattern: RegExp, public source: string) {
     super();
-    this.regex =
-      pattern instanceof RegExp
-        ? new RegExp(pattern.source, 'smy')
-        : new RegExp(pattern, 'smy');
+    this.regex = new RegExp(pattern.source, 'smy');
   }
 }
 

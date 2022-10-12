@@ -21,6 +21,8 @@ export class GeneralPegBuilder {
 
   private readonly visitedRules = new Set<Rule>();
 
+  private readonly errors: string[] = [];
+
   public build(grammar: string): Peg | ParsingError | Error {
     const pegParser = new PegParser();
     const result = pegParser.parse(grammar);
@@ -47,6 +49,9 @@ export class GeneralPegBuilder {
       new Set(this.rules.values()),
       this.visitedRules
     );
+    if (this.errors.length !== 0) {
+      return Error(this.errors.join('\n'));
+    }
     return new Peg(this.rules, [...toplevelRules]);
   }
 
@@ -186,7 +191,22 @@ export class GeneralPegBuilder {
     const [term] = choice.childNodes;
     assert(term instanceof NodeTerminal);
     const { text } = term;
-    return new pe.Terminal(text.slice(2, text.length - 1), text);
+    const pattern = text.slice(2, text.length - 1);
+    const regex = this.createRegExp(pattern, node);
+    return new pe.Terminal(regex, text);
+  }
+
+  private createRegExp(pattern: string, node: IParseTree) {
+    try {
+      return new RegExp(pattern);
+    } catch (e) {
+      const column = node.range.start.column;
+      const line = node.range.start.line;
+      this.errors.push(
+        `Invalid regular expression: ${pattern} at ${line}:${column}`
+      );
+      return /[]/;
+    }
   }
 
   private processNamedIdentifier(node: IParseTree): IParsingExpression {
@@ -218,10 +238,8 @@ export class GeneralPegBuilder {
     const [term] = choice.childNodes;
     assert(term instanceof NodeTerminal);
     const result = eval(term.text) as string;
-    return new pe.Terminal(
-      result.replace(/([^0-9a-zA-Z])/g, '\\$1'),
-      term.text
-    );
+    const pattern = result.replace(/([^0-9a-zA-Z])/g, '\\$1');
+    return new pe.Terminal(this.createRegExp(pattern, node), term.text);
   }
 
   private processClass(node: IParseTree): IParsingExpression {
@@ -233,7 +251,7 @@ export class GeneralPegBuilder {
       terminal.text[0] === '^'
         ? `[^${terminal.text.substring(2)}`
         : terminal.text;
-    return new pe.Terminal(text, terminal.text);
+    return new pe.Terminal(this.createRegExp(text, node), terminal.text);
   }
 
   private processDot(node: IParseTree): IParsingExpression {

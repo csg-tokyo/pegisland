@@ -465,4 +465,13 @@ describe('Parser', () => {
     const tree = parser.parse('abc', 'unknown_symbol') as IParseTree;
     expect(tree).toBeInstanceOf(Error);
   });
+
+  it('Should report an error when a regular expression is incorrect', () => {
+    const grammar = `
+      program     <- r'['
+      `;
+    const parser = createParser(grammar) as Error;
+    expect(parser).toBeInstanceOf(Error);
+    expect(parser.message).toEqual('Invalid regular expression: [ at 2:22');
+  });
 });

@@ -5,7 +5,7 @@ import { IParseTree } from './ParseTree';
 
 export type SimpleTree =
   | Nonterminals
-  | ['terminal', RegExp | string]
+  | ['terminal', RegExp]
   | ['' | '/', ...SimpleTree[]]
   | ['*' | '+' | '?' | '!' | '&', SimpleTree];
 

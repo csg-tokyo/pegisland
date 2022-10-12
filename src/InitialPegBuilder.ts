@@ -66,12 +66,8 @@ export class InitialPegBuilder {
     }
   }
 
-  private compileTerminal(expression: ['terminal', string | RegExp]) {
-    const [, pattern] = expression;
-    return new Terminal(
-      pattern,
-      pattern instanceof RegExp ? `r"${pattern.source}"` : `"${pattern}"`
-    );
+  private compileTerminal([, pattern]: ['terminal', RegExp]) {
+    return new Terminal(pattern, `r"${pattern.source}"`);
   }
 
   private compileNonterminal(expression: string) {

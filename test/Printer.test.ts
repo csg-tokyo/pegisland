@@ -19,7 +19,7 @@ import { peToString } from '../src/Printer';
 
 describe('Printer', () => {
   it('should print a Terminal', () => {
-    const term = new Terminal('.', 'dot');
+    const term = new Terminal(/./, 'dot');
     expect(peToString(term)).toEqual('dot');
   });
   it('should print a Nonterminal', () => {
