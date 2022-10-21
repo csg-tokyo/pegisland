@@ -79,15 +79,17 @@ export class PackratParsingEnv extends BaseParsingEnv<Rule> {
 
   override parseRule(rule: Rule, pos: Position): [IParseTree, Position] | null {
     if (!this.memo[pos.offset].has(rule)) {
-      const result = rule.parse(this, pos);
-      this.memo[pos.offset].set(rule, result);
-      if (result === null) {
-        this.stats.failureCount++;
-      }
       this.stats.memoMissCount++;
+      this.memo[pos.offset].set(rule, rule.parse(this, pos));
     }
     this.stats.memoAccessCount++;
-    return this.memo[pos.offset].get(rule) as [IParseTree, Position] | null;
+    const result = this.memo[pos.offset].get(rule) as
+      | [IParseTree, Position]
+      | null;
+    if (result === null) {
+      this.stats.failureCount++;
+    }
+    return result;
   }
 
   parse(pe: IParsingExpression, pos: Position): [IParseTree, Position] | null {
