@@ -235,7 +235,7 @@ export class Recognizer
   }
 
   visitLake(pe: Lake, pos: Position): [IParseTree, Position] | null {
-    const result = this.env.parse(pe.semantics, pos);
+    const result = this.env.parse(pe.operand, pos);
     assert(
       result !== null,
       'Lake should not fail since it accepts an empty string'

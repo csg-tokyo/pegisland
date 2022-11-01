@@ -9,37 +9,35 @@ export interface IParsingExpression {
   ): ReturnType;
 }
 
-class ParsingExpression implements IParsingExpression {
-  readonly #name = `visit${(this as object).constructor.name}`;
+abstract class UnaryOperator implements IParsingExpression {
+  constructor(public operand: IParsingExpression) {}
 
-  accept<ArgsType extends Array<unknown>, ReturnType>(
+  abstract accept<ArgsType extends unknown[] = [], ReturnType = void>(
     visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
     ...arg: ArgsType
-  ): ReturnType {
-    return visitor[this.#name as keyof typeof visitor](this as never, ...arg);
-  }
+  ): ReturnType;
 }
 
-class UnaryOperator extends ParsingExpression {
-  constructor(public operand: IParsingExpression) {
-    super();
-  }
+abstract class BinaryOperator implements IParsingExpression {
+  constructor(public lhs: IParsingExpression, public rhs: IParsingExpression) {}
+
+  abstract accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType;
 }
 
-class BinaryOperator extends ParsingExpression {
-  constructor(public lhs: IParsingExpression, public rhs: IParsingExpression) {
-    super();
-  }
+abstract class GeneralOperator implements IParsingExpression {
+  constructor(public operands: IParsingExpression[]) {}
+
+  abstract accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType;
 }
 
-class GeneralOperator extends ParsingExpression {
-  constructor(public operands: IParsingExpression[]) {
-    super();
-  }
-}
-
-export class NullParsingExpression extends ParsingExpression {
-  override accept<ArgsType extends Array<unknown>, ReturnType>(
+export class NullParsingExpression implements IParsingExpression {
+  accept<ArgsType extends Array<unknown>, ReturnType>(
     _visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
     ..._arg: ArgsType
   ): ReturnType {
@@ -47,49 +45,140 @@ export class NullParsingExpression extends ParsingExpression {
   }
 }
 
-export class Nonterminal extends ParsingExpression {
-  constructor(public rule: Rule, public name = '') {
-    super();
+export class Nonterminal implements IParsingExpression {
+  constructor(public rule: Rule, public name = '') {}
+
+  accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType {
+    return visitor.visitNonterminal(this, ...arg);
   }
 }
 
-export class Terminal extends ParsingExpression {
+export class Terminal implements IParsingExpression {
   regex: RegExp;
 
   constructor(public pattern: RegExp, public source: string) {
-    super();
     this.regex = new RegExp(pattern.source, 'smy');
+  }
+
+  accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType {
+    return visitor.visitTerminal(this, ...arg);
   }
 }
 
-export class ZeroOrMore extends UnaryOperator {}
+export class ZeroOrMore extends UnaryOperator {
+  override accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType {
+    return visitor.visitZeroOrMore(this, ...arg);
+  }
+}
 
-export class OneOrMore extends UnaryOperator {}
+export class OneOrMore extends UnaryOperator {
+  override accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType {
+    return visitor.visitOneOrMore(this, ...arg);
+  }
+}
 
-export class Optional extends UnaryOperator {}
+export class Optional extends UnaryOperator {
+  override accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType {
+    return visitor.visitOptional(this, ...arg);
+  }
+}
 
-export class And extends UnaryOperator {}
+export class And extends UnaryOperator {
+  override accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType {
+    return visitor.visitAnd(this, ...arg);
+  }
+}
 
-export class Not extends UnaryOperator {}
+export class Not extends UnaryOperator {
+  override accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType {
+    return visitor.visitNot(this, ...arg);
+  }
+}
 
-export class Colon extends BinaryOperator {}
+export class Colon extends BinaryOperator {
+  override accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType {
+    return visitor.visitColon(this, ...arg);
+  }
+}
 
-export class ColonNot extends BinaryOperator {}
+export class ColonNot extends BinaryOperator {
+  override accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType {
+    return visitor.visitColonNot(this, ...arg);
+  }
+}
 
-export class Sequence extends GeneralOperator {}
+export class Sequence extends GeneralOperator {
+  override accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType {
+    return visitor.visitSequence(this, ...arg);
+  }
+}
 
-export class OrderedChoice extends GeneralOperator {}
+export class OrderedChoice extends GeneralOperator {
+  override accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType {
+    return visitor.visitOrderedChoice(this, ...arg);
+  }
+}
 
-export class Grouping extends UnaryOperator {}
+export class Grouping extends UnaryOperator {
+  override accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType {
+    return visitor.visitGrouping(this, ...arg);
+  }
+}
 
-export class Rewriting extends ParsingExpression {
-  constructor(public operand: IParsingExpression, public spec: string) {
-    super();
+export class Rewriting implements IParsingExpression {
+  constructor(public operand: IParsingExpression, public spec: string) {}
+
+  accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType {
+    return visitor.visitRewriting(this, ...arg);
   }
 }
 
 export class Lake extends UnaryOperator {
-  semantics: IParsingExpression = new NullParsingExpression();
+  readonly originalOperand;
+
+  constructor(operand: IParsingExpression) {
+    super(operand);
+    this.originalOperand = operand;
+  }
 
   makeSemantics(symbols: Set<IParsingExpression>, waterRules: Rule[]) {
     const operandIsEpsilon =
@@ -105,7 +194,7 @@ export class Lake extends UnaryOperator {
       new Not(new Terminal(/./, '.')),
       new And(new Terminal(/./, '.')),
     ]);
-    this.semantics = new ZeroOrMore(
+    this.operand = new ZeroOrMore(
       new Grouping(
         new OrderedChoice([
           operandIsEpsilon ? alwaysFailExpression : this.operand,
@@ -113,6 +202,12 @@ export class Lake extends UnaryOperator {
         ])
       )
     );
-    this.operand = this.semantics;
+  }
+
+  override accept<ArgsType extends unknown[] = [], ReturnType = void>(
+    visitor: IParsingExpressionVisitor<ArgsType, ReturnType>,
+    ...arg: ArgsType
+  ): ReturnType {
+    return visitor.visitLake(this, ...arg);
   }
 }
