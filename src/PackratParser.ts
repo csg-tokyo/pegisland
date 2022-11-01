@@ -58,7 +58,7 @@ export class PackratParser {
         rule = this.rules.get(startSymbol);
       } else {
         return Error(
-          `Nonterminal symbol {startSymbol} does not exist in the grammar.`
+          `Nonterminal symbol ${startSymbol} does not exist in the grammar.`
         );
       }
     }
