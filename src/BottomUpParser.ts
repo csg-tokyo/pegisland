@@ -27,7 +27,7 @@ export class BottomUpParsingEnv extends BaseParsingEnv<Rule> {
       beginning
     ).build();
 
-    fs.writeFileSync('graph.dot', genDot(peg, parentsMap));
+    // fs.writeFileSync('graph.dot', genDot(peg, parentsMap));
     this.parentsMap = parentsMap;
     // console.log(indexMap);
     this.createHeap = getHeapCreator(indexMap, beginning, peg);
