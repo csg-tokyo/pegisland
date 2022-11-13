@@ -1,17 +1,18 @@
 // Copyright (C) 2022- Katsumi Okuda.  All rights reserved.
 import { strict as assert } from 'assert';
 import lineColumn from 'line-column';
-import { BeginningCalculator } from './set/BeginningCalculator';
-import { GraphBuilder } from './GraphBuilder';
-import { Indexer } from './Indexer';
+import { BottomUpTraverser } from './BottomUpTraverser';
+import { genDot } from './GraphPrinter';
+import { BaseParsingEnv } from './IParsingEnv';
 import { IParseTree } from './ParseTree';
 import { IParsingExpression, Terminal } from './ParsingExpression';
-import { BaseParsingEnv } from './IParsingEnv';
-import { Rule } from './Rule';
-import { Position } from './Position';
 import { Peg } from './Peg';
-import { PriorityQueue } from './PriorityQueue';
 import { PikaParsingEnv } from './PikaParser';
+import { Position } from './Position';
+import { PriorityQueue } from './PriorityQueue';
+import { Rule } from './Rule';
+import { BeginningCalculator } from './set/BeginningCalculator';
+import * as fs from 'fs';
 
 export class BottomUpParsingEnv extends BaseParsingEnv<Rule> {
   private readonly createHeap;
@@ -20,11 +21,16 @@ export class BottomUpParsingEnv extends BaseParsingEnv<Rule> {
 
   constructor(s: string, private peg: Peg) {
     super(s);
+    const beginning = new BeginningCalculator(peg.rules, true).calculate();
+    const { parentsMap, indexMap } = new BottomUpTraverser(
+      peg,
+      beginning
+    ).build();
 
-    const [parentsMap, childrenMap] = createParentsMap(this.peg);
-    // console.log(genDot(peg, parentsMap));
+    fs.writeFileSync('graph.dot', genDot(peg, parentsMap));
     this.parentsMap = parentsMap;
-    this.createHeap = getHeapCreator(this.peg, childrenMap);
+    // console.log(indexMap);
+    this.createHeap = getHeapCreator(indexMap, beginning, peg);
   }
 
   parseString(s: string, start: string): [IParseTree, Position] | Error {
@@ -68,30 +74,24 @@ export class BottomUpParsingEnv extends BaseParsingEnv<Rule> {
   }
 
   private fillMemoEntry(makePos: (index: number) => Position, pos: number) {
-    const [heap] = this.createHeap();
-    // console.log('heap was created for ' + pos, heap.size());
+    const heap = this.createHeap();
+    // console.log('heap was created for ' + pos, heap.size);
     while (!heap.empty()) {
       const rule = heap.pop() as Rule;
       const isGrowing = this.grow(rule, makePos(pos));
-
-      /*
-      if (isGrowing)
-        console.log(
-          pos,
-          heap.size(),
-          peToString(pe) + ' was popped!' + (this.memo[pos].get(pe) !== null)
-        );
-      */
       if (!isGrowing) continue;
       const parents = this.parentsMap.get(rule);
       if (!parents) continue;
-      parents.forEach((parent) => heap.push(parent));
+      parents.forEach((parent) => {
+        heap.push(parent);
+        // console.log('pushed: ', parent.symbol);
+      });
     }
   }
 
   private grow(rule: Rule, pos: Position): boolean {
     const isFirstEval = !this.memo[pos.offset].has(rule);
-    // console.log('Grow ' + show(pe));
+    // console.log('Grow: ', rule.symbol);
     if (isFirstEval) {
       this.memo[pos.offset].set(rule, null);
     }
@@ -133,94 +133,24 @@ function getTopLevelRules(peg: Peg) {
     : [peg.rules.values().next().value as Rule];
 }
 
-class DFSTraverser {
-  readonly visited = new Set<Rule>();
-
-  readonly bottoms = new Set<Rule>();
-
-  constructor(
-    private childrenMap: Map<Rule, Set<Rule>>,
-    private topLevelRules: Rule[]
-  ) {}
-
-  visit(pe: Rule) {
-    const children = this.childrenMap.has(pe)
-      ? [...(this.childrenMap.get(pe) as Set<Rule>)]
-      : [];
-    const unvisitedChildren = children.filter(
-      (child) => !this.visited.has(child)
-    );
-    if (unvisitedChildren.length === 0) {
-      this.bottoms.add(pe);
-    } else {
-      unvisitedChildren.forEach((child) => {
-        this.visited.add(child);
-        this.visit(child);
-      });
-    }
-  }
-
-  traverse() {
-    this.topLevelRules.forEach((rule) => {
-      this.visited.add(rule);
-      this.visit(rule);
-    });
-  }
-}
-
-function getHeapCreator(peg: Peg, childrenMap: Map<Rule, Set<Rule>>) {
-  const indexer = new Indexer();
-  const [indexMap] = indexer.build(peg);
-  assert(
-    peg.toplevelRules.length > 0,
-    'One or more top-level rules are needed.'
-  );
-
-  const traverser = new DFSTraverser(childrenMap, peg.toplevelRules);
-  traverser.traverse();
-
-  const calculator = new BeginningCalculator(peg.rules, true).calculate();
+function getHeapCreator(
+  indexMap: Map<Rule, number>,
+  beginning: Map<IParsingExpression, Set<IParsingExpression>>,
+  peg: Peg
+) {
   const beginWithTerminal = (rule: Rule) =>
-    [...(calculator.get(rule.rhs) as Set<IParsingExpression>).values()].filter(
+    [...(beginning.get(rule.rhs) as Set<IParsingExpression>).values()].filter(
       (pe) => pe instanceof Terminal
     ).length > 0;
   const bottomRules = [...peg.rules.values()].filter(beginWithTerminal);
 
-  /*
-  console.log(
-    'XXX',
-    [...difference(new Set(bottomRules), bottoms)]
-      .map((rule) => rule.symbol)
-      .join(',')
-  );
-  console.log(
-    'YYY',
-    [...difference(bottoms, new Set(bottomRules))]
-      .map((rule) => rule.symbol)
-      .join(',')
-  );
-  */
-  /*
-  console.log(
-    'bottoms',
-    [...bottomRules].map((rule) => peToString(rule.rhs)).join('\n')
-  );
-  */
   const cmp = (a: Rule, b: Rule) =>
-    (indexMap.get(a.rhs) as number) - (indexMap.get(b.rhs) as number);
-  return (): [PriorityQueue<Rule>, Map<IParsingExpression, number>] => {
+    (indexMap.get(a) as number) - (indexMap.get(b) as number);
+  return (): PriorityQueue<Rule> => {
     const heap = new PriorityQueue(cmp);
     bottomRules.forEach((rule) => heap.push(rule));
-    // bottoms.forEach((pe) => heap.push(pe));
-
-    return [heap, indexMap];
+    return heap;
   };
-}
-
-function createParentsMap(peg: Peg) {
-  const parentsBuilder = new GraphBuilder();
-  const parentsMap = parentsBuilder.build(peg);
-  return parentsMap;
 }
 
 export class BottomUpParserBase {
