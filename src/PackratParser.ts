@@ -13,7 +13,7 @@ function makeErrorMessage(env: PackratParsingEnv) {
   const info = finder.fromIndex(env.maxIndex);
   if (info) {
     return [
-      `Parsing error at offset line ${info.line} column ${info.col}.`,
+      `Parsing error at offset line ${info.line} column ${info.col}`,
       'when parsing with the following parsing expressions:',
       ...[...env.deepestStack.map(peToString)].reverse(),
     ].join('\n');
