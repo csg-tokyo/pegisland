@@ -2,7 +2,6 @@
 import { strict as assert } from 'assert';
 import lineColumn from 'line-column';
 import { BottomUpTraverser } from './BottomUpTraverser';
-import { genDot } from './GraphPrinter';
 import { BaseParsingEnv } from './IParsingEnv';
 import { IParseTree } from './ParseTree';
 import { IParsingExpression, Terminal } from './ParsingExpression';
@@ -12,7 +11,6 @@ import { Position } from './Position';
 import { PriorityQueue } from './PriorityQueue';
 import { Rule } from './Rule';
 import { BeginningCalculator } from './set/BeginningCalculator';
-import * as fs from 'fs';
 
 export class BottomUpParsingEnv extends BaseParsingEnv<Rule> {
   private readonly createHeap;
